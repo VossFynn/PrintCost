@@ -1,1 +1,234 @@
 @use '../../shared/page-styles';
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.calculate-shell {
+  overflow-x: hidden;
+}
+
+.calculate-form {
+  display: grid;
+  gap: var(--pc-space-3);
+  width: min(100%, 42rem);
+}
+
+.calculate-shell--single-column .calculate-form {
+  grid-template-columns: 1fr;
+}
+
+.calculate-form__section {
+  display: grid;
+  gap: var(--pc-space-2);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  padding: var(--pc-space-2);
+  background: var(--pc-color-surface-card);
+}
+
+.calculate-form__section h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.calculate-form__field {
+  display: grid;
+  gap: var(--pc-space-1);
+}
+
+.calculate-form__field span {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pc-color-ink-label);
+}
+
+.calculate-form__field input,
+.calculate-form__field select {
+  min-height: 2.5rem;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  padding: 0 var(--pc-space-2);
+}
+
+.calculate-form__field--checkbox {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.calculate-form__field--checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+}
+
+.calculate-form__error {
+  margin: 0;
+  color: var(--pc-color-primary);
+  font-size: 0.8125rem;
+}
+
+.calculate-form__empty-printers {
+  display: grid;
+  gap: var(--pc-space-1);
+  border: 1px dashed var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  padding: var(--pc-space-2);
+}
+
+.calculate-form__empty-printers p {
+  margin: 0;
+}
+
+.calculate-form__empty-printers a {
+  justify-self: start;
+}
+
+.calculate-form__empty-filaments {
+  display: grid;
+  gap: var(--pc-space-1);
+  border: 1px dashed var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  padding: var(--pc-space-2);
+}
+
+.calculate-form__empty-filaments p {
+  margin: 0;
+}
+
+.calculate-form__empty-filaments a {
+  justify-self: start;
+}
+
+.calculate-form__chip-row {
+  display: flex;
+  gap: var(--pc-space-1);
+  overflow-x: auto;
+  padding-bottom: var(--pc-space-1);
+}
+
+.calculate-form__chip {
+  min-height: 2.25rem;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: 999px;
+  background: transparent;
+  padding: 0 var(--pc-space-2);
+  white-space: nowrap;
+}
+
+.calculate-form__chip--active {
+  background: var(--pc-color-primary);
+  color: var(--pc-color-primary-foreground);
+  border-color: var(--pc-color-primary);
+}
+
+.calculate-form__filament-lines {
+  display: grid;
+  gap: var(--pc-space-2);
+}
+
+.calculate-form__filament-line {
+  display: grid;
+  gap: var(--pc-space-1);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  padding: var(--pc-space-2);
+}
+
+.calculate-form__filament-line-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.calculate-form__totals {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+
+.calculate-form__totals p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.calculate-form__plate-explanation {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.calculate-form__actions {
+  display: flex;
+}
+
+.calculate-form__actions button {
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-primary);
+  color: var(--pc-color-primary-foreground);
+  font-weight: 600;
+  padding: 0 var(--pc-space-3);
+}
+
+.calculate-form__actions button:disabled {
+  opacity: 0.45;
+}
+
+.calculate-result {
+  gap: var(--pc-space-2);
+}
+
+.calculate-result__rows {
+  margin: 0;
+  display: grid;
+  gap: var(--pc-space-1);
+}
+
+.calculate-result__row {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--pc-space-2);
+}
+
+.calculate-result__row dt,
+.calculate-result__row dd {
+  margin: 0;
+}
+
+.calculate-result__row dt {
+  font-size: 0.875rem;
+  color: var(--pc-color-ink-label);
+}
+
+.calculate-result__row dd {
+  font-weight: 600;
+}
+
+.calculate-result__row--price {
+  border-top: 1px solid var(--pc-color-border-subtle);
+  padding-top: var(--pc-space-1);
+  margin-top: var(--pc-space-1);
+  align-items: center;
+}
+
+.calculate-result__price-value--dominant {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.calculate-result__pending {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--pc-color-ink-secondary);
+}
+
+.calculate-result__sr-announcement {
+  margin: 0;
+  min-height: 1px;
+  font-size: 0;
+  line-height: 0;
+}

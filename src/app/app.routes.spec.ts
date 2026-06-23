@@ -1,3 +1,5 @@
+import 'fake-indexeddb/auto';
+
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Router } from '@angular/router';
@@ -40,5 +42,36 @@ describe('app routes', () => {
     expect(document.querySelector('link[href*="fonts.googleapis.com"]')).toBeNull();
     expect(document.querySelector('script[src*="fonts.googleapis.com"]')).toBeNull();
 
+  });
+
+  it('keeps Bestand navigation active and closes inventory detail on back or Escape', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const router = TestBed.inject(Router);
+
+    fixture.detectChanges();
+    await router.navigateByUrl('/inventory');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    await router.navigateByUrl('/inventory?detail=calc-1');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(router.url).toContain('/inventory?detail=calc-1');
+    expect(router.url.startsWith('/inventory')).toBe(true);
+
+    await router.navigateByUrl('/inventory');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(router.url).toBe('/inventory');
+
+    await router.navigateByUrl('/inventory?detail=calc-1');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(router.url).toContain('/inventory?detail=calc-1');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(router.url).toBe('/inventory');
   });
 });

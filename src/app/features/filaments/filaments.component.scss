@@ -1,1 +1,361 @@
 @use '../../shared/page-styles';
+
+.filament-manager {
+  display: grid;
+  gap: var(--pc-space-4);
+  margin-top: var(--pc-space-4);
+  padding: var(--pc-space-4);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-color-surface-card);
+  box-shadow: 0 10px 24px rgb(44 62 80 / 6%);
+}
+
+.filament-manager__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--pc-space-3);
+}
+
+.filament-manager__title,
+.filament-manager__subtitle,
+.filament-manager__empty,
+.filament-list__name,
+.filament-list__meta,
+.filament-list__stock {
+  margin: 0;
+}
+
+.filament-manager__title,
+.filament-list__name {
+  font-weight: 700;
+  color: var(--pc-color-ink-primary);
+}
+
+.filament-manager__subtitle,
+.filament-manager__empty,
+.filament-list__meta {
+  color: var(--pc-color-ink-secondary);
+}
+
+.filament-manager__title {
+  font-size: 1rem;
+}
+
+.filament-manager__empty-card {
+  display: grid;
+  gap: var(--pc-space-2);
+  padding: var(--pc-space-4);
+  border: 1px dashed var(--pc-color-border-muted);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-color-surface-muted);
+}
+
+.filament-manager__tools {
+  display: grid;
+  gap: var(--pc-space-3);
+}
+
+.filament-manager__search {
+  display: grid;
+  gap: var(--pc-space-1);
+}
+
+.filament-manager__search-label {
+  font-size: 0.8125rem;
+  color: var(--pc-color-ink-label);
+}
+
+.filament-manager__search input {
+  min-height: 2.75rem;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  padding: var(--pc-space-2);
+  font: inherit;
+}
+
+.filament-filter-row {
+  display: flex;
+  gap: var(--pc-space-2);
+  overflow-x: auto;
+  padding-bottom: var(--pc-space-1);
+  -webkit-overflow-scrolling: touch;
+}
+
+.filament-filter-chip {
+  flex: 0 0 auto;
+  min-height: 2.5rem;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: 9999px;
+  background: var(--pc-color-surface-card);
+  color: var(--pc-color-ink-primary);
+  padding: var(--pc-space-1) var(--pc-space-3);
+  font-weight: 700;
+}
+
+.filament-filter-chip--active {
+  border-color: var(--pc-color-primary);
+  background: var(--pc-color-surface-accent-soft);
+  color: var(--pc-color-primary);
+}
+
+.filament-manager__create,
+.filament-list__edit,
+.filament-list__select,
+.filament-form__actions button,
+.filament-form__add-purchase,
+.filament-form__purchase-row button {
+  min-height: 2.75rem;
+  border-radius: var(--pc-radius-sm);
+  font-weight: 700;
+}
+
+.filament-manager__create,
+.filament-form__actions button {
+  border: 0;
+  background: var(--pc-color-primary);
+  color: var(--pc-color-primary-foreground);
+}
+
+.filament-manager__create {
+  padding: var(--pc-space-2) var(--pc-space-3);
+  box-shadow: 0 4px 10px rgb(196 98 45 / 20%);
+}
+
+.filament-list {
+  display: grid;
+  gap: var(--pc-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filament-list__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'color content'
+    'color actions';
+  align-items: start;
+  gap: var(--pc-space-3);
+  padding: var(--pc-space-3);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-color-surface-card);
+}
+
+.filament-list__color {
+  grid-area: color;
+}
+
+.filament-list__color span {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 40%);
+}
+
+.filament-list__content {
+  grid-area: content;
+  display: grid;
+  gap: var(--pc-space-1);
+  min-width: 0;
+}
+
+.filament-list__stock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+
+.filament-list__stock-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0 var(--pc-space-2);
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.filament-list__stock-badge--empty {
+  background: var(--pc-color-surface-accent-soft);
+  color: var(--pc-color-primary);
+  border-color: var(--pc-color-primary);
+}
+
+.filament-list__stock-badge--low {
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-primary);
+  border-color: var(--pc-color-border-muted);
+}
+
+.filament-list__stock-badge--available {
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-ink-primary);
+  border-color: var(--pc-color-border-muted);
+}
+
+.filament-list__stock-value {
+  color: var(--pc-color-ink-secondary);
+}
+
+.filament-list__material-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0 var(--pc-space-2);
+  border-radius: 9999px;
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-ink-primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.filament-list__price {
+  margin: 0;
+  color: var(--pc-color-primary);
+  font-weight: 700;
+}
+
+.filament-list__actions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-2);
+}
+
+.filament-list__edit,
+.filament-list__select {
+  border: 1px solid var(--pc-color-primary);
+  background: transparent;
+  color: var(--pc-color-primary);
+  padding: var(--pc-space-1) var(--pc-space-3);
+}
+
+.filament-list__delete {
+  border: 1px solid #aa2f2f;
+  background: transparent;
+  color: #aa2f2f;
+  padding: var(--pc-space-1) var(--pc-space-3);
+}
+
+.filament-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgb(44 62 80 / 35%);
+}
+
+.filament-dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 20;
+  width: min(40rem, calc(100% - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  transform: translate(-50%, -50%);
+  background: var(--pc-color-surface-card);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  padding: var(--pc-space-4);
+  box-shadow: 0 12px 30px rgb(44 62 80 / 24%);
+}
+
+.filament-form {
+  display: grid;
+  gap: var(--pc-space-3);
+}
+
+.filament-form__row {
+  display: grid;
+  gap: var(--pc-space-1);
+}
+
+.filament-form__row label {
+  font-size: 0.8125rem;
+  color: var(--pc-color-ink-label);
+}
+
+.filament-form__row input,
+.filament-form__purchase-row input {
+  min-height: 2.75rem;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  padding: var(--pc-space-2);
+  font: inherit;
+}
+
+.filament-form__purchases {
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  padding: var(--pc-space-3);
+}
+
+.filament-form__purchase-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: var(--pc-space-2);
+  margin-bottom: var(--pc-space-2);
+}
+
+.filament-form__purchase-row button {
+  border: 1px solid var(--pc-color-border-subtle);
+  background: transparent;
+}
+
+.filament-form__add-purchase {
+  border: 1px solid var(--pc-color-primary);
+  background: transparent;
+  color: var(--pc-color-primary);
+  padding: var(--pc-space-1) var(--pc-space-3);
+}
+
+.filament-form__error {
+  margin: 0;
+  color: #aa2f2f;
+  font-size: 0.8125rem;
+}
+
+.filament-form__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+
+.filament-form__actions button {
+  padding: var(--pc-space-2) var(--pc-space-3);
+}
+
+.filament-form__actions button:disabled {
+  opacity: 0.6;
+}
+
+.filament-form__cancel {
+  background: transparent !important;
+  color: var(--pc-color-primary) !important;
+  border: 1px solid var(--pc-color-primary) !important;
+}
+
+@media (min-width: 48rem) {
+  .filament-list__item {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'color content actions';
+    align-items: center;
+  }
+
+  .filament-list__actions {
+    justify-content: flex-end;
+  }
+
+  .filament-manager__tools {
+    grid-template-columns: minmax(16rem, 1fr);
+  }
+}

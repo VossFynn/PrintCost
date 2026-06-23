@@ -321,6 +321,8 @@ Story 2.5: FR3, FR4.
 
 Story 2.6: FR3, FR7.
 
+Story 2.7: NFR-6, NFR-7.
+
 Story 3.1: FR5.
 
 Story 3.2: FR5, FR4.
@@ -702,6 +704,57 @@ So that old pricing stays reproducible.
 **When** the Filament record still exists
 **Then** the system can resolve it for stock deduction
 **And** missing records are handled by a German data error in the print occurrence flow.
+
+### Story 2.7: Add TSDoc and Clarifying Documentation for Existing Code
+
+As a maker and maintainer,
+I want important functions, stores, and complex logic documented with TSDoc and targeted clarifying comments,
+So that implementation intent stays clear and future development is safer.
+
+**Acceptance Criteria:**
+
+**Given** existing TypeScript services, store-like state holders, and utility functions exist
+**When** documentation pass is completed
+**Then** public methods, critical private methods, state/store structures, and non-obvious business rules have concise TSDoc
+**And** comments explain intent and constraints, not line-by-line mechanics.
+
+**Given** documentation is added
+**When** developers read feature and core modules
+**Then** they can understand purpose, inputs/outputs, side effects, invariants, and error expectations without tracing every call path
+**And** comments avoid noise and duplication of obvious code.
+
+**Given** new tickets are created after this story
+**When** task and dev-note sections are generated
+**Then** each ticket includes explicit requirement for TSDoc on difficult-to-understand functions, stores, and important logic blocks
+**And** guidance states to document sections/functions only, not every line.
+
+### Story 2.8: Restyle Existing Filaments List Component
+
+As a maker,
+I want the existing Filaments list component restyled to the updated visual guide,
+So that the inventory surface matches the new PrintCost look without changing behavior.
+
+**Acceptance Criteria:**
+
+**Given** the Filaments surface renders
+**When** the updated style guide is applied
+**Then** list rows, filter chips, empty state, and low-stock state use the revised tokens, spacing, radius, and typography from `DESIGN.md`
+**And** the component keeps the existing layout density appropriate for mobile.
+
+**Given** the existing Filaments interactions are used
+**When** the restyle ships
+**Then** search, filter, selection, create, and edit behavior remain unchanged
+**And** no new data contract is introduced.
+
+**Given** low/zero stock rows render
+**When** the new style is applied
+**Then** the state remains readable with non-color indicator text or icon
+**And** contrast stays consistent with the accessibility floor.
+
+**Given** the surface renders at mobile and desktop widths
+**When** the restyled component is shown
+**Then** touch targets remain usable
+**And** no horizontal overflow is introduced.
 
 ## Epic 3: Live Print Pricing and Saved Calculations
 

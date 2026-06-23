@@ -15,6 +15,12 @@ import {
 export const DB_NAME = 'printcost';
 export const DB_VERSION = 1;
 
+/**
+ * IndexedDB schema for PrintCost v1.
+ *
+ * Store shapes mirror the domain/storage records so services can read and
+ * write without translating between persistence-specific DTOs.
+ */
 export interface PrintCostDbSchema extends DBSchema {
   printers: {
     key: string;
@@ -58,6 +64,12 @@ export interface PrintCostDbSchema extends DBSchema {
 
 let databasePromise: Promise<IDBPDatabase<PrintCostDbSchema>> | undefined;
 
+/**
+ * Creates a store if the upgrade database does not already contain it.
+ *
+ * The upgrade callback is idempotent so schema bootstrapping can run safely
+ * on fresh installs and future upgrades.
+ */
 const ensureStore = (
   db: IDBPDatabase<PrintCostDbSchema>,
   storeName: 'printers' | 'filaments' | 'calculations' | 'sales' | 'customers' | 'templates' | 'parts',
@@ -73,6 +85,10 @@ const ensureStore = (
   }
 };
 
+/**
+ * Ensures the settings store exists because it uses a string key instead of
+ * the shared `id` key path used by the other stores.
+ */
 const ensureSettingsStore = (db: IDBPDatabase<PrintCostDbSchema>) => {
   const upgradeDb = db as unknown as IDBDatabase;
 
@@ -81,7 +97,11 @@ const ensureSettingsStore = (db: IDBPDatabase<PrintCostDbSchema>) => {
   }
 };
 
-const seedDefaultSettings = async (db: IDBPDatabase<PrintCostDbSchema>) => {
+/**
+ * Seeds missing settings keys only. Existing user values are preserved so the
+ * database can be reopened repeatedly without clobbering local preferences.
+ */
+export const seedDefaultSettings = async (db: IDBPDatabase<PrintCostDbSchema>) => {
   const tx = db.transaction('settings', 'readwrite');
   const store = tx.objectStore('settings');
 
@@ -95,6 +115,12 @@ const seedDefaultSettings = async (db: IDBPDatabase<PrintCostDbSchema>) => {
   await tx.done;
 };
 
+/**
+ * Opens the PrintCost database, creates missing stores, and seeds defaults.
+ *
+ * The returned database is cached for the session; callers should reuse the
+ * shared instance instead of opening IndexedDB directly in feature code.
+ */
 export const initializePrintCostDatabase = async (): Promise<IDBPDatabase<PrintCostDbSchema>> => {
   if (!databasePromise) {
     databasePromise = openDB<PrintCostDbSchema>(DB_NAME, DB_VERSION, {
@@ -127,6 +153,12 @@ export const initializePrintCostDatabase = async (): Promise<IDBPDatabase<PrintC
   return db;
 };
 
+/**
+ * Writes a single settings entry by key.
+ *
+ * Settings are mutated through this helper so service code keeps the schema
+ * contract and storage side effects in one place.
+ */
 export const writeSetting = async (
   db: IDBPDatabase<PrintCostDbSchema>,
   key: string,
@@ -135,9 +167,15 @@ export const writeSetting = async (
   await db.put('settings', { key, value });
 };
 
+/**
+ * Reads a single settings entry by key.
+ */
 export const readSetting = async (db: IDBPDatabase<PrintCostDbSchema>, key: string) =>
   db.get('settings', key);
 
+/**
+ * Closes the cached database instance and removes the local IndexedDB store.
+ */
 export const deletePrintCostDatabase = async () => {
   if (databasePromise) {
     const db = await databasePromise;
