@@ -1,170 +1,186 @@
 <section class="page">
   <p class="page__eyebrow">Filamente</p>
   <h1>Filamente</h1>
-  <p class="page__body">Verwalte Filamentrollen inklusive Einkaufshistorie.</p>
 
-  <section class="filament-manager">
-    <div class="filament-manager__header">
-      <div>
-        <h2 class="filament-manager__title">Filament verwalten</h2>
-        <p class="filament-manager__subtitle">Aktive Filamente für Kalkulation und Bestand.</p>
-      </div>
-      <button type="button" data-testid="open-filament-dialog" class="filament-manager__create" (click)="openCreateDialog()">
-        Neues Filament
+  <label class="filament-search" for="filament-search-input">
+    <span class="filament-search__icon" aria-hidden="true">○</span>
+    <input
+      id="filament-search-input"
+      #searchInput
+      data-testid="filament-search"
+      type="search"
+      placeholder="Suchen…"
+      [value]="searchTerm()"
+      (input)="setSearchTerm(searchInput.value)"
+      class="filament-search__input"
+    />
+  </label>
+
+  <div class="filament-filter-row" aria-label="Filamentfilter">
+    @for (filter of filamentFilters; track filter) {
+      <button
+        type="button"
+        data-testid="filament-filter-chip"
+        class="filament-filter-chip"
+        [class.filament-filter-chip--active]="selectedFilter() === filter"
+        [attr.aria-pressed]="selectedFilter() === filter"
+        (click)="selectFilter(filter)"
+      >
+        {{ filter }}
       </button>
-    </div>
-
-    <div class="filament-manager__tools">
-      <label class="filament-manager__search">
-        <span class="filament-manager__search-label">Suchen</span>
-        <input
-          #searchInput
-          data-testid="filament-search"
-          type="search"
-          placeholder="Filamente suchen"
-          [value]="searchTerm()"
-          (input)="setSearchTerm(searchInput.value)"
-        />
-      </label>
-
-      <div class="filament-filter-row" aria-label="Filamentfilter">
-        @for (filter of filamentFilters; track filter) {
-          <button
-            type="button"
-            data-testid="filament-filter-chip"
-            class="filament-filter-chip"
-            [class.filament-filter-chip--active]="selectedFilter() === filter"
-            [attr.aria-pressed]="selectedFilter() === filter"
-            (click)="selectFilter(filter)"
-          >
-            {{ filter }}
-          </button>
-        }
-      </div>
-    </div>
-
-    @if (filaments().length === 0) {
-      <div class="filament-manager__empty-card" data-testid="filament-empty-state">
-        <p class="filament-manager__empty">Noch kein aktives Filament vorhanden.</p>
-      </div>
-    } @else if (visibleFilaments().length === 0) {
-      <div class="filament-manager__empty-card" data-testid="filament-no-results">
-        <p class="filament-manager__empty">Keine Filamente gefunden.</p>
-      </div>
-    } @else {
-      <ul class="filament-list" aria-label="Aktive Filamente">
-        @for (filament of visibleFilaments(); track trackByFilamentId($index, filament)) {
-          <li class="filament-list__item" data-testid="filament-item">
-            <div class="filament-list__color">
-              <span [style.background-color]="filament.colorHex"></span>
-            </div>
-            <div class="filament-list__content">
-              <p class="filament-list__name">{{ filament.name }}</p>
-              <p class="filament-list__meta">
-                <span class="filament-list__material-tag">{{ materialTag(filament.type) }}</span>
-                @if (filament.manufacturer) { · {{ filament.manufacturer }} }
-              </p>
-              <p class="filament-list__price" data-testid="filament-price">{{ formatPricePerGram(filament) }}</p>
-              <p class="filament-list__stock">
-                <span
-                  class="filament-list__stock-badge"
-                  [ngClass]="'filament-list__stock-badge--' + stockStateTone(filament.remainingG ?? 0)"
-                  data-testid="filament-stock-badge"
-                >
-                  {{ stockStateText(filament.remainingG ?? 0) }}
-                </span>
-                <span class="filament-list__stock-value">{{ filament.remainingG ?? 0 }} g</span>
-              </p>
-            </div>
-            <div class="filament-list__actions">
-              <button type="button" class="filament-list__edit" (click)="startEdit(filament.id)">Bearbeiten</button>
-              <button type="button" class="filament-list__select">Auswählen</button>
-              <button type="button" data-testid="delete-filament" class="filament-list__delete" (click)="requestDelete(filament.id)">
-                Löschen
-              </button>
-            </div>
-          </li>
-        }
-      </ul>
     }
-  </section>
+  </div>
 
-  @if (isDialogOpen()) {
-    <div class="filament-dialog__backdrop"></div>
-    <section class="filament-dialog" data-testid="filament-dialog" role="dialog" aria-modal="true" aria-label="Filament bearbeiten">
+  @if (filaments().length === 0) {
+    <div class="filament-empty-card" data-testid="filament-empty-state">
+      <p class="filament-empty-card__text">Noch kein aktives Filament vorhanden.</p>
+    </div>
+  } @else if (visibleFilaments().length === 0) {
+    <div class="filament-empty-card" data-testid="filament-no-results">
+      <p class="filament-empty-card__text">Keine Filamente gefunden.</p>
+    </div>
+  } @else {
+    <ul class="filament-list" aria-label="Aktive Filamente">
+      @for (filament of visibleFilaments(); track trackByFilamentId($index, filament)) {
+        <li class="filament-list__item" data-testid="filament-item">
+          <span class="filament-list__color-dot" [style.background-color]="filament.colorHex"></span>
+          <div class="filament-list__content">
+            <div class="filament-list__top-row">
+              <p class="filament-list__name">{{ filament.name }}
+                @if (filament.manufacturer) {
+                  <span class="filament-list__manufacturer"> · {{ filament.manufacturer }}</span>
+                }
+              </p>
+              <span class="filament-list__price" data-testid="filament-price">{{ formatPricePerGram(filament) }}</span>
+            </div>
+            <div class="filament-list__stock-row">
+              <span class="filament-list__material-tag">{{ materialTag(filament.type) }}</span>
+              <div class="filament-list__stock-bar-wrap">
+                <div
+                  class="filament-list__stock-bar"
+                  [class.filament-list__stock-bar--low]="stockStateTone(filament.remainingG ?? 0) === 'low'"
+                  [class.filament-list__stock-bar--empty]="stockStateTone(filament.remainingG ?? 0) === 'empty'"
+                  [style.width.%]="stockPercent(filament)"
+                ></div>
+              </div>
+              <span class="filament-list__stock-value">{{ filament.remainingG ?? 0 }} g / {{ filament.rollWeightG ?? 0 }} g</span>
+            </div>
+          </div>
+          <div class="filament-list__actions">
+            <button type="button" class="filament-list__edit" (click)="startEdit(filament.id)">Bearbeiten</button>
+            <button type="button" data-testid="delete-filament" class="filament-list__delete" (click)="requestDelete(filament.id)">
+              Löschen
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  <button type="button" data-testid="open-filament-dialog" class="filament-fab" (click)="openCreateDialog()" aria-label="Neues Filament hinzufügen">
+    + Filament
+  </button>
+</section>
+
+@if (isDialogOpen()) {
+  <div class="sheet-backdrop" (click)="closeDialog()"></div>
+  <section class="filament-sheet" data-testid="filament-dialog" role="dialog" aria-modal="true" aria-label="Filament bearbeiten">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 class="sheet-header__title">{{ editingFilamentId() ? 'Filament bearbeiten' : 'Filament hinzufügen' }}</h2>
+      <button type="button" class="sheet-header__close" (click)="closeDialog()" aria-label="Schließen">×</button>
+    </div>
+    <div class="sheet-body">
       <form class="filament-form" [formGroup]="form" (ngSubmit)="saveFilament()">
         <div class="filament-form__row">
-          <label for="name">Name</label>
-          <input id="name" data-testid="name" type="text" formControlName="name" />
+          <label for="name" class="filament-form__label">Name *</label>
+          <input id="name" data-testid="name" type="text" formControlName="name" class="filament-form__input" />
           @if (getError('name'); as message) {
             <p class="filament-form__error">{{ message }}</p>
           }
         </div>
 
-        <div class="filament-form__row">
-          <label for="type">Typ</label>
-          <input id="type" type="text" formControlName="type" />
-          @if (getError('type'); as message) {
-            <p class="filament-form__error">{{ message }}</p>
-          }
+        <div class="filament-form__two-col">
+          <div class="filament-form__row">
+            <label for="type" class="filament-form__label">Material *</label>
+            <input id="type" type="text" formControlName="type" class="filament-form__input" />
+            @if (getError('type'); as message) {
+              <p class="filament-form__error">{{ message }}</p>
+            }
+          </div>
+          <div class="filament-form__row">
+            <label for="manufacturer" class="filament-form__label">Marke</label>
+            <input id="manufacturer" type="text" formControlName="manufacturer" class="filament-form__input" />
+            @if (getError('manufacturer'); as message) {
+              <p class="filament-form__error">{{ message }}</p>
+            }
+          </div>
         </div>
 
         <div class="filament-form__row">
-          <label for="colorHex">Farbe (Hex)</label>
-          <input id="colorHex" type="text" formControlName="colorHex" />
+          <label for="colorHex" class="filament-form__label">Farbe</label>
+          <div class="filament-form__color-row">
+            <input
+              type="color"
+              class="filament-form__color-picker"
+              [value]="form.controls.colorHex.value"
+              (input)="onColorPickerChange($event)"
+              aria-label="Farbe auswählen"
+            />
+            <input
+              id="colorHex"
+              type="text"
+              formControlName="colorHex"
+              class="filament-form__input"
+              placeholder="#000000"
+            />
+          </div>
           @if (getError('colorHex'); as message) {
             <p class="filament-form__error">{{ message }}</p>
           }
         </div>
 
-        <div class="filament-form__row">
-          <label for="manufacturer">Hersteller (optional)</label>
-          <input id="manufacturer" type="text" formControlName="manufacturer" />
-          @if (getError('manufacturer'); as message) {
-            <p class="filament-form__error">{{ message }}</p>
-          }
+        <div class="filament-form__two-col">
+          <div class="filament-form__row">
+            <label for="rollWeightG" class="filament-form__label">Spule (g)</label>
+            <input id="rollWeightG" type="number" min="0.0001" step="1" formControlName="rollWeightG" class="filament-form__input" />
+            @if (getError('rollWeightG'); as message) {
+              <p class="filament-form__error">{{ message }}</p>
+            }
+          </div>
+          <div class="filament-form__row">
+            <label for="remainingG" class="filament-form__label">Restbestand (g)</label>
+            <input id="remainingG" type="number" min="0" step="1" formControlName="remainingG" class="filament-form__input" />
+            @if (getError('remainingG'); as message) {
+              <p class="filament-form__error">{{ message }}</p>
+            }
+          </div>
         </div>
 
         <div class="filament-form__row">
-          <label for="rollWeightG">Rollengewicht (g)</label>
-          <input id="rollWeightG" type="number" min="0.0001" step="1" formControlName="rollWeightG" />
-          @if (getError('rollWeightG'); as message) {
-            <p class="filament-form__error">{{ message }}</p>
-          }
-        </div>
-
-        <div class="filament-form__row">
-          <label for="remainingG">Restmenge (g)</label>
-          <input id="remainingG" type="number" min="0" step="1" formControlName="remainingG" />
-          @if (getError('remainingG'); as message) {
-            <p class="filament-form__error">{{ message }}</p>
-          }
-        </div>
-
-        <div class="filament-form__row">
-          <label for="multiColorSurchargeEurKg">Mehrfarb-Zuschlag (€/kg)</label>
-          <input id="multiColorSurchargeEurKg" type="number" min="0" step="0.01" formControlName="multiColorSurchargeEurKg" />
+          <label for="multiColorSurchargeEurKg" class="filament-form__label">Mehrfarb-Zuschlag (€/kg)</label>
+          <input id="multiColorSurchargeEurKg" type="number" min="0" step="0.01" formControlName="multiColorSurchargeEurKg" class="filament-form__input" />
           @if (getError('multiColorSurchargeEurKg'); as message) {
             <p class="filament-form__error">{{ message }}</p>
           }
         </div>
 
         <div class="filament-form__row">
-          <label for="fixedPriceEurG">Fixpreis (€/g, optional)</label>
-          <input id="fixedPriceEurG" type="number" min="0" step="0.0001" formControlName="fixedPriceEurG" />
+          <label for="fixedPriceEurG" class="filament-form__label">Fixpreis (€/g, optional)</label>
+          <input id="fixedPriceEurG" type="number" min="0" step="0.0001" formControlName="fixedPriceEurG" class="filament-form__input" />
           @if (getError('fixedPriceEurG'); as message) {
             <p class="filament-form__error">{{ message }}</p>
           }
         </div>
 
         <fieldset class="filament-form__purchases">
-          <legend>Einkäufe</legend>
+          <legend class="filament-form__label">Einkäufe (optional)</legend>
           @for (purchase of purchaseGroups; track $index) {
             <div class="filament-form__purchase-row" [formGroup]="purchase">
-              <input type="number" min="0.0001" step="0.01" placeholder="Preis (€)" formControlName="priceEur" />
-              <input type="number" min="0.0001" step="0.001" placeholder="Menge (kg)" formControlName="quantityKg" />
-              <input type="date" formControlName="purchasedAt" />
-              <button type="button" (click)="removePurchase($index)">Entfernen</button>
+              <input type="number" min="0.0001" step="0.01" placeholder="Preis (€)" formControlName="priceEur" class="filament-form__input" />
+              <input type="number" min="0.0001" step="0.001" placeholder="Menge (kg)" formControlName="quantityKg" class="filament-form__input" />
+              <input type="date" formControlName="purchasedAt" class="filament-form__input" />
+              <button type="button" class="filament-form__remove-purchase" (click)="removePurchase($index)" aria-label="Einkauf entfernen">✕</button>
             </div>
             @if (getPurchaseError($index, 'priceEur'); as message) {
               <p class="filament-form__error">{{ message }}</p>
@@ -176,7 +192,7 @@
               <p class="filament-form__error">{{ message }}</p>
             }
           }
-          <button type="button" class="filament-form__add-purchase" (click)="addPurchase()">Einkauf hinzufügen</button>
+          <button type="button" class="filament-form__add-purchase" (click)="addPurchase()">+ Einkauf hinzufügen</button>
           @if (getPurchaseArrayError(); as message) {
             <p class="filament-form__error">{{ message }}</p>
           }
@@ -187,10 +203,12 @@
         }
 
         <div class="filament-form__actions">
-          <button data-testid="save-filament" type="submit" [disabled]="isSaving()">Filament speichern</button>
           <button data-testid="cancel-filament" type="button" class="filament-form__cancel" (click)="closeDialog()">Abbrechen</button>
+          <button data-testid="save-filament" type="submit" class="filament-form__submit" [disabled]="isSaving()">
+            Filament speichern
+          </button>
         </div>
       </form>
-    </section>
-  }
-</section>
+    </div>
+  </section>
+}

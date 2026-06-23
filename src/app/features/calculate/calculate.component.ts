@@ -161,6 +161,7 @@ export class CalculateComponent {
       return;
     }
 
+    const settings = this.#settingsService.settings();
     await this.#calculationService.savePlannedCalculation({
       projectName: this.form.controls.projectName.value,
       customerId: this.selectedCustomerId(),
@@ -170,8 +171,8 @@ export class CalculateComponent {
         powerWatts: printer.powerWatts,
         purchasePriceEur: printer.purchasePriceEur,
         lifetimeHours: printer.lifetimeHours,
-        electricityPriceEurKwh: printer.electricityPriceEurKwh,
-        annualBaseFeeEur: printer.annualBaseFeeEur,
+        electricityPriceEurKwh: typeof settings['electricityPriceEurKwh'] === 'number' ? settings['electricityPriceEurKwh'] : 0.32,
+        annualBaseFeeEur: typeof settings['annualBaseFeeEur'] === 'number' ? settings['annualBaseFeeEur'] : 0,
         note: printer.note
       },
       filamentSnapshots: this.buildFilamentSnapshots(),
@@ -344,6 +345,11 @@ export class CalculateComponent {
   filamentNameForLine(index: number): string {
     const filamentId = this.filamentLines.at(index).controls.filamentId.value;
     return this.activeFilaments().find((filament) => filament.id === filamentId)?.name ?? 'Filament';
+  }
+
+  filamentColorForLine(index: number): string {
+    const filamentId = this.filamentLines.at(index).controls.filamentId.value;
+    return this.activeFilaments().find((filament) => filament.id === filamentId)?.colorHex ?? '#cccccc';
   }
 
   priceModeForLine(index: number): FilamentPriceMode {
@@ -599,11 +605,12 @@ export class CalculateComponent {
 
   private mapToCalculationInput(printer: {
     powerWatts: number;
-    electricityPriceEurKwh: number;
-    annualBaseFeeEur: number;
     purchasePriceEur: number;
     lifetimeHours: number;
   }): CalculationInput | null {
+    const settings = this.#settingsService.settings();
+    const electricityPriceEurKwh = typeof settings['electricityPriceEurKwh'] === 'number' ? settings['electricityPriceEurKwh'] : 0.32;
+    const annualBaseFeeEur = typeof settings['annualBaseFeeEur'] === 'number' ? settings['annualBaseFeeEur'] : 0;
     const filamentLines = this.filamentLines.controls.map((line) => {
       const filament = this.activeFilaments().find((entry) => entry.id === line.controls.filamentId.value);
       if (!filament) {
@@ -632,8 +639,8 @@ export class CalculateComponent {
       modelingCostEur: Number(this.form.controls.modelingCostEur.value),
       profitMarginPercent: Number(this.form.controls.profitMarginPercent.value),
       powerWatts: printer.powerWatts,
-      electricityPriceEurKwh: printer.electricityPriceEurKwh,
-      annualBaseFeeEur: printer.annualBaseFeeEur,
+      electricityPriceEurKwh,
+      annualBaseFeeEur,
       purchasePriceEur: printer.purchasePriceEur,
       lifetimeHours: printer.lifetimeHours
     };

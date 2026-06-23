@@ -2,264 +2,100 @@
   <p class="page__eyebrow">Mehr</p>
   <h1>Mehr</h1>
 
-  <!-- Verwaltung group -->
+  <!-- VERWALTUNG -->
   <section class="mehr-group" aria-label="Verwaltung">
     <h2 class="mehr-group__heading">Verwaltung</h2>
 
-    <section class="printer-manager">
-      <div class="printer-manager__header">
-        <div>
-          <h3 class="printer-manager__title">Drucker verwalten</h3>
-          <p class="printer-manager__subtitle">Aktive Druckerprofile für Kalkulationen.</p>
+    <div class="mehr-nav-card">
+      <button type="button" class="mehr-nav-row" data-testid="open-printer-dialog" (click)="openCreateDialog()">
+        <span class="mehr-nav-row__icon" aria-hidden="true">▤</span>
+        <div class="mehr-nav-row__body">
+          <p class="mehr-nav-row__title">Drucker verwalten</p>
+          <p class="mehr-nav-row__meta">{{ printers().length }} Profile · Watt, AfA/h</p>
         </div>
-        <button type="button" data-testid="open-printer-dialog" class="printer-manager__create" (click)="openCreateDialog()">
-          Neuer Drucker
-        </button>
-      </div>
-
-      @if (printers().length === 0) {
-        <p class="printer-manager__empty">Noch kein aktives Druckerprofil vorhanden.</p>
-      } @else {
-        <ul class="printer-list" aria-label="Aktive Druckerprofile">
-          @for (printer of printers(); track printer.id) {
-            <li class="printer-list__item">
-              <div>
-                <p class="printer-list__name">{{ printer.name }}</p>
-                <p class="printer-list__meta">
-                  {{ printer.powerWatts }} W · {{ printer.electricityPriceEurKwh }} €/kWh
-                </p>
-              </div>
-              <div class="printer-list__actions">
-                <button type="button" class="printer-list__edit" (click)="startEdit(printer.id)">Bearbeiten</button>
-                <button
-                  type="button"
-                  data-testid="delete-printer"
-                  class="printer-list__delete"
-                  (click)="requestDelete(printer.id)"
-                >
-                  Löschen
-                </button>
-              </div>
-            </li>
-          }
-        </ul>
-      }
-
-      @if (isDialogOpen()) {
-        <div class="printer-dialog__backdrop" (click)="cancelEdit()"></div>
-        <section class="printer-dialog" role="dialog" aria-modal="true" aria-label="Druckerprofil bearbeiten">
-          <form class="printer-form" [formGroup]="form" (ngSubmit)="savePrinter()">
-            <div class="printer-form__row">
-              <label for="name">Name</label>
-              <input id="name" data-testid="name" type="text" formControlName="name" />
-              @if (getError('name'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="powerWatts">Leistung (W)</label>
-              <input
-                id="powerWatts"
-                data-testid="powerWatts"
-                type="number"
-                inputmode="decimal"
-                min="0.0001"
-                step="0.1"
-                formControlName="powerWatts"
-              />
-              @if (getError('powerWatts'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="purchasePriceEur">Kaufpreis (€)</label>
-              <input
-                id="purchasePriceEur"
-                data-testid="purchasePriceEur"
-                type="number"
-                inputmode="decimal"
-                min="0.0001"
-                step="0.01"
-                formControlName="purchasePriceEur"
-              />
-              @if (getError('purchasePriceEur'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="lifetimeHours">Lebensdauer (h)</label>
-              <input
-                id="lifetimeHours"
-                data-testid="lifetimeHours"
-                type="number"
-                inputmode="decimal"
-                min="0.0001"
-                step="0.1"
-                formControlName="lifetimeHours"
-              />
-              @if (getError('lifetimeHours'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="electricityPriceEurKwh">Strompreis (€/kWh)</label>
-              <input
-                id="electricityPriceEurKwh"
-                data-testid="electricityPriceEurKwh"
-                type="number"
-                inputmode="decimal"
-                min="0.0001"
-                step="0.0001"
-                formControlName="electricityPriceEurKwh"
-              />
-              @if (getError('electricityPriceEurKwh'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="annualBaseFeeEur">Grundgebühr pro Jahr (€)</label>
-              <input
-                id="annualBaseFeeEur"
-                data-testid="annualBaseFeeEur"
-                type="number"
-                inputmode="decimal"
-                min="0"
-                step="0.01"
-                formControlName="annualBaseFeeEur"
-              />
-              @if (getError('annualBaseFeeEur'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="note">Notiz (optional)</label>
-              <textarea id="note" rows="3" formControlName="note"></textarea>
-              @if (getError('note'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            @if (serviceError(); as message) {
-              <p class="printer-form__error">{{ message }}</p>
-            }
-
-            <div class="printer-form__actions">
-              <button data-testid="save-printer" type="submit" [disabled]="isSaving()">
-                {{ editingPrinterId() ? 'Änderungen speichern' : 'Drucker speichern' }}
-              </button>
-              <button type="button" class="printer-form__cancel" (click)="cancelEdit()">Abbrechen</button>
-            </div>
-          </form>
-        </section>
-      }
-    </section>
-
-    <section class="customer-manager">
-      <div class="printer-manager__header">
-        <div>
-          <h3 class="printer-manager__title">Kunden</h3>
-          <p class="printer-manager__subtitle">Aktive Kundendatensätze für Kalkulationen und Verkäufe.</p>
+        <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="mehr-nav-divider"></div>
+      <button type="button" class="mehr-nav-row" data-testid="open-customer-dialog" (click)="openCreateCustomerDialog()">
+        <span class="mehr-nav-row__icon" aria-hidden="true">◎</span>
+        <div class="mehr-nav-row__body">
+          <p class="mehr-nav-row__title">Kunden</p>
+          <p class="mehr-nav-row__meta">{{ customers().length }} Kunden · Name, Notiz, Kontakt</p>
         </div>
-        <button type="button" data-testid="open-customer-dialog" class="printer-manager__create" (click)="openCreateCustomerDialog()">
-          Neuer Kunde
-        </button>
-      </div>
-
-      @if (customers().length === 0) {
-        <p class="printer-manager__empty">Noch kein aktiver Kunde vorhanden.</p>
-      } @else {
-        <ul class="customer-list" aria-label="Aktive Kunden">
-          @for (customer of customers(); track customer.id) {
-            <li class="customer-list__item">
-              <div class="customer-list__identity">
-                <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
-                <div>
-                  <p class="printer-list__name">{{ customer.name }}</p>
-                  <p class="printer-list__meta">{{ customerPreview(customer.contact, customer.note) }}</p>
-                </div>
-              </div>
-              <div class="printer-list__actions">
-                <button type="button" class="printer-list__edit" (click)="startEditCustomer(customer.id)">Bearbeiten</button>
-                <button
-                  type="button"
-                  data-testid="delete-customer"
-                  class="printer-list__delete"
-                  (click)="requestDeleteCustomer(customer.id)"
-                >
-                  Löschen
-                </button>
-              </div>
-            </li>
-          }
-        </ul>
-      }
-
-      @if (isCustomerDialogOpen()) {
-        <div class="printer-dialog__backdrop" (click)="cancelCustomerEdit()"></div>
-        <section class="printer-dialog" role="dialog" aria-modal="true" aria-label="Kunde bearbeiten">
-          <form class="printer-form" [formGroup]="customerForm" (ngSubmit)="saveCustomer()">
-            <div class="printer-form__row">
-              <label for="customerName">Name</label>
-              <input id="customerName" data-testid="customer-name" type="text" formControlName="name" />
-              @if (getCustomerError('name'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="customerContact">Kontakt (optional)</label>
-              <input id="customerContact" type="text" formControlName="contact" />
-              @if (getCustomerError('contact'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            <div class="printer-form__row">
-              <label for="customerNote">Notiz (optional)</label>
-              <textarea id="customerNote" rows="3" formControlName="note"></textarea>
-              @if (getCustomerError('note'); as message) {
-                <p class="printer-form__error">{{ message }}</p>
-              }
-            </div>
-
-            @if (customerServiceError(); as message) {
-              <p class="printer-form__error">{{ message }}</p>
-            }
-
-            <div class="printer-form__actions">
-              <button data-testid="save-customer" type="submit" [disabled]="isSavingCustomer()">
-                {{ editingCustomerId() ? 'Änderungen speichern' : 'Kunde speichern' }}
-              </button>
-              <button type="button" class="printer-form__cancel" (click)="cancelCustomerEdit()">Abbrechen</button>
-            </div>
-          </form>
-        </section>
-      }
-    </section>
+        <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
+      </button>
+    </div>
   </section>
 
-  <!-- System group -->
-  <section class="mehr-group" aria-label="System" aria-describedby="system-group-desc">
+  <!-- DRUCKER -->
+  @if (printers().length > 0) {
+    <section class="mehr-group" aria-label="Drucker">
+      <h2 class="mehr-group__heading">Drucker · Vorschau</h2>
+      <ul class="printer-list" aria-label="Aktive Druckerprofile">
+        @for (printer of printers(); track printer.id) {
+          <li class="printer-list__item">
+            <div>
+              <p class="printer-list__name">{{ printer.name }}</p>
+              <p class="printer-list__meta">{{ printer.powerWatts }} W · {{ printer.lifetimeHours }} h Lebensdauer</p>
+            </div>
+            <div class="printer-list__actions">
+              <button type="button" class="printer-list__edit" (click)="startEdit(printer.id)">Bearbeiten</button>
+              <button type="button" data-testid="delete-printer" class="printer-list__delete" (click)="requestDelete(printer.id)">
+                Löschen
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  <!-- KUNDEN -->
+  <section class="mehr-group" aria-label="Kunden">
+    <h2 class="mehr-group__heading">Kunden · Vorschau</h2>
+
+    @if (customers().length > 0) {
+      <ul class="customer-list" aria-label="Aktive Kunden">
+        @for (customer of customers(); track customer.id) {
+          <li class="customer-list__item">
+            <div class="customer-list__identity">
+              <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
+              <div>
+                <p class="printer-list__name">{{ customer.name }}</p>
+                <p class="printer-list__meta">{{ customerPreview(customer.contact, customer.note) }}</p>
+              </div>
+            </div>
+            <div class="printer-list__actions">
+              <button type="button" class="printer-list__edit" (click)="startEditCustomer(customer.id)">Bearbeiten</button>
+              <button type="button" data-testid="delete-customer" class="printer-list__delete" (click)="requestDeleteCustomer(customer.id)">
+                Löschen
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+    <button type="button" class="customer-add-btn" (click)="openCreateCustomerDialog()">
+      + Kunde hinzufügen
+    </button>
+  </section>
+
+  <!-- SYSTEM -->
+  <section class="mehr-group" aria-label="System">
     <h2 class="mehr-group__heading">System</h2>
-    <p id="system-group-desc" class="system-info">
+    <p class="system-info">
       Deine Daten werden ausschließlich lokal auf diesem Gerät gespeichert. Es gibt keine Cloud-Synchronisierung und kein Benutzerkonto.
     </p>
 
-    <!-- Kalkulations-Standards (5.1) -->
     <section class="system-section" aria-labelledby="calc-standards-heading">
       <h3 id="calc-standards-heading" class="system-section__heading">Kalkulations-Standards</h3>
       <p class="system-section__description">Voreinstellungen für neue Kalkulationen.</p>
 
       <form class="settings-form" [formGroup]="settingsForm" (ngSubmit)="saveSettings()" data-testid="settings-form">
         <div class="settings-form__row">
-          <label for="defaultPriceMode">Standardpreismodus</label>
-          <select id="defaultPriceMode" formControlName="defaultPriceMode" data-testid="defaultPriceMode">
+          <label class="settings-form__label" for="defaultPriceMode">Standardpreismodus</label>
+          <select id="defaultPriceMode" formControlName="defaultPriceMode" data-testid="defaultPriceMode" class="settings-form__control">
             @for (option of priceModeOptions; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
             }
@@ -267,7 +103,7 @@
         </div>
 
         <div class="settings-form__row">
-          <label for="defaultProfitMarginPercent">Standardgewinn (%)</label>
+          <label class="settings-form__label" for="defaultProfitMarginPercent">Standardgewinn (%)</label>
           <input
             id="defaultProfitMarginPercent"
             data-testid="defaultProfitMarginPercent"
@@ -277,6 +113,7 @@
             max="500"
             step="0.1"
             formControlName="defaultProfitMarginPercent"
+            class="settings-form__control"
           />
           @if (getSettingsError('defaultProfitMarginPercent'); as message) {
             <p class="settings-form__error" data-testid="settings-error-margin">{{ message }}</p>
@@ -284,7 +121,7 @@
         </div>
 
         <div class="settings-form__row">
-          <label for="defaultModelingCostEur">Modellierungskosten Standard (€)</label>
+          <label class="settings-form__label" for="defaultModelingCostEur">Modellierungskosten Standard (€)</label>
           <input
             id="defaultModelingCostEur"
             data-testid="defaultModelingCostEur"
@@ -294,6 +131,7 @@
             max="9999"
             step="0.01"
             formControlName="defaultModelingCostEur"
+            class="settings-form__control"
           />
           @if (getSettingsError('defaultModelingCostEur'); as message) {
             <p class="settings-form__error" data-testid="settings-error-modeling">{{ message }}</p>
@@ -301,7 +139,7 @@
         </div>
 
         <div class="settings-form__row">
-          <label for="defaultExtraWorkFeePercent">Mehrplatten-Aufschlag Standard (%)</label>
+          <label class="settings-form__label" for="defaultExtraWorkFeePercent">Mehrplatten-Aufschlag Standard (%)</label>
           <input
             id="defaultExtraWorkFeePercent"
             data-testid="defaultExtraWorkFeePercent"
@@ -311,33 +149,62 @@
             max="200"
             step="0.1"
             formControlName="defaultExtraWorkFeePercent"
+            class="settings-form__control"
           />
           @if (getSettingsError('defaultExtraWorkFeePercent'); as message) {
             <p class="settings-form__error" data-testid="settings-error-fee">{{ message }}</p>
           }
         </div>
 
+        <div class="settings-form__row">
+          <label class="settings-form__label" for="electricityPriceEurKwh">Strompreis (€/kWh)</label>
+          <input
+            id="electricityPriceEurKwh"
+            data-testid="electricityPriceEurKwh"
+            type="number"
+            inputmode="decimal"
+            min="0.0001"
+            step="0.0001"
+            formControlName="electricityPriceEurKwh"
+            class="settings-form__control"
+          />
+          @if (getSettingsError('electricityPriceEurKwh'); as message) {
+            <p class="settings-form__error">{{ message }}</p>
+          }
+        </div>
+
+        <div class="settings-form__row">
+          <label class="settings-form__label" for="annualBaseFeeEur">Grundgebühr pro Jahr (€)</label>
+          <input
+            id="annualBaseFeeEur"
+            data-testid="annualBaseFeeEur"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.01"
+            formControlName="annualBaseFeeEur"
+            class="settings-form__control"
+          />
+          @if (getSettingsError('annualBaseFeeEur'); as message) {
+            <p class="settings-form__error">{{ message }}</p>
+          }
+        </div>
+
         @if (settingsSaveError(); as message) {
           <p class="settings-form__error">{{ message }}</p>
         }
-
         @if (settingsSaveSuccess()) {
           <p class="settings-form__success" data-testid="settings-save-success">Einstellungen gespeichert.</p>
         }
 
         <div class="settings-form__actions">
-          <button
-            type="submit"
-            data-testid="save-settings"
-            [disabled]="isSavingSettings() || settingsForm.invalid"
-          >
+          <button type="submit" data-testid="save-settings" class="settings-form__btn" [disabled]="isSavingSettings() || settingsForm.invalid">
             Standards speichern
           </button>
         </div>
       </form>
     </section>
 
-    <!-- Daten exportieren / importieren (5.2 / 5.3) -->
     <section class="system-section" aria-labelledby="data-section-heading">
       <h3 id="data-section-heading" class="system-section__heading">Daten exportieren / importieren</h3>
       <p class="data-hint">Exportiere regelmäßig ein Backup, um Datenverlust zu vermeiden.</p>
@@ -348,17 +215,10 @@
             <p class="data-actions__label">Backup exportieren</p>
             <p class="data-actions__desc">Lädt alle Daten als JSON-Datei herunter.</p>
           </div>
-          <button
-            type="button"
-            data-testid="export-backup"
-            class="data-actions__btn"
-            [disabled]="isExporting()"
-            (click)="triggerExport()"
-          >
+          <button type="button" data-testid="export-backup" class="data-actions__btn" [disabled]="isExporting()" (click)="triggerExport()">
             {{ isExporting() ? 'Exportiere…' : 'Exportieren' }}
           </button>
         </div>
-
         @if (exportSuccess()) {
           <p class="data-actions__success" data-testid="export-success">Backup erfolgreich heruntergeladen.</p>
         }
@@ -371,25 +231,11 @@
             <p class="data-actions__label">Backup importieren</p>
             <p class="data-actions__desc">Ersetzt alle lokalen Daten durch ein Backup.</p>
           </div>
-          <input
-            type="file"
-            accept=".json,application/json"
-            style="display:none"
-            data-testid="import-file-input"
-            #importFileInput
-            (change)="onImportFileChange($event)"
-          />
-          <button
-            type="button"
-            data-testid="import-backup"
-            class="data-actions__btn"
-            [disabled]="isImporting()"
-            (click)="importFileInput.click()"
-          >
+          <input type="file" accept=".json,application/json" style="display:none" data-testid="import-file-input" #importFileInput (change)="onImportFileChange($event)" />
+          <button type="button" data-testid="import-backup" class="data-actions__btn" [disabled]="isImporting()" (click)="importFileInput.click()">
             {{ isImporting() ? 'Lese…' : 'Importieren' }}
           </button>
         </div>
-
         @if (importSuccess()) {
           <p class="data-actions__success" data-testid="import-success">Backup erfolgreich importiert.</p>
         }
@@ -397,80 +243,182 @@
           <p class="data-actions__error" data-testid="import-error">{{ message }}</p>
         }
       </div>
-
-      @if (showImportConfirm()) {
-        <div class="confirm-backdrop" (click)="cancelImport()"></div>
-        <section
-          class="confirm-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="import-confirm-title"
-        >
-          <h4 id="import-confirm-title" class="confirm-dialog__title">Backup importieren?</h4>
-          <p class="confirm-dialog__body">Daten werden ersetzt. Vorher Backup exportieren?</p>
-          <div class="confirm-dialog__actions">
-            <button type="button" data-testid="confirm-import" class="confirm-dialog__btn--danger" (click)="confirmImport()">
-              Importieren
-            </button>
-            <button type="button" data-testid="cancel-import" class="confirm-dialog__btn--cancel" (click)="cancelImport()">
-              Abbrechen
-            </button>
-          </div>
-        </section>
-      }
     </section>
 
-    <!-- Alle Daten löschen (5.4) -->
     <section class="system-section" aria-labelledby="delete-section-heading">
       <h3 id="delete-section-heading" class="system-section__heading">Alle Daten löschen</h3>
-
       <div class="data-actions">
         <div class="data-actions__row">
           <div>
             <p class="data-actions__label">Zurücksetzen</p>
             <p class="data-actions__desc">Löscht alle lokalen PrintCost-Daten unwiderruflich.</p>
           </div>
-          <button
-            type="button"
-            data-testid="delete-all-data"
-            class="data-actions__btn data-actions__btn--danger"
-            [disabled]="isDeletingData()"
-            (click)="requestDeleteAllData()"
-          >
+          <button type="button" data-testid="delete-all-data" class="data-actions__btn data-actions__btn--danger" [disabled]="isDeletingData()" (click)="requestDeleteAllData()">
             Alle Daten löschen
           </button>
         </div>
-
         @if (deleteDataSuccess()) {
-          <p class="data-actions__success" data-testid="delete-success">Alle Daten wurden gelöscht. Die App wurde zurückgesetzt.</p>
+          <p class="data-actions__success" data-testid="delete-success">Alle Daten wurden gelöscht.</p>
         }
         @if (deleteDataError(); as message) {
           <p class="data-actions__error" data-testid="delete-error">{{ message }}</p>
         }
       </div>
-
-      @if (showDeleteConfirm()) {
-        <div class="confirm-backdrop" (click)="cancelDeleteData()"></div>
-        <section
-          class="confirm-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-confirm-title"
-        >
-          <h4 id="delete-confirm-title" class="confirm-dialog__title">Alle Daten löschen?</h4>
-          <p class="confirm-dialog__body">
-            Alle lokalen PrintCost-Daten werden unwiderruflich gelöscht. Bitte vorher ein Backup exportieren.
-          </p>
-          <div class="confirm-dialog__actions">
-            <button type="button" data-testid="confirm-delete" class="confirm-dialog__btn--danger" (click)="confirmDeleteAllData()">
-              Alles löschen
-            </button>
-            <button type="button" data-testid="cancel-delete" class="confirm-dialog__btn--cancel" (click)="cancelDeleteData()">
-              Abbrechen
-            </button>
-          </div>
-        </section>
-      }
     </section>
   </section>
 </section>
+
+<!-- DRUCKER DIALOG -->
+@if (isDialogOpen()) {
+  <div class="sheet-backdrop" (click)="cancelEdit()"></div>
+  <section class="mehr-sheet" role="dialog" aria-modal="true" aria-label="Druckerprofil bearbeiten">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 class="sheet-header__title">{{ editingPrinterId() ? 'Drucker bearbeiten' : 'Drucker hinzufügen' }}</h2>
+      <button type="button" class="sheet-header__close" (click)="cancelEdit()" aria-label="Schließen">×</button>
+    </div>
+    <div class="sheet-body">
+      <form class="printer-form" [formGroup]="form" (ngSubmit)="savePrinter()">
+        <div class="printer-form__row">
+          <label class="printer-form__label" for="name">Druckername *</label>
+          <input id="name" data-testid="name" type="text" formControlName="name" class="printer-form__input" />
+          @if (getError('name'); as message) {
+            <p class="printer-form__error">{{ message }}</p>
+          }
+        </div>
+
+        <div class="printer-form__two-col">
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="powerWatts">Leistung (W)</label>
+            <input id="powerWatts" data-testid="powerWatts" type="number" inputmode="decimal" min="0.0001" step="0.1" formControlName="powerWatts" class="printer-form__input" />
+            @if (getError('powerWatts'); as message) {
+              <p class="printer-form__error">{{ message }}</p>
+            }
+          </div>
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="lifetimeHours">Lebensdauer (h)</label>
+            <input id="lifetimeHours" data-testid="lifetimeHours" type="number" inputmode="decimal" min="0.0001" step="0.1" formControlName="lifetimeHours" class="printer-form__input" />
+            @if (getError('lifetimeHours'); as message) {
+              <p class="printer-form__error">{{ message }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="printer-form__row">
+          <label class="printer-form__label" for="purchasePriceEur">Kaufpreis (€)</label>
+          <input id="purchasePriceEur" data-testid="purchasePriceEur" type="number" inputmode="decimal" min="0.0001" step="0.01" formControlName="purchasePriceEur" class="printer-form__input" />
+          @if (getError('purchasePriceEur'); as message) {
+            <p class="printer-form__error">{{ message }}</p>
+          }
+        </div>
+
+        <div class="printer-form__row">
+          <label class="printer-form__label" for="note">Notiz (optional)</label>
+          <textarea id="note" rows="3" formControlName="note" class="printer-form__input printer-form__textarea"></textarea>
+          @if (getError('note'); as message) {
+            <p class="printer-form__error">{{ message }}</p>
+          }
+        </div>
+
+        @if (serviceError(); as message) {
+          <p class="printer-form__error">{{ message }}</p>
+        }
+
+        <div class="printer-form__actions">
+          <button type="button" class="printer-form__cancel" (click)="cancelEdit()">Abbrechen</button>
+          <button data-testid="save-printer" type="submit" class="printer-form__submit" [disabled]="isSaving()">
+            {{ editingPrinterId() ? 'Änderungen speichern' : 'Drucker speichern' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+}
+
+<!-- KUNDE DIALOG -->
+@if (isCustomerDialogOpen()) {
+  <div class="sheet-backdrop" (click)="cancelCustomerEdit()"></div>
+  <section class="mehr-sheet" role="dialog" aria-modal="true" aria-label="Kunde bearbeiten">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 class="sheet-header__title">{{ editingCustomerId() ? 'Kunde bearbeiten' : 'Kunde hinzufügen' }}</h2>
+      <button type="button" class="sheet-header__close" (click)="cancelCustomerEdit()" aria-label="Schließen">×</button>
+    </div>
+    <div class="sheet-body">
+      <form class="printer-form" [formGroup]="customerForm" (ngSubmit)="saveCustomer()">
+        <div class="printer-form__row">
+          <label class="printer-form__label" for="customerName">Name *</label>
+          <input id="customerName" data-testid="customer-name" type="text" formControlName="name" class="printer-form__input" />
+          @if (getCustomerError('name'); as message) {
+            <p class="printer-form__error">{{ message }}</p>
+          }
+        </div>
+
+        <div class="printer-form__row">
+          <label class="printer-form__label" for="customerContact">Kontakt (optional)</label>
+          <input id="customerContact" type="text" formControlName="contact" class="printer-form__input" placeholder="Tel. oder E-Mail…" />
+          @if (getCustomerError('contact'); as message) {
+            <p class="printer-form__error">{{ message }}</p>
+          }
+        </div>
+
+        <div class="printer-form__row">
+          <label class="printer-form__label" for="customerNote">Notiz (optional)</label>
+          <textarea id="customerNote" rows="3" formControlName="note" class="printer-form__input printer-form__textarea" placeholder="z.B. bevorzugt weiße Filamente…"></textarea>
+          @if (getCustomerError('note'); as message) {
+            <p class="printer-form__error">{{ message }}</p>
+          }
+        </div>
+
+        @if (customerServiceError(); as message) {
+          <p class="printer-form__error">{{ message }}</p>
+        }
+
+        <div class="printer-form__actions">
+          <button type="button" class="printer-form__cancel" (click)="cancelCustomerEdit()">Abbrechen</button>
+          <button data-testid="save-customer" type="submit" class="printer-form__submit" [disabled]="isSavingCustomer()">
+            {{ editingCustomerId() ? 'Änderungen speichern' : 'Kunde speichern' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+}
+
+<!-- IMPORT CONFIRM -->
+@if (showImportConfirm()) {
+  <div class="sheet-backdrop" (click)="cancelImport()"></div>
+  <section class="confirm-sheet" role="dialog" aria-modal="true" aria-labelledby="import-confirm-title">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 id="import-confirm-title" class="sheet-header__title">Backup importieren?</h2>
+      <button type="button" class="sheet-header__close" (click)="cancelImport()" aria-label="Schließen">×</button>
+    </div>
+    <div class="sheet-body">
+      <p class="confirm-sheet__body">Daten werden ersetzt. Vorher Backup exportieren?</p>
+      <div class="confirm-sheet__actions">
+        <button type="button" data-testid="cancel-import" class="printer-form__cancel" (click)="cancelImport()">Abbrechen</button>
+        <button type="button" data-testid="confirm-import" class="printer-form__submit printer-form__submit--danger" (click)="confirmImport()">Importieren</button>
+      </div>
+    </div>
+  </section>
+}
+
+<!-- DELETE ALL CONFIRM -->
+@if (showDeleteConfirm()) {
+  <div class="sheet-backdrop" (click)="cancelDeleteData()"></div>
+  <section class="confirm-sheet" role="dialog" aria-modal="true" aria-labelledby="delete-confirm-title">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 id="delete-confirm-title" class="sheet-header__title">Alle Daten löschen?</h2>
+      <button type="button" class="sheet-header__close" (click)="cancelDeleteData()" aria-label="Schließen">×</button>
+    </div>
+    <div class="sheet-body">
+      <p class="confirm-sheet__body">Alle lokalen PrintCost-Daten werden unwiderruflich gelöscht. Bitte vorher ein Backup exportieren.</p>
+      <div class="confirm-sheet__actions">
+        <button type="button" data-testid="cancel-delete" class="printer-form__cancel" (click)="cancelDeleteData()">Abbrechen</button>
+        <button type="button" data-testid="confirm-delete" class="printer-form__submit printer-form__submit--danger" (click)="confirmDeleteAllData()">Alles löschen</button>
+      </div>
+    </div>
+  </section>
+}

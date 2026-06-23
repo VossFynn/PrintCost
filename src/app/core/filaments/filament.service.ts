@@ -235,9 +235,6 @@ export class FilamentService {
     }
 
     const purchases = payload.purchases.map((purchase) => this.validatePurchase(purchase));
-    if (purchases.length === 0) {
-      throw new Error('At least one valid purchase is required');
-    }
 
     return {
       ...payload,

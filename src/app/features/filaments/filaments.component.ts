@@ -147,7 +147,7 @@ export class FilamentsComponent {
     while (this.purchases.length > 0) {
       this.purchases.removeAt(0);
     }
-    const sourcePurchases = filament.purchases?.length ? filament.purchases : [{ priceEur: 0, quantityKg: 0, purchasedAt: '' }];
+    const sourcePurchases = filament.purchases ?? [];
     for (const purchase of sourcePurchases) {
       this.purchases.push(
         this.#formBuilder.nonNullable.group({
@@ -166,12 +166,18 @@ export class FilamentsComponent {
     this.isDialogOpen.set(true);
   }
 
+  onColorPickerChange(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.form.controls.colorHex.setValue(value);
+    this.form.controls.colorHex.markAsDirty();
+  }
+
   async saveFilament(): Promise<void> {
     this.form.markAllAsTouched();
     this.purchases.markAllAsTouched();
     this.serviceError.set(null);
 
-    if (this.form.invalid || this.purchases.length === 0 || this.purchases.invalid) {
+    if (this.form.invalid || (this.purchases.length > 0 && this.purchases.invalid)) {
       return;
     }
 
@@ -304,7 +310,7 @@ export class FilamentsComponent {
   }
 
   getPurchaseArrayError(): string | null {
-    if (this.purchases.length > 0 && !this.purchases.invalid) {
+    if (this.purchases.length === 0 || !this.purchases.invalid) {
       return null;
     }
 
@@ -312,7 +318,7 @@ export class FilamentsComponent {
       return null;
     }
 
-    return 'Bitte mindestens einen Einkauf eingeben';
+    return 'Ungültige Einkäufe prüfen';
   }
 
   stockStateText(remainingG: number): string {
@@ -325,6 +331,13 @@ export class FilamentsComponent {
     }
 
     return 'Bestand verfügbar';
+  }
+
+  stockPercent(filament: FilamentRecord): number {
+    const roll = filament.rollWeightG ?? 0;
+    const remaining = filament.remainingG ?? 0;
+    if (roll <= 0) return 0;
+    return Math.min(100, Math.max(0, (remaining / roll) * 100));
   }
 
   stockStateTone(remainingG: number): 'empty' | 'low' | 'available' {
@@ -346,8 +359,15 @@ export class FilamentsComponent {
   }
 
   formatPricePerGram(filament: FilamentRecord): string {
-    const price = this.#filamentService.weightedAveragePricePerGram(filament);
-    return `${price.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} €/g`;
+    if (!filament.purchases || filament.purchases.length === 0) {
+      return '–';
+    }
+    try {
+      const price = this.#filamentService.weightedAveragePricePerGram(filament);
+      return `${price.toLocaleString('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} €/g`;
+    } catch {
+      return '–';
+    }
   }
 
   trackByFilamentId(index: number, filament: FilamentRecord): string {
@@ -399,7 +419,6 @@ export class FilamentsComponent {
     while (this.purchases.length > 0) {
       this.purchases.removeAt(0);
     }
-    this.purchases.push(this.createPurchaseGroup());
     this.form.markAsPristine();
     this.form.markAsUntouched();
     this.purchases.markAsPristine();

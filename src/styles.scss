@@ -64,6 +64,34 @@
   --pc-radius-phone-frame: 2.125rem;
 }
 
+/* ── Dialog / sheet animations ─────────────────────────── */
+@keyframes pc-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pc-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pc-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 html,
 body {
   height: 100%;
@@ -93,4 +121,18 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+/* ── Elegant focus states ──────────────────────────── */
+input:not([type='checkbox']):not([type='radio']):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--pc-color-primary) !important;
+  box-shadow: 0 0 0 3px rgb(196 98 45 / 10%);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--pc-color-primary);
+  outline-offset: 2px;
 }

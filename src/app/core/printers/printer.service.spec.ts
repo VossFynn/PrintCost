@@ -22,8 +22,6 @@ describe('PrinterService', () => {
       powerWatts: 350,
       purchasePriceEur: 1000,
       lifetimeHours: 10000,
-      electricityPriceEurKwh: 0.35,
-      annualBaseFeeEur: 0,
       note: '  Workhorse  '
     });
 
@@ -39,9 +37,7 @@ describe('PrinterService', () => {
       name: 'Prusa MK4',
       powerWatts: 350,
       purchasePriceEur: 1000,
-      lifetimeHours: 10000,
-      electricityPriceEurKwh: 0.35,
-      annualBaseFeeEur: 0
+      lifetimeHours: 10000
     });
 
     const created = service.activePrinters()[0];
@@ -50,8 +46,6 @@ describe('PrinterService', () => {
       powerWatts: 400,
       purchasePriceEur: 2000,
       lifetimeHours: 8000,
-      electricityPriceEurKwh: 0.39,
-      annualBaseFeeEur: 12.5,
       note: 'Updated profile'
     });
 
@@ -71,9 +65,7 @@ describe('PrinterService', () => {
         name: '   ',
         powerWatts: 350,
         purchasePriceEur: 1000,
-        lifetimeHours: 10000,
-        electricityPriceEurKwh: 0.35,
-        annualBaseFeeEur: 0
+        lifetimeHours: 10000
       })
     ).rejects.toThrow('Printer name is required');
 
@@ -82,9 +74,7 @@ describe('PrinterService', () => {
         name: 'Prusa MK4',
         powerWatts: -1,
         purchasePriceEur: 1000,
-        lifetimeHours: 10000,
-        electricityPriceEurKwh: 0.35,
-        annualBaseFeeEur: 0
+        lifetimeHours: 10000
       })
     ).rejects.toThrow('Power must be greater than 0');
   });
@@ -97,9 +87,7 @@ describe('PrinterService', () => {
       name: 'Prusa MK4',
       powerWatts: 350,
       purchasePriceEur: 1000,
-      lifetimeHours: 10000,
-      electricityPriceEurKwh: 0.35,
-      annualBaseFeeEur: 0
+      lifetimeHours: 10000
     });
 
     const created = service.activePrinters()[0];
@@ -118,9 +106,7 @@ describe('PrinterService', () => {
       name: 'Bambu P1S',
       powerWatts: 400,
       purchasePriceEur: 750,
-      lifetimeHours: 9000,
-      electricityPriceEurKwh: 0.38,
-      annualBaseFeeEur: 0
+      lifetimeHours: 9000
     });
 
     await service.softDeletePrinter(created.id);

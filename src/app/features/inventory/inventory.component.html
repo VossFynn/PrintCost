@@ -2,99 +2,155 @@
   <p class="page__eyebrow">Bestand</p>
   <h1>Bestand</h1>
 
-  <div class="inventory-tabs" role="tablist" aria-label="Bestandsbereiche">
+  <nav class="inventory-tabs" role="tablist" aria-label="Bestandsbereiche">
     @for (area of inventoryAreas; track area) {
       <button
         type="button"
         [attr.data-testid]="'inventory-tab-' + area"
-        class="inventory-tabs__button"
-        [class.inventory-tabs__button--active]="isAreaActive(area)"
+        class="inventory-tabs__tab"
+        [class.inventory-tabs__tab--active]="isAreaActive(area)"
         [attr.aria-pressed]="isAreaActive(area)"
         (click)="selectArea(area)"
       >
         {{ area === 'drucke' ? 'Drucke' : 'Teile' }}
       </button>
     }
-  </div>
+  </nav>
 
   @if (activeArea() === 'drucke') {
-    <section class="inventory-section">
-      <h2>Drucke</h2>
-      <div class="inventory-filters" aria-label="Druckefilter">
-        @for (filter of druckeFilters; track filter) {
-          <button
-            type="button"
-            data-testid="drucke-filter-chip"
-            class="inventory-filters__chip"
-            [class.inventory-filters__chip--active]="isDruckeFilterActive(filter)"
-            [attr.aria-pressed]="isDruckeFilterActive(filter)"
-            (click)="selectDruckeFilter(filter)"
-          >
-            {{ filter }}
-          </button>
-        }
-      </div>
-      @if (actionFeedback(); as feedback) {
-        <p aria-live="polite">{{ feedback }}</p>
+    <div class="inventory-filters" aria-label="Druckefilter">
+      @for (filter of druckeFilters; track filter) {
+        <button
+          type="button"
+          data-testid="drucke-filter-chip"
+          class="inventory-filters__chip"
+          [class.inventory-filters__chip--active]="isDruckeFilterActive(filter)"
+          [attr.aria-pressed]="isDruckeFilterActive(filter)"
+          (click)="selectDruckeFilter(filter)"
+        >
+          {{ filter }}
+        </button>
       }
-      @if (detailError(); as detailError) {
-        <p aria-live="polite">{{ detailError }}</p>
-      }
+    </div>
 
-      @if (savedCalculations().length === 0) {
-        <div class="inventory-empty">
-          <p class="page__body">Noch keine gespeicherten Kalkulationen vorhanden.</p>
-          <a href="/calculate" data-testid="inventory-empty-cta">Zur Kalkulation</a>
-        </div>
-      } @else if (visibleDruckeCards().length === 0) {
-        <p class="page__body">Keine gespeicherten Kalkulationen für diesen Filter gefunden.</p>
-      } @else {
-        <ul class="inventory-cards" aria-label="Gespeicherte Drucke">
-          @for (card of visibleDruckeCards(); track card.id) {
-            <li class="inventory-card" data-testid="inventory-card" (click)="openDetail(card.id)">
-              <h3 data-testid="inventory-card-title">{{ card.projectName }}</h3>
-              <p>Gedruckt: {{ card.timesPrinted }}</p>
-              <p>Verkauft: {{ card.timesSold }}</p>
-              <p>Verschenkt: {{ card.timesGifted }}</p>
-              <p>Verbleibend: {{ card.remainingCount }}</p>
-              <p>Preis: {{ card.roundedPriceEur }} €</p>
-              <p>Aktualisiert: {{ card.updatedAtLabel }}</p>
-              <button type="button" data-testid="inventory-record-print" (click)="onCardQuickAction($event, card.id)">
-                +1 · Druck verbuchen
-              </button>
-            </li>
-          }
-        </ul>
-      }
-    </section>
+    @if (actionFeedback(); as feedback) {
+      <p aria-live="polite" class="inventory-feedback">{{ feedback }}</p>
+    }
+    @if (detailError(); as err) {
+      <p aria-live="polite" class="inventory-feedback inventory-feedback--error">{{ err }}</p>
+    }
+
+    @if (savedCalculations().length === 0) {
+      <div class="inventory-empty">
+        <p class="page__body">Noch keine gespeicherten Kalkulationen vorhanden.</p>
+        <a href="/calculate" data-testid="inventory-empty-cta">Zur Kalkulation</a>
+      </div>
+    } @else if (visibleDruckeCards().length === 0) {
+      <p class="page__body inventory-no-results">Keine gespeicherten Kalkulationen für diesen Filter gefunden.</p>
+    } @else {
+      <ul class="inventory-cards" aria-label="Gespeicherte Drucke">
+        @for (card of visibleDruckeCards(); track card.id) {
+          <li class="inventory-card" data-testid="inventory-card" (click)="openDetail(card.id)">
+            <div class="inventory-card__body">
+              <h3 class="inventory-card__title" data-testid="inventory-card-title">{{ card.projectName }}</h3>
+              <p class="inventory-card__meta">{{ card.roundedPriceEur }} € · {{ card.updatedAtLabel }}</p>
+              <div class="inventory-card__pills">
+                <span class="inventory-card__pill">×{{ card.timesPrinted }} gedruckt</span>
+                @if (card.timesSold > 0) {
+                  <span class="inventory-card__pill">{{ card.timesSold }} verkauft</span>
+                }
+                @if (card.status === 'in-stock') {
+                  <span class="inventory-card__pill inventory-card__pill--ok">auf Lager</span>
+                } @else if (card.status === 'partial') {
+                  <span class="inventory-card__pill inventory-card__pill--warn">{{ card.remainingCount }} verl.</span>
+                } @else if (card.status === 'complete') {
+                  <span class="inventory-card__pill inventory-card__pill--muted">vollständig</span>
+                } @else if (card.status === 'gifted') {
+                  <span class="inventory-card__pill inventory-card__pill--muted">verschenkt</span>
+                }
+              </div>
+            </div>
+            <button
+              type="button"
+              class="inventory-card__quick-action"
+              data-testid="inventory-record-print"
+              aria-label="Druck verbuchen"
+              (click)="onCardQuickAction($event, card.id)"
+            >
+              +1
+            </button>
+          </li>
+        }
+      </ul>
+    }
   } @else {
     <section class="inventory-section">
-      <h2>Teile</h2>
+      <h2 class="inventory-section__label">Teile</h2>
       <p class="page__body">Teile folgen in einer späteren Story.</p>
     </section>
   }
 
   @if (selectedDetail(); as detail) {
     <section class="inventory-detail" data-testid="inventory-detail" aria-label="Details zur Kalkulation">
+      <div class="inventory-detail__handle"></div>
       <div class="inventory-detail__header">
-        <h2>Details zur Kalkulation</h2>
-        <button type="button" (click)="closeDetail()">Schließen</button>
+        <div>
+          <p class="inventory-detail__eyebrow">Kalkulation</p>
+          <h2 class="inventory-detail__project-name">{{ detail.record.projectName }}</h2>
+        </div>
+        <button type="button" class="inventory-detail__close" (click)="closeDetail()" aria-label="Schließen">✕</button>
       </div>
 
-      <p>Projekt: {{ detail.record.projectName }}</p>
-      <p>Drucker: {{ detail.record.printerSnapshot.name }}</p>
-      <p>Filament: {{ detailFilamentSummary() }}</p>
-      <p>Druckzeit: {{ detailPrintDurationLabel() }}</p>
-      <p>Materialkosten: {{ formatMoney(detail.record.calculationResult.materialCostEur) }}</p>
-      <p>Stromkosten: {{ formatMoney(detail.record.calculationResult.electricityCostEur) }}</p>
-      <p>Abschreibung: {{ formatMoney(detail.record.calculationResult.depreciationCostEur) }}</p>
-      <p>Gesamtpreis: {{ formatMoney(detail.record.calculationResult.roundedFinalPriceEur) }}</p>
+      <dl class="inventory-detail__props">
+        <div class="inventory-detail__prop">
+          <dt>Drucker</dt>
+          <dd>{{ detail.record.printerSnapshot.name }}</dd>
+        </div>
+        <div class="inventory-detail__prop">
+          <dt>Filament</dt>
+          <dd>{{ detailFilamentSummary() }}</dd>
+        </div>
+        <div class="inventory-detail__prop">
+          <dt>Druckzeit</dt>
+          <dd>{{ detailPrintDurationLabel() }}</dd>
+        </div>
+        <div class="inventory-detail__prop">
+          <dt>Materialkosten</dt>
+          <dd>{{ formatMoney(detail.record.calculationResult.materialCostEur) }}</dd>
+        </div>
+        <div class="inventory-detail__prop">
+          <dt>Stromkosten</dt>
+          <dd>{{ formatMoney(detail.record.calculationResult.electricityCostEur) }}</dd>
+        </div>
+        <div class="inventory-detail__prop">
+          <dt>Abschreibung</dt>
+          <dd>{{ formatMoney(detail.record.calculationResult.depreciationCostEur) }}</dd>
+        </div>
+        <div class="inventory-detail__prop inventory-detail__prop--total">
+          <dt>Gesamtpreis</dt>
+          <dd>{{ formatMoney(detail.record.calculationResult.roundedFinalPriceEur) }}</dd>
+        </div>
+      </dl>
 
-      <h3>Verlauf</h3>
-      <p>Gedruckt: {{ detail.history.printedCount }}</p>
-      <p>Verkauft: {{ detail.history.soldCount }}</p>
-      <p>Verschenkt: {{ detail.history.giftedCount }}</p>
-      <p>Verbleibend: {{ detail.history.remainingCount }}</p>
+      <p class="inventory-detail__section-label">Verlauf</p>
+      <div class="inventory-detail__counters">
+        <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-val">{{ detail.history.printedCount }}</span>
+          <span class="inventory-detail__counter-key">Gedruckt</span>
+        </div>
+        <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-val">{{ detail.history.soldCount }}</span>
+          <span class="inventory-detail__counter-key">Verkauft</span>
+        </div>
+        <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-val">{{ detail.history.giftedCount }}</span>
+          <span class="inventory-detail__counter-key">Geschenkt</span>
+        </div>
+        <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-val">{{ detail.history.remainingCount }}</span>
+          <span class="inventory-detail__counter-key">Verl.</span>
+        </div>
+      </div>
 
       <div class="inventory-detail__actions">
         <button
@@ -114,7 +170,7 @@
           class="sale-form"
           data-testid="sale-form"
         >
-          <h3>Transaktion verbuchen</h3>
+          <p class="sale-form__title">Transaktion verbuchen</p>
 
           <div class="form-group">
             <label for="customerId" class="form-group__label">Kunde</label>
@@ -202,19 +258,17 @@
         </form>
       }
 
-      @if (detail.history.entries.length === 0) {
-        <p class="page__body">Noch keine Verkäufe oder Geschenke vorhanden.</p>
-      } @else {
+      @if (detail.history.entries.length > 0) {
         <ul class="inventory-detail__history">
           @for (entry of detail.history.entries; track entry.id) {
-            <li>
-              <p>Datum: {{ entry.dateLabel }}</p>
-              <p>{{ entry.priceLabel }}</p>
+            <li class="inventory-history__entry">
+              <p class="inventory-history__date">{{ entry.dateLabel }}</p>
+              <p class="inventory-history__price">{{ entry.priceLabel }}</p>
               @if (entry.customerLabel) {
-                <p>Kunde: {{ entry.customerLabel }}</p>
+                <p class="inventory-history__customer">{{ entry.customerLabel }}</p>
               }
               @if (entry.note) {
-                <p>Notiz: {{ entry.note }}</p>
+                <p class="inventory-history__note">{{ entry.note }}</p>
               }
             </li>
           }

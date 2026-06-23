@@ -10,8 +10,8 @@ export interface PrinterRecord {
   powerWatts: number;
   purchasePriceEur: number;
   lifetimeHours: number;
-  electricityPriceEurKwh: number;
-  annualBaseFeeEur: number;
+  electricityPriceEurKwh?: number;
+  annualBaseFeeEur?: number;
   note?: string;
   deleted: boolean;
   createdAt: string;
@@ -200,7 +200,9 @@ export const DEFAULT_SETTINGS: Record<string, unknown> = {
   defaultPriceMode: 'FIXED',
   defaultProfitMarginPercent: 0,
   defaultModelingCostEur: 0,
-  defaultExtraWorkFeePercent: 0
+  defaultExtraWorkFeePercent: 0,
+  electricityPriceEurKwh: 0.32,
+  annualBaseFeeEur: 0
 };
 
 /**

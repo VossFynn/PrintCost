@@ -11,18 +11,16 @@ import { PrinterPayload, PrinterService } from '../../core/printers/printer.serv
 import { SettingsService } from '../../core/settings/settings.service';
 import { BackupFormat } from '../../domain/models/storage.models';
 
-type PrinterFormFieldName =
-  | 'name'
-  | 'powerWatts'
-  | 'purchasePriceEur'
-  | 'lifetimeHours'
-  | 'electricityPriceEurKwh'
-  | 'annualBaseFeeEur'
-  | 'note';
+type PrinterFormFieldName = 'name' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
 
 type CustomerFormFieldName = 'name' | 'contact' | 'note';
 
-type SettingsFormFieldName = 'defaultProfitMarginPercent' | 'defaultModelingCostEur' | 'defaultExtraWorkFeePercent';
+type SettingsFormFieldName =
+  | 'defaultProfitMarginPercent'
+  | 'defaultModelingCostEur'
+  | 'defaultExtraWorkFeePercent'
+  | 'electricityPriceEurKwh'
+  | 'annualBaseFeeEur';
 
 /**
  * Manages printer profile CRUD, customer CRUD, calculation defaults, and
@@ -52,8 +50,6 @@ export class MoreComponent {
     powerWatts: [0, [Validators.required, Validators.min(0.0001)]],
     purchasePriceEur: [0, [Validators.required, Validators.min(0.0001)]],
     lifetimeHours: [0, [Validators.required, Validators.min(0.0001)]],
-    electricityPriceEurKwh: [0, [Validators.required, Validators.min(0.0001)]],
-    annualBaseFeeEur: [0, [Validators.required, Validators.min(0)]],
     note: ['', [Validators.maxLength(500)]]
   });
 
@@ -82,7 +78,9 @@ export class MoreComponent {
     defaultPriceMode: ['FIXED', [Validators.required]],
     defaultProfitMarginPercent: [0, [Validators.required, Validators.min(0), Validators.max(500)]],
     defaultModelingCostEur: [0, [Validators.required, Validators.min(0), Validators.max(9999)]],
-    defaultExtraWorkFeePercent: [0, [Validators.required, Validators.min(0), Validators.max(200)]]
+    defaultExtraWorkFeePercent: [0, [Validators.required, Validators.min(0), Validators.max(200)]],
+    electricityPriceEurKwh: [0.32, [Validators.required, Validators.min(0.0001)]],
+    annualBaseFeeEur: [0, [Validators.required, Validators.min(0)]]
   });
 
   readonly isSavingSettings = signal(false);
@@ -128,7 +126,9 @@ export class MoreComponent {
             defaultPriceMode: (settings['defaultPriceMode'] as string) || 'FIXED',
             defaultProfitMarginPercent: (settings['defaultProfitMarginPercent'] as number) ?? 0,
             defaultModelingCostEur: (settings['defaultModelingCostEur'] as number) ?? 0,
-            defaultExtraWorkFeePercent: (settings['defaultExtraWorkFeePercent'] as number) ?? 0
+            defaultExtraWorkFeePercent: (settings['defaultExtraWorkFeePercent'] as number) ?? 0,
+            electricityPriceEurKwh: (settings['electricityPriceEurKwh'] as number) ?? 0.32,
+            annualBaseFeeEur: (settings['annualBaseFeeEur'] as number) ?? 0
           },
           { emitEvent: false }
         );
@@ -153,7 +153,9 @@ export class MoreComponent {
         this.#settingsService.setSetting('defaultPriceMode', values.defaultPriceMode),
         this.#settingsService.setSetting('defaultProfitMarginPercent', values.defaultProfitMarginPercent),
         this.#settingsService.setSetting('defaultModelingCostEur', values.defaultModelingCostEur),
-        this.#settingsService.setSetting('defaultExtraWorkFeePercent', values.defaultExtraWorkFeePercent)
+        this.#settingsService.setSetting('defaultExtraWorkFeePercent', values.defaultExtraWorkFeePercent),
+        this.#settingsService.setSetting('electricityPriceEurKwh', values.electricityPriceEurKwh),
+        this.#settingsService.setSetting('annualBaseFeeEur', values.annualBaseFeeEur)
       ]);
       this.settingsSaveSuccess.set(true);
       this.settingsForm.markAsPristine();
@@ -179,6 +181,10 @@ export class MoreComponent {
           return 'Kosten dürfen nicht negativ sein';
         case 'defaultExtraWorkFeePercent':
           return 'Aufschlag darf nicht negativ sein';
+        case 'electricityPriceEurKwh':
+          return 'Strompreis muss größer als 0 sein';
+        case 'annualBaseFeeEur':
+          return 'Grundgebühr darf nicht negativ sein';
       }
     }
 
@@ -353,8 +359,6 @@ export class MoreComponent {
       powerWatts: printer.powerWatts,
       purchasePriceEur: printer.purchasePriceEur,
       lifetimeHours: printer.lifetimeHours,
-      electricityPriceEurKwh: printer.electricityPriceEurKwh,
-      annualBaseFeeEur: printer.annualBaseFeeEur,
       note: printer.note ?? ''
     });
     this.form.markAsPristine();
@@ -565,10 +569,6 @@ export class MoreComponent {
         return 'Bitte Kaufpreis eingeben';
       case 'lifetimeHours':
         return 'Bitte Lebensdauer eingeben';
-      case 'electricityPriceEurKwh':
-        return 'Bitte Strompreis eingeben';
-      case 'annualBaseFeeEur':
-        return 'Bitte Grundgebühr eingeben';
       case 'note':
         return 'Bitte Notiz prüfen';
     }
@@ -582,10 +582,6 @@ export class MoreComponent {
         return 'Kaufpreis muss größer als 0 sein';
       case 'lifetimeHours':
         return 'Lebensdauer muss größer als 0 sein';
-      case 'electricityPriceEurKwh':
-        return 'Strompreis muss größer als 0 sein';
-      case 'annualBaseFeeEur':
-        return 'Grundgebühr darf nicht negativ sein';
       default:
         return 'Ungültiger Wert';
     }
@@ -598,8 +594,6 @@ export class MoreComponent {
       powerWatts: 0,
       purchasePriceEur: 0,
       lifetimeHours: 0,
-      electricityPriceEurKwh: 0,
-      annualBaseFeeEur: 0,
       note: ''
     });
     this.form.markAsPristine();
@@ -624,7 +618,9 @@ export class MoreComponent {
         defaultPriceMode: (settings['defaultPriceMode'] as string) || 'FIXED',
         defaultProfitMarginPercent: (settings['defaultProfitMarginPercent'] as number) ?? 0,
         defaultModelingCostEur: (settings['defaultModelingCostEur'] as number) ?? 0,
-        defaultExtraWorkFeePercent: (settings['defaultExtraWorkFeePercent'] as number) ?? 0
+        defaultExtraWorkFeePercent: (settings['defaultExtraWorkFeePercent'] as number) ?? 0,
+        electricityPriceEurKwh: (settings['electricityPriceEurKwh'] as number) ?? 0.32,
+        annualBaseFeeEur: (settings['annualBaseFeeEur'] as number) ?? 0
       },
       { emitEvent: false }
     );

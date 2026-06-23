@@ -1,8 +1,9 @@
 .page {
   display: grid;
-  gap: var(--pc-space-3);
+  align-content: start;
+  gap: var(--pc-space-2);
   min-height: 100%;
-  padding: var(--pc-space-2) 0 0;
+  padding: var(--pc-space-3) 0 0;
 }
 
 .page__eyebrow {
@@ -10,21 +11,23 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
   color: var(--pc-color-ink-label);
 }
 
 h1 {
   margin: 0;
-  font-size: 1.4375rem;
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.1;
+  color: var(--pc-color-ink-primary);
 }
 
 .page__body {
   margin: 0;
   max-width: 34rem;
+  font-size: 0.875rem;
   color: var(--pc-color-ink-secondary);
-  line-height: 1.5;
+  line-height: 1.55;
 }

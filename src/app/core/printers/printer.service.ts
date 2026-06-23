@@ -28,8 +28,6 @@ export interface PrinterPayload {
   powerWatts: number;
   purchasePriceEur: number;
   lifetimeHours: number;
-  electricityPriceEurKwh: number;
-  annualBaseFeeEur: number;
   note?: string;
 }
 
@@ -160,14 +158,6 @@ export class PrinterService {
 
     if (payload.lifetimeHours <= 0) {
       throw new Error('Lifetime hours must be greater than 0');
-    }
-
-    if (payload.electricityPriceEurKwh <= 0) {
-      throw new Error('Electricity price must be greater than 0');
-    }
-
-    if (payload.annualBaseFeeEur < 0) {
-      throw new Error('Annual base fee cannot be negative');
     }
 
     const note = payload.note?.trim();
