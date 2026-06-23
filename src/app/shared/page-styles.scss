@@ -1,0 +1,30 @@
+.page {
+  display: grid;
+  gap: var(--pc-space-3);
+  min-height: 100%;
+  padding: var(--pc-space-2) 0 0;
+}
+
+.page__eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--pc-color-ink-label);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.4375rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.page__body {
+  margin: 0;
+  max-width: 34rem;
+  color: var(--pc-color-ink-secondary);
+  line-height: 1.5;
+}

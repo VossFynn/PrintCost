@@ -1,0 +1,110 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+}
+
+.shell {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 100dvh;
+  width: min(100%, 48rem);
+  margin: 0 auto;
+  background: var(--pc-color-surface-app);
+}
+
+.shell__content {
+  min-height: 0;
+  overflow: auto;
+  padding: var(--pc-space-4) var(--pc-space-4) var(--pc-space-5);
+}
+
+.shell__update-banner {
+  margin: var(--pc-space-3) var(--pc-space-4) 0;
+  padding: var(--pc-space-3);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-surface-card);
+  color: var(--pc-color-ink-primary);
+}
+
+.shell__update-message {
+  margin: 0;
+  font-weight: 700;
+}
+
+.shell__update-actions {
+  display: flex;
+  gap: var(--pc-space-2);
+  margin-top: var(--pc-space-2);
+}
+
+.shell__update-button {
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-surface-card);
+  color: var(--pc-color-ink-primary);
+  padding: 0.35rem 0.75rem;
+}
+
+.shell__update-button--primary {
+  border-color: var(--pc-color-primary);
+  background: var(--pc-color-primary);
+  color: var(--pc-color-primary-foreground);
+}
+
+.shell__nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--pc-space-1);
+  padding: var(--pc-space-3) var(--pc-space-3) calc(var(--pc-space-3) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--pc-color-border-muted);
+  background: color-mix(in srgb, var(--pc-color-surface-card) 96%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.shell__link {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--pc-space-1);
+  min-height: 3.75rem;
+  border-radius: var(--pc-radius-card);
+  color: var(--pc-color-ink-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.shell__link--active,
+.shell__link[aria-current='page'] {
+  color: var(--pc-color-primary);
+  background: var(--pc-color-surface-accent-soft);
+  font-weight: 600;
+}
+
+.shell__link:focus-visible {
+  outline: 2px solid var(--pc-color-primary);
+  outline-offset: 2px;
+}
+
+.shell__icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.shell__label {
+  font-size: 0.625rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+@media (min-width: 48rem) {
+  .shell {
+    border-left: 1px solid var(--pc-color-border-subtle);
+    border-right: 1px solid var(--pc-color-border-subtle);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell__link {
+    transition: none;
+  }
+}

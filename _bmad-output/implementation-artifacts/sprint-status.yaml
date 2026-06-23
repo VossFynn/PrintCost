@@ -1,0 +1,53 @@
+# generated: 2026-06-23T18:46:39+0200
+# last_updated: 2026-06-23T19:04:01+0200
+# project: PrintCost
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: /Users/U730282/.private/PrintCost/_bmad-output/implementation-artifacts
+
+generated: 2026-06-23T18:46:39+0200
+last_updated: 2026-06-23T19:28:23+0200
+project: PrintCost
+project_key: NOKEY
+tracking_system: file-system
+story_location: /Users/U730282/.private/PrintCost/_bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: in-progress
+  1-1-create-installable-angular-pwa-shell: review
+  1-2-apply-design-tokens-and-shared-shell-ui: review
+  1-3-initialize-local-indexeddb-schema-and-settings: review
+  1-4-enable-offline-app-shell-and-update-banner: review
+  1-5-add-static-hosting-csp-and-build-checks: review
+  epic-1-retrospective: optional
+  epic-2: backlog
+  2-1-manage-printer-profiles: backlog
+  2-2-soft-delete-printer-profiles-safely: backlog
+  2-3-manage-filament-records-and-purchase-history: backlog
+  2-4-calculate-filament-price-basis: backlog
+  2-5-find-and-filter-filaments: backlog
+  2-6-soft-delete-filaments-safely: backlog
+  epic-2-retrospective: optional
+  epic-3: backlog
+  3-1-build-calculation-form-with-required-inputs: backlog
+  3-2-add-multi-filament-lines-and-price-mode-selection: backlog
+  3-3-implement-pure-calculation-engine: backlog
+  3-4-render-live-result-card-and-plate-explanation: backlog
+  3-5-save-calculation-with-snapshots: backlog
+  3-6-save-and-load-calculation-templates: backlog
+  epic-3-retrospective: optional
+  epic-4: backlog
+  4-1-show-saved-calculations-in-drucke-inventory: backlog
+  4-2-record-print-occurrence-with-stock-deduction: backlog
+  4-3-open-calculation-detail-and-sale-history: backlog
+  4-4-record-sales-and-gifts: backlog
+  4-5-manage-manual-parts-in-teile: backlog
+  4-6-manage-customer-records: backlog
+  epic-4-retrospective: optional
+  epic-5: backlog
+  5-1-manage-calculation-defaults: backlog
+  5-2-export-versioned-backup-json: backlog
+  5-3-validate-and-import-backup-with-replace-strategy: backlog
+  5-4-delete-all-local-data-safely: backlog
+  5-5-final-pwa-data-safety-and-update-polish: backlog
+  epic-5-retrospective: optional

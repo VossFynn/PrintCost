@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="PrintCost">
+  <rect width="192" height="192" rx="40" fill="#f6efe8"/>
+  <rect x="28" y="28" width="136" height="136" rx="28" fill="#ffffff" stroke="#d7c5b5" stroke-width="6"/>
+  <path d="M60 60h72v24H60z" fill="#b85f3b"/>
+  <path d="M60 92h72v40H60z" fill="#24303b" opacity="0.9"/>
+  <text x="96" y="138" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#b85f3b">P</text>
+</svg>

@@ -1,0 +1,11 @@
+{
+  "date": "2026-06-23",
+  "environment": "local-dev",
+  "mobile_performance_score": null,
+  "pwa_score": null,
+  "waiver": {
+    "active": true,
+    "reason": "Chrome/Lighthouse runtime not available in current execution environment. Run Lighthouse in CI/browser-capable host and replace waiver with recorded scores (target: PWA >= 90, Performance >= 85)."
+  }
+}
+

@@ -1,0 +1,34 @@
+<div class="shell">
+  @if (updateBanner.updateAvailable()) {
+    <section class="shell__update-banner" role="status" aria-live="polite">
+      <p class="shell__update-message">Update verfügbar</p>
+      <div class="shell__update-actions">
+        <button type="button" class="shell__update-button shell__update-button--primary" (click)="updateBanner.applyUpdate()">
+          Jetzt neu laden
+        </button>
+        <button type="button" class="shell__update-button" (click)="updateBanner.dismiss()">Später</button>
+      </div>
+    </section>
+  }
+
+  <main class="shell__content">
+    <router-outlet />
+  </main>
+
+  <nav class="shell__nav" aria-label="Primäre Navigation">
+    @for (item of navItems; track item.path) {
+      <a
+        class="shell__link"
+        [routerLink]="item.path"
+        routerLinkActive="shell__link--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        #linkActive="routerLinkActive"
+        [attr.aria-current]="linkActive.isActive ? 'page' : null"
+        [attr.aria-label]="item.ariaLabel"
+      >
+        <span class="shell__icon" aria-hidden="true">{{ item.icon }}</span>
+        <span class="shell__label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+</div>
