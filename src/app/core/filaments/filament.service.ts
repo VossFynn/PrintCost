@@ -234,6 +234,10 @@ export class FilamentService {
       throw new Error('Fixed price must be greater than 0');
     }
 
+    if (!payload.purchases || payload.purchases.length === 0) {
+      throw new Error('At least one valid purchase is required');
+    }
+
     const purchases = payload.purchases.map((purchase) => this.validatePurchase(purchase));
 
     return {

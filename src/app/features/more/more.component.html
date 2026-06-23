@@ -28,9 +28,9 @@
   </section>
 
   <!-- DRUCKER -->
-  @if (printers().length > 0) {
-    <section class="mehr-group" aria-label="Drucker">
-      <h2 class="mehr-group__heading">Drucker · Vorschau</h2>
+  <section class="mehr-group" aria-label="Drucker">
+    <h2 class="mehr-group__heading">Drucker · Vorschau</h2>
+    @if (printers().length > 0) {
       <ul class="printer-list" aria-label="Aktive Druckerprofile">
         @for (printer of printers(); track printer.id) {
           <li class="printer-list__item">
@@ -47,8 +47,10 @@
           </li>
         }
       </ul>
-    </section>
-  }
+    } @else {
+      <p class="printer-list__empty">Noch kein aktives Druckerprofil vorhanden.</p>
+    }
+  </section>
 
   <!-- KUNDEN -->
   <section class="mehr-group" aria-label="Kunden">
@@ -74,6 +76,8 @@
           </li>
         }
       </ul>
+    } @else {
+      <p class="customer-list__empty">Noch kein aktiver Kunde vorhanden.</p>
     }
 
     <button type="button" class="customer-add-btn" (click)="openCreateCustomerDialog()">

@@ -1,20 +1,18 @@
-<section class="page calculate-shell" data-testid="calculate-shell">
+<section class="page calculate-shell calculate-shell--single-column" data-testid="calculate-shell">
   <div class="calc-page-header">
     <div>
       <p class="page__eyebrow">Kalkulation</p>
       <h1>Neue Kalkulation</h1>
     </div>
-    @if (hasTemplates()) {
-      <button
-        data-testid="load-template"
-        type="button"
-        class="calc-page-header__load-btn"
-        [disabled]="isTemplateLoadBlocked()"
-        (click)="loadTemplateSelection()"
-      >
-        Vorlage laden
-      </button>
-    }
+    <button
+      data-testid="load-template"
+      type="button"
+      class="calc-page-header__load-btn"
+      [disabled]="isTemplateLoadBlocked() || !hasTemplates()"
+      (click)="loadTemplateSelection()"
+    >
+      Vorlage laden
+    </button>
   </div>
 
   @if (loadError(); as loadMessage) {
@@ -25,7 +23,7 @@
 
     <!-- PROJEKT -->
     <div class="calc-section">
-      <p class="calc-section__label">Projekt</p>
+      <p class="calc-section__label" data-testid="calculate-section-title">Projekt</p>
       <label class="calc-field" for="projectName">
         <span class="calc-field__label">Projektname</span>
         <input id="projectName" data-testid="project-name" type="text" formControlName="projectName" class="calc-field__input" placeholder="z. B. Benchy v2 · Halterung" />
@@ -35,52 +33,9 @@
       }
     </div>
 
-    <!-- DRUCKER & KUNDE -->
-    <div class="calc-section">
-      <p class="calc-section__label">Druck</p>
-
-      @if (!hasActivePrinters()) {
-        <div class="calc-empty-state" data-testid="calculate-printer-empty">
-          <p>Noch kein aktives Druckerprofil vorhanden.</p>
-          <a href="/more">Erst Drucker anlegen</a>
-        </div>
-      } @else {
-        <label class="calc-field" for="printerId">
-          <span class="calc-field__label">Druckerprofil</span>
-          <select
-            id="printerId"
-            data-testid="printer-select"
-            formControlName="printerId"
-            class="calc-field__input"
-            (change)="onPrinterChange($any($event.target).value)"
-          >
-            @for (printer of activePrinters(); track printer.id) {
-              <option data-testid="printer-option" [value]="printer.id">{{ printer.name }}</option>
-            }
-          </select>
-        </label>
-      }
-      @if (templatePrinterReselectGuidance(); as printerGuidance) {
-        <p class="calc-error" data-testid="template-printer-guidance">{{ printerGuidance }}</p>
-      }
-      @if (getError('printerId'); as message) {
-        <p class="calc-error">{{ message }}</p>
-      }
-
-      <label class="calc-field" for="customerId">
-        <span class="calc-field__label">Kunde (optional)</span>
-        <select id="customerId" data-testid="customer-select" formControlName="customerId" class="calc-field__input">
-          <option value="">Kein Kunde (privat)</option>
-          @for (customer of activeCustomers(); track customer.id) {
-            <option data-testid="customer-option" [value]="customer.id">{{ customer.name }}</option>
-          }
-        </select>
-      </label>
-    </div>
-
     <!-- FILAMENT -->
     <div class="calc-section">
-      <p class="calc-section__label">Filament</p>
+      <p class="calc-section__label" data-testid="calculate-section-title">Filament</p>
 
       @if (!hasActiveFilaments()) {
         <div class="calc-empty-state" data-testid="filament-empty">
@@ -134,17 +89,16 @@
 
         <div class="calc-field">
           <span class="calc-field__label">Preis-Modus</span>
-          <div class="seg-ctrl" role="group" aria-label="Preis-Modus">
+          <select
+            data-testid="filament-price-mode"
+            class="calc-field__input"
+            [value]="filamentLines.controls.length > 0 ? priceModeForLine(0) : 'WEIGHTED_AVERAGE'"
+            (change)="filamentLines.controls.length > 0 && onPriceModeChange(0, $any($event.target).value)"
+          >
             @for (mode of priceModeOptions; track mode.value) {
-              <button
-                type="button"
-                data-testid="filament-price-mode"
-                class="seg-ctrl__btn"
-                [class.seg-ctrl__btn--active]="filamentLines.controls.length > 0 && priceModeForLine(0) === mode.value"
-                (click)="filamentLines.controls.length > 0 && onPriceModeChange(0, mode.value)"
-              >{{ mode.label }}</button>
+              <option [value]="mode.value">{{ mode.label }}</option>
             }
-          </div>
+          </select>
         </div>
 
         @for (line of filamentLines.controls; track line.controls.filamentId.value; let index = $index) {
@@ -169,6 +123,49 @@
       @if (templateFilamentReselectGuidance(); as filamentGuidance) {
         <p class="calc-error" data-testid="template-filament-guidance">{{ filamentGuidance }}</p>
       }
+    </div>
+
+    <!-- DRUCKER & KUNDE -->
+    <div class="calc-section">
+      <p class="calc-section__label" data-testid="calculate-section-title">Druck</p>
+
+      @if (!hasActivePrinters()) {
+        <div class="calc-empty-state" data-testid="calculate-printer-empty">
+          <p>Noch kein aktives Druckerprofil vorhanden.</p>
+          <a href="/more">Erst Drucker anlegen</a>
+        </div>
+      } @else {
+        <label class="calc-field" for="printerId">
+          <span class="calc-field__label">Druckerprofil</span>
+          <select
+            id="printerId"
+            data-testid="printer-select"
+            formControlName="printerId"
+            class="calc-field__input"
+            (change)="onPrinterChange($any($event.target).value)"
+          >
+            @for (printer of activePrinters(); track printer.id) {
+              <option data-testid="printer-option" [value]="printer.id">{{ printer.name }}</option>
+            }
+          </select>
+        </label>
+      }
+      @if (templatePrinterReselectGuidance(); as printerGuidance) {
+        <p class="calc-error" data-testid="template-printer-guidance">{{ printerGuidance }}</p>
+      }
+      @if (getError('printerId'); as message) {
+        <p class="calc-error">{{ message }}</p>
+      }
+
+      <label class="calc-field" for="customerId">
+        <span class="calc-field__label">Kunde (optional)</span>
+        <select id="customerId" data-testid="customer-select" formControlName="customerId" class="calc-field__input">
+          <option value="">Kein Kunde (privat)</option>
+          @for (customer of activeCustomers(); track customer.id) {
+            <option data-testid="customer-option" [value]="customer.id">{{ customer.name }}</option>
+          }
+        </select>
+      </label>
     </div>
 
     <!-- DRUCKZEIT & MENGEN -->
@@ -265,12 +262,10 @@
             <dt>Modellierung</dt>
             <dd>{{ formatCurrency(result.modelingCostEur) }}</dd>
           </div>
-          @if (result.extraWorkFeeEur > 0) {
-            <div class="calc-result__row">
-              <dt>Mehrplatten-Aufschlag</dt>
-              <dd>{{ formatCurrency(result.extraWorkFeeEur) }}</dd>
-            </div>
-          }
+          <div class="calc-result__row">
+            <dt>Mehrplatten-Aufschlag</dt>
+            <dd>{{ formatCurrency(result.extraWorkFeeEur) }}</dd>
+          </div>
           <div class="calc-result__row calc-result__row--subtotal">
             <dt>Zwischensumme</dt>
             <dd>{{ formatCurrency(result.subtotalEur) }}</dd>
@@ -282,7 +277,7 @@
         </dl>
         <div class="calc-result__price-block">
           <p class="calc-result__price-label">Preis</p>
-          <p class="calc-result__price-value" data-testid="result-price-value">{{ formatCurrency(result.roundedFinalPriceEur) }}</p>
+          <p class="calc-result__price-value calculate-result__price-value--dominant" data-testid="result-price-value">{{ formatCurrency(result.roundedFinalPriceEur) }}</p>
         </div>
       } @else {
         <p class="calc-result__pending">Ergebnis wird angezeigt, sobald alle Pflichtfelder gültig sind.</p>

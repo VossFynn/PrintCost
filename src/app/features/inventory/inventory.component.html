@@ -53,12 +53,10 @@
           <li class="inventory-card" data-testid="inventory-card" (click)="openDetail(card.id)">
             <div class="inventory-card__body">
               <h3 class="inventory-card__title" data-testid="inventory-card-title">{{ card.projectName }}</h3>
-              <p class="inventory-card__meta">{{ card.roundedPriceEur }} € · {{ card.updatedAtLabel }}</p>
+              <p class="inventory-card__meta">Preis: {{ card.roundedPriceEur }} € · Aktualisiert: {{ card.updatedAtLabel }}</p>
               <div class="inventory-card__pills">
-                <span class="inventory-card__pill">×{{ card.timesPrinted }} gedruckt</span>
-                @if (card.timesSold > 0) {
-                  <span class="inventory-card__pill">{{ card.timesSold }} verkauft</span>
-                }
+                <span class="inventory-card__pill">Gedruckt: {{ card.timesPrinted }}</span>
+                <span class="inventory-card__pill">Verkauft: {{ card.timesSold }}</span>
                 @if (card.status === 'in-stock') {
                   <span class="inventory-card__pill inventory-card__pill--ok">auf Lager</span>
                 } @else if (card.status === 'partial') {
@@ -95,7 +93,7 @@
       <div class="inventory-detail__handle"></div>
       <div class="inventory-detail__header">
         <div>
-          <p class="inventory-detail__eyebrow">Kalkulation</p>
+          <p class="inventory-detail__eyebrow">Details zur Kalkulation</p>
           <h2 class="inventory-detail__project-name">{{ detail.record.projectName }}</h2>
         </div>
         <button type="button" class="inventory-detail__close" (click)="closeDetail()" aria-label="Schließen">✕</button>
@@ -103,31 +101,31 @@
 
       <dl class="inventory-detail__props">
         <div class="inventory-detail__prop">
-          <dt>Drucker</dt>
+          <dt>Drucker: </dt>
           <dd>{{ detail.record.printerSnapshot.name }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Filament</dt>
+          <dt>Filament: </dt>
           <dd>{{ detailFilamentSummary() }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Druckzeit</dt>
+          <dt>Druckzeit: </dt>
           <dd>{{ detailPrintDurationLabel() }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Materialkosten</dt>
+          <dt>Materialkosten: </dt>
           <dd>{{ formatMoney(detail.record.calculationResult.materialCostEur) }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Stromkosten</dt>
+          <dt>Stromkosten: </dt>
           <dd>{{ formatMoney(detail.record.calculationResult.electricityCostEur) }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Abschreibung</dt>
+          <dt>Abschreibung: </dt>
           <dd>{{ formatMoney(detail.record.calculationResult.depreciationCostEur) }}</dd>
         </div>
         <div class="inventory-detail__prop inventory-detail__prop--total">
-          <dt>Gesamtpreis</dt>
+          <dt>Gesamtpreis: </dt>
           <dd>{{ formatMoney(detail.record.calculationResult.roundedFinalPriceEur) }}</dd>
         </div>
       </dl>
@@ -135,20 +133,20 @@
       <p class="inventory-detail__section-label">Verlauf</p>
       <div class="inventory-detail__counters">
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Gedruckt: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.printedCount }}</span>
-          <span class="inventory-detail__counter-key">Gedruckt</span>
         </div>
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Verkauft: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.soldCount }}</span>
-          <span class="inventory-detail__counter-key">Verkauft</span>
         </div>
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Verschenkt: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.giftedCount }}</span>
-          <span class="inventory-detail__counter-key">Geschenkt</span>
         </div>
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Verbleibend: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.remainingCount }}</span>
-          <span class="inventory-detail__counter-key">Verl.</span>
         </div>
       </div>
 
@@ -268,7 +266,7 @@
                 <p class="inventory-history__customer">{{ entry.customerLabel }}</p>
               }
               @if (entry.note) {
-                <p class="inventory-history__note">{{ entry.note }}</p>
+                <p class="inventory-history__note">Notiz: {{ entry.note }}</p>
               }
             </li>
           }

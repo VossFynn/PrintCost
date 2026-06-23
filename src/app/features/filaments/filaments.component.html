@@ -55,15 +55,27 @@
             </div>
             <div class="filament-list__stock-row">
               <span class="filament-list__material-tag">{{ materialTag(filament.type) }}</span>
-              <div class="filament-list__stock-bar-wrap">
-                <div
-                  class="filament-list__stock-bar"
-                  [class.filament-list__stock-bar--low]="stockStateTone(filament.remainingG ?? 0) === 'low'"
-                  [class.filament-list__stock-bar--empty]="stockStateTone(filament.remainingG ?? 0) === 'empty'"
-                  [style.width.%]="stockPercent(filament)"
-                ></div>
-              </div>
-              <span class="filament-list__stock-value">{{ filament.remainingG ?? 0 }} g / {{ filament.rollWeightG ?? 0 }} g</span>
+              @if ((filament.remainingG ?? 0) > 0) {
+                <div class="filament-list__stock-bar-wrap">
+                  <div
+                    class="filament-list__stock-bar"
+                    [class.filament-list__stock-bar--low]="stockStateTone(filament.remainingG ?? 0) === 'low'"
+                    [class.filament-list__stock-bar--empty]="stockStateTone(filament.remainingG ?? 0) === 'empty'"
+                    [style.width.%]="stockPercent(filament)"
+                  ></div>
+                </div>
+              }
+              <span
+                data-testid="filament-stock-badge"
+                class="filament-list__stock-value"
+                [class.filament-list__stock-badge--empty]="(filament.remainingG ?? 0) === 0"
+              >
+                @if ((filament.remainingG ?? 0) === 0) {
+                  Kein Bestand
+                } @else {
+                  {{ filament.remainingG ?? 0 }} g / {{ filament.rollWeightG ?? 0 }} g
+                }
+              </span>
             </div>
           </div>
           <div class="filament-list__actions">

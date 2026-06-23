@@ -177,7 +177,7 @@ export class FilamentsComponent {
     this.purchases.markAllAsTouched();
     this.serviceError.set(null);
 
-    if (this.form.invalid || (this.purchases.length > 0 && this.purchases.invalid)) {
+    if (this.form.invalid || this.purchases.length === 0 || this.purchases.invalid) {
       return;
     }
 
@@ -310,11 +310,15 @@ export class FilamentsComponent {
   }
 
   getPurchaseArrayError(): string | null {
-    if (this.purchases.length === 0 || !this.purchases.invalid) {
+    if (!this.form.touched) {
       return null;
     }
 
-    if (!this.purchases.touched && !this.form.touched) {
+    if (this.purchases.length === 0) {
+      return 'Bitte mindestens einen Einkauf eingeben';
+    }
+
+    if (!this.purchases.invalid) {
       return null;
     }
 
