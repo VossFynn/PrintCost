@@ -10,6 +10,7 @@ import { PartService } from '../../core/inventory/part.service';
 import { PrinterPayload, PrinterService } from '../../core/printers/printer.service';
 import { SettingsService } from '../../core/settings/settings.service';
 import { BackupFormat, CustomerPaymentMethod, CustomerType } from '../../domain/models/storage.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 type PrinterFormFieldName = 'name' | 'bedType' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
 
@@ -29,7 +30,7 @@ type SettingsFormFieldName =
 @Component({
   selector: 'app-more',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
   templateUrl: './more.component.html',
   styleUrl: './more.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -73,6 +74,11 @@ export class MoreComponent {
   readonly editingCustomerId = signal<string | null>(null);
   readonly customers = this.#customerService.activeCustomers;
   readonly savedCalculations = this.#calculationService.activeSavedCalculations;
+  readonly headerSubtitle = computed(() => {
+    const printerCount = this.printers().length;
+    const customerCount = this.customers().length;
+    return `${printerCount} Drucker · ${customerCount} Kunden`;
+  });
   readonly customerSearchTerm = signal('');
   readonly customerDetailId = signal<string | null>(null);
   readonly customerDetail = computed(() => this.customers().find((customer) => customer.id === this.customerDetailId()) ?? null);

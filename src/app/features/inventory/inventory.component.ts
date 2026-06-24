@@ -7,6 +7,7 @@ import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CalculationDetailView, CalculationService } from '../../core/calculations/calculation.service';
 import { CustomerService } from '../../core/customers/customer.service';
 import { CalculationRecord } from '../../domain/models/storage.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 type InventoryArea = 'drucke' | 'teile';
 type DruckeFilter = 'Alle' | 'Auf Lager' | 'Teilweise' | 'Vollständig' | 'Verschenkt';
@@ -27,7 +28,7 @@ interface InventoryCardViewModel {
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
   templateUrl: './inventory.component.html',
   styleUrl: './inventory.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -59,6 +60,10 @@ export class InventoryComponent {
         matchesDruckeFilter(card, this.activeDruckeFilter()) &&
         (!term || card.projectName.toLowerCase().includes(term))
     );
+  });
+  readonly headerSubtitle = computed(() => {
+    const count = this.savedCalculations().length;
+    return `${count} Druck${count !== 1 ? 'e' : ''}`;
   });
   readonly totalPrinted = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesPrinted, 0));
   readonly totalSold = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesSold, 0));

@@ -1,40 +1,24 @@
 <section class="page">
 
   <!-- ── Page Header ────────────────────────────────────── -->
-  <div class="filament-header">
-    <h1>Filamente</h1>
-    <button type="button" class="filament-header__filter-btn" aria-label="Filtern">≡</button>
-    <div class="filament-header__actions">
-      <label class="filament-search" for="filament-search-input">
-        <span class="filament-search__icon" aria-hidden="true">○</span>
-        <input
-          id="filament-search-input"
-          #searchInput
-          data-testid="filament-search"
-          type="search"
-          placeholder="Filament suchen…"
-          [value]="searchTerm()"
-          (input)="setSearchTerm(searchInput.value)"
-          class="filament-search__input"
-        />
-      </label>
-      <button type="button" class="filament-header__add-btn" (click)="openCreateDialog()">
-        + Filament hinzufügen
-      </button>
-    </div>
-  </div>
-
-  <!-- ── Mobile hero ───────────────────────────────────── -->
-  <div class="filament-hero">
-    <div class="filament-hero__icon" aria-hidden="true">◐</div>
-    <div class="filament-hero__content">
-      <span class="filament-hero__eyebrow">Spulen &amp; Farben</span>
-      <p class="filament-hero__title">Filamente</p>
-      <p class="filament-hero__subtitle">
-        {{ filaments().length }} Spule{{ filaments().length !== 1 ? 'n' : '' }}@if (materialTypeList()) {&nbsp;· {{ materialTypeList() }}}
-      </p>
-    </div>
-  </div>
+  <app-page-header icon="◐" eyebrow="Spulen &amp; Farben" heading="Filamente" [subtitle]="headerSubtitle()">
+    <label class="filament-search" for="filament-search-input">
+      <span class="filament-search__icon" aria-hidden="true">⌕</span>
+      <input
+        id="filament-search-input"
+        #searchInput
+        data-testid="filament-search"
+        type="search"
+        placeholder="Filament suchen…"
+        [value]="searchTerm()"
+        (input)="setSearchTerm(searchInput.value)"
+        class="filament-search__input"
+      />
+    </label>
+    <button type="button" data-testid="open-filament-dialog" class="filament-header__add-btn" (click)="openCreateDialog()">
+      + Filament hinzufügen
+    </button>
+  </app-page-header>
 
   <!-- ── Filter Chips ───────────────────────────────────── -->
   <div class="filament-filter-row" aria-label="Filamentfilter">
@@ -184,17 +168,6 @@
 
     </div>
   }
-
-  <!-- ── Mobile FAB ─────────────────────────────────────── -->
-  <button
-    type="button"
-    data-testid="open-filament-dialog"
-    class="filament-fab"
-    (click)="openCreateDialog()"
-    aria-label="Neues Filament hinzufügen"
-  >
-    + Filament
-  </button>
 
 </section>
 

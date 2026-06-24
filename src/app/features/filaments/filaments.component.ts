@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { FilamentPayload, FilamentService } from '../../core/filaments/filament.service';
 import { FilamentRecord } from '../../domain/models/storage.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 type FilamentFormFieldName =
   | 'name'
@@ -26,7 +27,7 @@ type FilamentFilter = 'Alle' | 'PLA' | 'PETG' | 'ABS' | 'TPU' | 'Anderes';
 @Component({
   selector: 'app-filaments',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
   templateUrl: './filaments.component.html',
   styleUrl: './filaments.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -92,6 +93,14 @@ export class FilamentsComponent {
   readonly materialTypeList = computed(() =>
     [...new Set(this.filaments().map((filament) => this.materialTag(filament.type)))].join(', ')
   );
+
+  /** Header subtitle, e.g. "6 Spulen · PLA, PETG, ABS". */
+  readonly headerSubtitle = computed(() => {
+    const count = this.filaments().length;
+    const base = `${count} Spule${count !== 1 ? 'n' : ''}`;
+    const materials = this.materialTypeList();
+    return materials ? `${base} · ${materials}` : base;
+  });
 
   /** Total remaining filament across all spools, in grams. */
   readonly totalRemainingG = computed(() =>

@@ -1,46 +1,11 @@
 @use '../../shared/page-styles';
 
-// ── Page Header ───────────────────────────────────────────
-
-.filament-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  align-items: center;
-  gap: var(--pc-space-2) var(--pc-space-3);
-
-  h1 { margin: 0; grid-column: 1; grid-row: 1; }
-}
-
-// Mobile filter button (top-right next to h1)
-.filament-header__filter-btn {
-  grid-column: 2;
-  grid-row: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.25rem;
-  min-width: 2.25rem;
-  border: 1.5px solid var(--pc-color-border-subtle);
-  border-radius: var(--pc-radius-input);
-  background: var(--pc-color-surface-card);
-  color: var(--pc-color-ink-secondary);
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-// Search + add button: full width on row 2 on mobile
-.filament-header__actions {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-2);
-}
+// ── Header actions (projected into app-page-header) ───────
 
 .filament-header__add-btn {
-  display: none; // FAB handles this on mobile
-  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
   border: none;
   border-radius: var(--pc-radius-input);
   background: var(--pc-color-primary);
@@ -57,14 +22,13 @@
   &:hover { opacity: 0.9; }
 }
 
-// ── Search ────────────────────────────────────────────────
-
 .filament-search {
   display: flex;
   align-items: center;
   gap: var(--pc-space-2);
   flex: 1;
-  min-height: 2.25rem;
+  min-width: 11rem;
+  min-height: 2.5rem;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);
@@ -89,57 +53,6 @@
 
   &::placeholder { color: var(--pc-color-ink-muted); }
   &:focus { outline: none; }
-}
-
-// ── Mobile Hero ───────────────────────────────────────────
-
-.filament-hero {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-3);
-  padding: var(--pc-space-3) 0 var(--pc-space-1);
-}
-
-.filament-hero__icon {
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--pc-radius-md);
-  background: var(--pc-color-primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  box-shadow: 0 2px 8px rgb(196 98 45 / 30%);
-}
-
-.filament-hero__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.filament-hero__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--pc-color-ink-label);
-}
-
-.filament-hero__title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--pc-color-ink-primary);
-}
-
-.filament-hero__subtitle {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--pc-color-ink-secondary);
 }
 
 // ── Filter Chips ──────────────────────────────────────────
@@ -213,7 +126,7 @@
   display: grid;
   gap: var(--pc-space-2);
   margin: 0;
-  padding: 0 0 5rem; // bottom padding for FAB
+  padding: 0 0 var(--pc-space-4);
   list-style: none;
 }
 
@@ -444,34 +357,6 @@
   display: block;
   font-size: 0.75rem;
   color: var(--pc-color-ink-muted);
-}
-
-// ── Mobile FAB ────────────────────────────────────────────
-
-.filament-fab {
-  position: fixed;
-  bottom: calc(5.5rem + env(safe-area-inset-bottom));
-  right: max(var(--pc-space-4), calc(50% - 24rem + var(--pc-space-4)));
-  min-height: 3rem;
-  border: none;
-  border-radius: 9999px;
-  background: var(--pc-color-primary);
-  color: #fff;
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  padding: 0 var(--pc-space-5);
-  box-shadow: 0 6px 20px rgb(196 98 45 / 35%);
-  cursor: pointer;
-  z-index: 10;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
-
-  &:hover {
-    box-shadow: 0 8px 24px rgb(196 98 45 / 45%);
-    transform: translateY(-1px);
-  }
-
-  &:active { transform: translateY(0); }
 }
 
 // ── Sheet / Dialog ────────────────────────────────────────
@@ -852,24 +737,8 @@
 
 @media (min-width: 56rem) {
 
-  .filament-hero { display: none; }
-
-  .filament-header__filter-btn { display: none; }
-  .filament-header__add-btn { display: flex; align-items: center; }
-
-  // On desktop: header becomes 3 columns (h1 | search | add-btn)
-  .filament-header {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-rows: auto;
-    h1 { grid-column: 1; grid-row: 1; }
-  }
-
-  .filament-header__actions {
-    grid-column: 2 / -1;
-    grid-row: 1;
-  }
-
-  .filament-search { flex: 1; }
+  // On desktop the search keeps a comfortable fixed width instead of stretching.
+  .filament-search { flex: 0 1 18rem; }
 
   // Two-column layout
   .filament-layout {
@@ -994,12 +863,6 @@
 
   // Stats panel visible on desktop
   .filament-panel { display: block; }
-
-  // FAB moves to bottom-right corner
-  .filament-fab {
-    bottom: var(--pc-space-6);
-    right: var(--pc-space-6);
-  }
 
   // Dialog: centered modal
   .filament-sheet {

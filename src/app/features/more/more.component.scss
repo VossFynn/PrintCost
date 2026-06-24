@@ -1,21 +1,9 @@
 @use '../../shared/page-styles';
 
-// ── Page Header ───────────────────────────────────────────
-
-.mehr-page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--pc-space-3);
-  flex-wrap: wrap;
-
-  h1 { margin: 0; }
-}
-
-.mehr-page-header__actions { display: none; } // mobile: hidden
+// ── Header action (projected into app-page-header) ────────
 
 .mehr-page-header__btn {
-  min-height: 2.25rem;
+  min-height: 2.5rem;
   border: none;
   border-radius: var(--pc-radius-input);
   background: var(--pc-color-primary);
@@ -26,56 +14,12 @@
   padding: 0 var(--pc-space-4);
   cursor: pointer;
   white-space: nowrap;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--pc-space-1);
   transition: opacity 0.15s ease;
 
   &:hover { opacity: 0.9; }
-}
-
-// ── Mobile Hero ───────────────────────────────────────────
-
-.mehr-hero {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-3);
-  padding: var(--pc-space-3) 0 var(--pc-space-1);
-}
-
-.mehr-hero__icon {
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--pc-radius-md);
-  background: var(--pc-color-primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgb(196 98 45 / 30%);
-}
-
-.mehr-hero__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.mehr-hero__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--pc-color-ink-label);
-}
-
-.mehr-hero__subtitle {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--pc-color-ink-secondary);
 }
 
 // ── Group structure ───────────────────────────────────────
@@ -1287,11 +1231,7 @@
 
 @media (min-width: 56rem) {
 
-  // Header
-  .mehr-page-header__actions { display: flex; }
-
-  // Hide mobile hero and customer preview
-  .mehr-hero { display: none; }
+  // Hide mobile customer preview
   .mehr-customer-preview { display: none; }
 
   // Hide mobile nav

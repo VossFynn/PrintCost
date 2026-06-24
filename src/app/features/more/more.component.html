@@ -1,21 +1,9 @@
 <section class="page">
 
   <!-- ── Page Header ─────────────────────────────────────── -->
-  <div class="mehr-page-header">
-    <h1>Mehr</h1>
-    <div class="mehr-page-header__actions">
-      <button type="button" class="mehr-page-header__btn" (click)="openCreateDialog()">+ Hinzufügen</button>
-    </div>
-  </div>
-
-  <!-- ── Mobile hero ─────────────────────────────────────── -->
-  <div class="mehr-hero">
-    <div class="mehr-hero__icon" aria-hidden="true">⋯</div>
-    <div class="mehr-hero__content">
-      <span class="mehr-hero__eyebrow">Einstellungen</span>
-      <p class="mehr-hero__subtitle">{{ printers().length }} Drucker · {{ customers().length }} Kunden</p>
-    </div>
-  </div>
+  <app-page-header icon="⋯" eyebrow="Verwaltung &amp; System" heading="Mehr" [subtitle]="headerSubtitle()">
+    <button type="button" class="mehr-page-header__btn" (click)="openCreateDialog()">+ Hinzufügen</button>
+  </app-page-header>
 
   <!-- ── Mobile nav card (hidden on desktop) ─────────────── -->
   <section class="mehr-mobile-nav mehr-group" aria-label="Verwaltung">

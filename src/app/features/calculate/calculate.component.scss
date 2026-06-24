@@ -11,32 +11,6 @@
 
 /* ── Page header row ────────────────────────────────────── */
 
-.calc-page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--pc-space-3);
-  flex-wrap: wrap;
-}
-
-.calc-page-header__title {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-
-  h1 { margin: 0; }
-}
-
-.calc-page-header__breadcrumb {
-  display: none; // hidden on mobile; shown on desktop below
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--pc-color-ink-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
 .calc-page-header__load-btn {
   flex-shrink: 0;
   min-height: 2.25rem;
@@ -62,16 +36,8 @@
   }
 }
 
-.calc-header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-2);
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
 .calc-header-actions__btn {
-  display: none; /* hidden on mobile, shown on desktop */
+  display: none; /* hidden on mobile (bottom Aktionen block handles it), shown on desktop */
   min-height: 2.25rem;
   border: 1.5px solid var(--pc-color-primary);
   border-radius: var(--pc-radius-input);
@@ -105,38 +71,6 @@
     background: var(--pc-color-primary);
     box-shadow: 0 4px 12px rgb(196 98 45 / 30%);
   }
-}
-
-/* ── Mobile page hero ───────────────────────────────────── */
-
-.calc-page-hero {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-2);
-  margin-top: var(--pc-space-3);
-  margin-bottom: var(--pc-space-1);
-}
-
-.calc-hero-icon {
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--pc-radius-md);
-  background: var(--pc-color-primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  box-shadow: 0 2px 8px rgb(196 98 45 / 30%);
-}
-
-.calc-hero-eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--pc-color-ink-label);
 }
 
 /* ── Column wrappers ────────────────────────────────────── */
@@ -858,11 +792,6 @@ select.calc-field__input {
 
 @media (min-width: 56rem) {
 
-  /* Breadcrumb visible on desktop */
-  .calc-page-header__breadcrumb {
-    display: block;
-  }
-
   /* Header actions: show the extra buttons */
   .calc-header-actions__btn {
     display: inline-flex;
@@ -932,11 +861,6 @@ select.calc-field__input {
 
   .calc-filament-table__summe td:last-child {
     display: table-cell;
-  }
-
-  /* Hero row hidden on desktop */
-  .calc-page-hero {
-    display: none;
   }
 
   /* Druck section: restore 3-col metrics grid on desktop */
