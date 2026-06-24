@@ -162,7 +162,7 @@
           <span class="inventory-panel__stat-label">Letzte Aktivität</span>
           @if (savedCalculations().length > 0) {
             <span class="inventory-panel__stat-sub inventory-panel__stat-sub--recent">
-              {{ savedCalculations()[0]?.projectName ?? '—' }}
+              {{ savedCalculations()[0].projectName }}
             </span>
           } @else {
             <span class="inventory-panel__stat-sub">Keine Einträge</span>
