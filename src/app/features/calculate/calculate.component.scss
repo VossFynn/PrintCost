@@ -14,8 +14,27 @@
 .calc-page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--pc-space-3);
+  flex-wrap: wrap;
+}
+
+.calc-page-header__title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+
+  h1 { margin: 0; }
+}
+
+.calc-page-header__breadcrumb {
+  display: none; // hidden on mobile; shown on desktop below
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pc-color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .calc-page-header__load-btn {
@@ -86,6 +105,38 @@
     background: var(--pc-color-primary);
     box-shadow: 0 4px 12px rgb(196 98 45 / 30%);
   }
+}
+
+/* ── Mobile page hero ───────────────────────────────────── */
+
+.calc-page-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  margin-top: var(--pc-space-3);
+  margin-bottom: var(--pc-space-1);
+}
+
+.calc-hero-icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--pc-radius-md);
+  background: var(--pc-color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  box-shadow: 0 2px 8px rgb(196 98 45 / 30%);
+}
+
+.calc-hero-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--pc-color-ink-label);
 }
 
 /* ── Column wrappers ────────────────────────────────────── */
@@ -178,10 +229,10 @@ select.calc-field__input {
   padding-right: 2.5rem;
 }
 
-/* Two-column field row */
+/* Two-column field row — single column on mobile */
 .calc-field-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--pc-space-2);
 }
 
@@ -223,13 +274,13 @@ select.calc-field__input {
   color: var(--pc-color-primary);
 }
 
-/* Price mode: select visible on mobile, tabs hidden */
+/* Price mode: tabs visible on mobile, select hidden */
 .calc-preismodell-tabs {
-  display: none;
+  display: flex;
 }
 
 .calc-price-mode-select {
-  display: block;
+  display: none;
 }
 
 /* ── Errors ─────────────────────────────────────────────── */
@@ -358,6 +409,7 @@ select.calc-field__input {
 }
 
 .calc-filament-table__cost-cell {
+  display: none; /* hidden on mobile; cost is secondary info */
   text-align: right;
   font-weight: 600;
   color: var(--pc-color-ink-secondary);
@@ -372,9 +424,13 @@ select.calc-field__input {
     border-top: 1px solid var(--pc-color-border-subtle);
   }
 
-  td:last-child,
+  td:last-child {
+    display: none; /* cost sum hidden on mobile */
+  }
+
   td:nth-child(2) {
     text-align: right;
+    color: var(--pc-color-success);
   }
 }
 
@@ -444,11 +500,11 @@ select.calc-field__input {
   font-style: italic;
 }
 
-/* ── Druck metrics (compact 3-box row) ──────────────────── */
+/* ── Druck metrics — stacked on mobile, 3-col on desktop ── */
 
 .calc-druck-metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--pc-space-2);
 }
 
@@ -466,18 +522,18 @@ select.calc-field__input {
 }
 
 .calc-druck-metric__input {
-  min-height: 2.5rem;
+  min-height: 3rem;
   min-width: 0;
   width: 100%;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
-  padding: 0 var(--pc-space-2);
+  padding: 0 var(--pc-space-3);
   background: var(--pc-color-surface-card);
   color: var(--pc-color-ink-primary);
   font: inherit;
   font-weight: 600;
-  font-size: 1rem;
-  text-align: center;
+  font-size: 1.25rem;
+  text-align: left;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -802,6 +858,11 @@ select.calc-field__input {
 
 @media (min-width: 56rem) {
 
+  /* Breadcrumb visible on desktop */
+  .calc-page-header__breadcrumb {
+    display: block;
+  }
+
   /* Header actions: show the extra buttons */
   .calc-header-actions__btn {
     display: inline-flex;
@@ -857,16 +918,32 @@ select.calc-field__input {
     display: table-header-group;
   }
 
-  /* Price mode: show tabs on desktop, hide select */
-  .calc-preismodell-tabs {
-    display: flex;
+  /* Price mode: tabs stay flex on desktop, select stays hidden */
+
+  /* Two-column field row on desktop */
+  .calc-field-row {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .calc-price-mode-select {
+  /* Restore cost cell on desktop */
+  .calc-filament-table__cost-cell {
+    display: table-cell;
+  }
+
+  .calc-filament-table__summe td:last-child {
+    display: table-cell;
+  }
+
+  /* Hero row hidden on desktop */
+  .calc-page-hero {
     display: none;
   }
 
-  /* Druck section: compact metrics on desktop */
+  /* Druck section: restore 3-col metrics grid on desktop */
+  .calc-druck-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   .calc-druck-metric__input {
     font-size: 1.25rem;
     min-height: 3rem;
@@ -944,9 +1021,91 @@ select.calc-field__input {
   }
 }
 
+/* ── Stat value variant ─────────────────────────────────── */
+
+.calc-result__stat-value--pos {
+  color: var(--pc-color-success);
+}
+
+/* ── Kostenanteil (desktop only) ────────────────────────── */
+
+.calc-result__kostenanteil {
+  display: none; /* shown on desktop */
+}
+
+.calc-result__kostenanteil-label {
+  margin: 0 0 var(--pc-space-2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--pc-color-ink-label);
+}
+
+.calc-result__kosten-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--pc-color-surface-muted);
+  overflow: hidden;
+  margin-bottom: var(--pc-space-3);
+}
+
+.calc-result__kosten-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: width 0.3s ease;
+
+  &--material { background: #c4622d; }
+  &--strom    { background: #e8a87c; }
+  &--afa      { background: #7ab3d4; }
+  &--model    { background: #a8c4d8; }
+}
+
+.calc-result__kosten-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--pc-space-1) var(--pc-space-2);
+}
+
+.calc-result__kosten-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6875rem;
+  color: var(--pc-color-ink-secondary);
+  font-weight: 500;
+}
+
+.calc-result__kosten-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+
+  &--material { background: #c4622d; }
+  &--strom    { background: #e8a87c; }
+  &--afa      { background: #7ab3d4; }
+  &--model    { background: #a8c4d8; }
+}
+
+@media (min-width: 56rem) {
+  .calc-result__kostenanteil {
+    display: block;
+    border-top: 1px solid var(--pc-color-border-muted);
+    padding-top: var(--pc-space-3);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .calc-chip,
   .calc-header-actions__btn {
+    transition: none;
+  }
+
+  .calc-result__kosten-bar-fill {
     transition: none;
   }
 }

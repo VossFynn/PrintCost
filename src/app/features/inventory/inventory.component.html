@@ -1,6 +1,29 @@
 <section class="page">
-  <h1>Bestand</h1>
 
+  <!-- ── Page Header ────────────────────────────────────── -->
+  <div class="inventory-header">
+    <h1>Bestand</h1>
+    <div class="inventory-header__actions">
+      <button type="button" class="inventory-header__search-btn" aria-label="Suchen">
+        <span aria-hidden="true">⌕</span> Suchen
+      </button>
+      <button type="button" class="inventory-header__book-btn" (click)="openDetail('')" aria-label="Drucklauf buchen">
+        + Drucklauf buchen
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Mobile hero ────────────────────────────────────── -->
+  <div class="inventory-hero">
+    <div class="inventory-hero__icon" aria-hidden="true">⊡</div>
+    <div class="inventory-hero__content">
+      <span class="inventory-hero__eyebrow">Drucke &amp; Teile</span>
+      <p class="inventory-hero__title">Bestand</p>
+      <p class="inventory-hero__subtitle">{{ savedCalculations().length }} Drucke</p>
+    </div>
+  </div>
+
+  <!-- ── Tabs ───────────────────────────────────────────── -->
   <nav class="inventory-tabs" role="tablist" aria-label="Bestandsbereiche">
     @for (area of inventoryAreas; track area) {
       <button
@@ -17,6 +40,8 @@
   </nav>
 
   @if (activeArea() === 'drucke') {
+
+    <!-- ── Filter chips ──────────────────────────────── -->
     <div class="inventory-filters" aria-label="Druckefilter">
       @for (filter of druckeFilters; track filter) {
         <button
@@ -39,47 +64,120 @@
       <p aria-live="polite" class="inventory-feedback inventory-feedback--error">{{ err }}</p>
     }
 
-    @if (savedCalculations().length === 0) {
-      <div class="inventory-empty">
-        <p class="page__body">Noch keine gespeicherten Kalkulationen vorhanden.</p>
-        <a href="/calculate" data-testid="inventory-empty-cta">Zur Kalkulation</a>
-      </div>
-    } @else if (visibleDruckeCards().length === 0) {
-      <p class="page__body inventory-no-results">Keine gespeicherten Kalkulationen für diesen Filter gefunden.</p>
-    } @else {
-      <ul class="inventory-cards" aria-label="Gespeicherte Drucke">
-        @for (card of visibleDruckeCards(); track card.id) {
-          <li class="inventory-card" data-testid="inventory-card" (click)="openDetail(card.id)">
-            <div class="inventory-card__body">
-              <h3 class="inventory-card__title" data-testid="inventory-card-title">{{ card.projectName }}</h3>
-              <p class="inventory-card__meta">Preis: {{ card.roundedPriceEur }} € · Aktualisiert: {{ card.updatedAtLabel }}</p>
-              <div class="inventory-card__pills">
-                <span class="inventory-card__pill">Gedruckt: {{ card.timesPrinted }}</span>
-                <span class="inventory-card__pill">Verkauft: {{ card.timesSold }}</span>
-                @if (card.status === 'in-stock') {
-                  <span class="inventory-card__pill inventory-card__pill--ok">auf Lager</span>
-                } @else if (card.status === 'partial') {
-                  <span class="inventory-card__pill inventory-card__pill--warn">{{ card.remainingCount }} verl.</span>
-                } @else if (card.status === 'complete') {
-                  <span class="inventory-card__pill inventory-card__pill--muted">vollständig</span>
-                } @else if (card.status === 'gifted') {
-                  <span class="inventory-card__pill inventory-card__pill--muted">verschenkt</span>
-                }
-              </div>
-            </div>
-            <button
-              type="button"
-              class="inventory-card__quick-action"
-              data-testid="inventory-record-print"
-              aria-label="Druck verbuchen"
-              (click)="onCardQuickAction($event, card.id)"
-            >
-              +1
-            </button>
-          </li>
+    <!-- ── Two-column layout ──────────────────────────── -->
+    <div class="inventory-layout">
+
+      <!-- Main list -->
+      <div class="inventory-main">
+
+        @if (savedCalculations().length === 0) {
+          <div class="inventory-empty">
+            <p class="page__body">Noch keine gespeicherten Kalkulationen vorhanden.</p>
+            <a href="/calculate" data-testid="inventory-empty-cta">Zur Kalkulation</a>
+          </div>
+        } @else if (visibleDruckeCards().length === 0) {
+          <p class="page__body inventory-no-results">Keine gespeicherten Kalkulationen für diesen Filter gefunden.</p>
+        } @else {
+
+          <!-- Column headers (desktop only) -->
+          <div class="inventory-col-heads" aria-hidden="true">
+            <span>Projekt</span>
+            <span>Gedruckt</span>
+            <span>Verkauft</span>
+            <span>Status</span>
+            <span></span>
+          </div>
+
+          <ul class="inventory-cards" aria-label="Gespeicherte Drucke">
+            @for (card of visibleDruckeCards(); track card.id) {
+              <li class="inventory-card" data-testid="inventory-card" (click)="openDetail(card.id)">
+
+                <div class="inventory-card__info">
+                  <h3 class="inventory-card__title" data-testid="inventory-card-title">{{ card.projectName }}</h3>
+                  <p class="inventory-card__meta">{{ card.updatedAtLabel }} · {{ card.roundedPriceEur }} €</p>
+                </div>
+
+                <span class="inventory-card__printed">
+                  {{ card.timesPrinted }}×
+                </span>
+
+                <span class="inventory-card__sold">
+                  {{ card.timesSold }}×
+                </span>
+
+                <!-- Mobile badges row -->
+                <div class="inventory-card__badges">
+                  @if (card.timesPrinted > 0) {
+                    <span class="inventory-card__badge">+{{ card.timesPrinted }} gedruckt</span>
+                  }
+                  @if (card.timesSold > 0) {
+                    <span class="inventory-card__badge inventory-card__badge--sold">{{ card.timesSold }} verkauft</span>
+                  }
+                </div>
+
+                <div class="inventory-card__status">
+                  @if (card.status === 'in-stock') {
+                    <span class="inventory-card__pill inventory-card__pill--ok">Auf Lager</span>
+                  } @else if (card.status === 'partial') {
+                    <span class="inventory-card__pill inventory-card__pill--warn">Teilweise</span>
+                  } @else if (card.status === 'complete') {
+                    <span class="inventory-card__pill inventory-card__pill--muted">Vollständig</span>
+                  } @else if (card.status === 'gifted') {
+                    <span class="inventory-card__pill inventory-card__pill--muted">Verschenkt</span>
+                  }
+                </div>
+
+                <button
+                  type="button"
+                  class="inventory-card__quick-action"
+                  data-testid="inventory-record-print"
+                  aria-label="Druck verbuchen"
+                  (click)="onCardQuickAction($event, card.id)"
+                >
+                  +1
+                </button>
+
+              </li>
+            }
+          </ul>
         }
-      </ul>
-    }
+      </div>
+
+      <!-- ── Stats Panel ─────────────────────────────── -->
+      <aside class="inventory-panel">
+        <h2 class="inventory-panel__heading">Übersicht</h2>
+
+        <div class="inventory-panel__card">
+          <span class="inventory-panel__stat-label">Gesamt gedruckt</span>
+          <strong class="inventory-panel__stat-value inventory-panel__stat-value--large">{{ savedCalculations().length }}</strong>
+          <span class="inventory-panel__stat-sub">{{ savedCalculations().length }} Projekte</span>
+        </div>
+
+        <div class="inventory-panel__row">
+          <div class="inventory-panel__card">
+            <span class="inventory-panel__stat-label">Verkauft</span>
+            <strong class="inventory-panel__stat-value">—</strong>
+          </div>
+          <div class="inventory-panel__card">
+            <span class="inventory-panel__stat-label">Auf Lager</span>
+            <strong class="inventory-panel__stat-value">—</strong>
+          </div>
+        </div>
+
+        <div class="inventory-panel__card">
+          <span class="inventory-panel__stat-label">Letzte Aktivität</span>
+          @if (savedCalculations().length > 0) {
+            <span class="inventory-panel__stat-sub inventory-panel__stat-sub--recent">
+              {{ savedCalculations()[0]?.projectName ?? '—' }}
+            </span>
+          } @else {
+            <span class="inventory-panel__stat-sub">Keine Einträge</span>
+          }
+        </div>
+      </aside>
+
+    </div>
+
   } @else {
     <section class="inventory-section">
       <h2 class="inventory-section__label">Teile</h2>
@@ -87,9 +185,10 @@
     </section>
   }
 
+  <!-- ── Detail Panel ───────────────────────────────────── -->
   @if (selectedDetail(); as detail) {
     <section class="inventory-detail" data-testid="inventory-detail" aria-label="Details zur Kalkulation">
-      <div class="inventory-detail__handle"></div>
+      <div class="inventory-detail__handle" aria-hidden="true"></div>
       <div class="inventory-detail__header">
         <div>
           <p class="inventory-detail__eyebrow">Details zur Kalkulation</p>
@@ -100,31 +199,31 @@
 
       <dl class="inventory-detail__props">
         <div class="inventory-detail__prop">
-          <dt>Drucker: </dt>
+          <dt>Drucker</dt>
           <dd>{{ detail.record.printerSnapshot.name }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Filament: </dt>
+          <dt>Filament</dt>
           <dd>{{ detailFilamentSummary() }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Druckzeit: </dt>
+          <dt>Druckzeit</dt>
           <dd>{{ detailPrintDurationLabel() }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Materialkosten: </dt>
+          <dt>Materialkosten</dt>
           <dd>{{ formatMoney(detail.record.calculationResult.materialCostEur) }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Stromkosten: </dt>
+          <dt>Stromkosten</dt>
           <dd>{{ formatMoney(detail.record.calculationResult.electricityCostEur) }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Abschreibung: </dt>
+          <dt>Abschreibung</dt>
           <dd>{{ formatMoney(detail.record.calculationResult.depreciationCostEur) }}</dd>
         </div>
         <div class="inventory-detail__prop inventory-detail__prop--total">
-          <dt>Gesamtpreis: </dt>
+          <dt>Gesamtpreis</dt>
           <dd>{{ formatMoney(detail.record.calculationResult.roundedFinalPriceEur) }}</dd>
         </div>
       </dl>
@@ -132,20 +231,20 @@
       <p class="inventory-detail__section-label">Verlauf</p>
       <div class="inventory-detail__counters">
         <div class="inventory-detail__counter">
-          <span class="inventory-detail__counter-key">Gedruckt: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.printedCount }}</span>
+          <span class="inventory-detail__counter-key">Gedruckt</span>
         </div>
         <div class="inventory-detail__counter">
-          <span class="inventory-detail__counter-key">Verkauft: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.soldCount }}</span>
+          <span class="inventory-detail__counter-key">Verkauft</span>
         </div>
         <div class="inventory-detail__counter">
-          <span class="inventory-detail__counter-key">Verschenkt: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.giftedCount }}</span>
+          <span class="inventory-detail__counter-key">Verschenkt</span>
         </div>
         <div class="inventory-detail__counter">
-          <span class="inventory-detail__counter-key">Verbleibend: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.remainingCount }}</span>
+          <span class="inventory-detail__counter-key">Verbleibend</span>
         </div>
       </div>
 
@@ -171,12 +270,7 @@
 
           <div class="form-group">
             <label for="customerId" class="form-group__label">Kunde</label>
-            <select
-              id="customerId"
-              formControlName="customerId"
-              class="form-group__control"
-              data-testid="sale-customer-select"
-            >
+            <select id="customerId" formControlName="customerId" class="form-group__control" data-testid="sale-customer-select">
               <option value="">-- Kein Kunde --</option>
               @for (cust of activeCustomers(); track cust.id) {
                 <option [value]="cust.id">{{ cust.name }}</option>
@@ -186,15 +280,7 @@
 
           <div class="form-group">
             <label for="priceEur" class="form-group__label">Verkaufspreis (€)</label>
-            <input
-              type="number"
-              id="priceEur"
-              formControlName="priceEur"
-              step="0.01"
-              min="0"
-              class="form-group__control"
-              data-testid="sale-price-input"
-            />
+            <input type="number" id="priceEur" formControlName="priceEur" step="0.01" min="0" class="form-group__control" data-testid="sale-price-input" />
             @if (saleForm.controls.priceEur.touched && saleForm.controls.priceEur.errors?.['min']) {
               <p class="form-error" data-testid="price-min-error">Preis darf nicht negativ sein</p>
             }
@@ -204,25 +290,13 @@
           </div>
 
           <div class="form-group form-group--checkbox">
-            <input
-              type="checkbox"
-              id="gifted"
-              formControlName="gifted"
-              class="form-group__checkbox"
-              data-testid="sale-gifted-checkbox"
-            />
+            <input type="checkbox" id="gifted" formControlName="gifted" class="form-group__checkbox" data-testid="sale-gifted-checkbox" />
             <label for="gifted" class="form-group__label--inline">Als Geschenk markieren</label>
           </div>
 
           <div class="form-group">
             <label for="date" class="form-group__label">Verkaufsdatum</label>
-            <input
-              type="date"
-              id="date"
-              formControlName="date"
-              class="form-group__control"
-              data-testid="sale-date-input"
-            />
+            <input type="date" id="date" formControlName="date" class="form-group__control" data-testid="sale-date-input" />
             @if (saleForm.controls.date.touched && saleForm.controls.date.errors?.['required']) {
               <p class="form-error" data-testid="date-required-error">Bitte Datum eingeben</p>
             }
@@ -230,25 +304,14 @@
 
           <div class="form-group">
             <label for="note" class="form-group__label">Notiz</label>
-            <textarea
-              id="note"
-              formControlName="note"
-              class="form-group__control"
-              data-testid="sale-note-input"
-              rows="3"
-            ></textarea>
+            <textarea id="note" formControlName="note" class="form-group__control" data-testid="sale-note-input" rows="3"></textarea>
             @if (saleForm.controls.note.touched && saleForm.controls.note.errors?.['maxlength']) {
               <p class="form-error">Notiz ist zu lang (maximal 500 Zeichen)</p>
             }
           </div>
 
           <div class="form-actions">
-            <button
-              type="submit"
-              [disabled]="saleForm.invalid"
-              class="form-actions__submit"
-              data-testid="submit-sale-btn"
-            >
+            <button type="submit" [disabled]="saleForm.invalid" class="form-actions__submit" data-testid="submit-sale-btn">
               Speichern
             </button>
           </div>
@@ -273,4 +336,5 @@
       }
     </section>
   }
+
 </section>

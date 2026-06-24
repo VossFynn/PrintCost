@@ -1,12 +1,70 @@
 @use '../../shared/page-styles';
 
-/* ── Search ─────────────────────────────────────────────── */
+// ── Page Header ───────────────────────────────────────────
+
+.filament-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: var(--pc-space-2) var(--pc-space-3);
+
+  h1 { margin: 0; grid-column: 1; grid-row: 1; }
+}
+
+// Mobile filter button (top-right next to h1)
+.filament-header__filter-btn {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  min-width: 2.25rem;
+  border: 1.5px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-surface-card);
+  color: var(--pc-color-ink-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+// Search + add button: full width on row 2 on mobile
+.filament-header__actions {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+
+.filament-header__add-btn {
+  display: none; // FAB handles this on mobile
+  min-height: 2.25rem;
+  border: none;
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-primary);
+  color: var(--pc-color-primary-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0 var(--pc-space-4);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+
+  &:hover { opacity: 0.9; }
+}
+
+// ── Search ────────────────────────────────────────────────
 
 .filament-search {
   display: flex;
   align-items: center;
   gap: var(--pc-space-2);
-  min-height: 2.75rem;
+  flex: 1;
+  min-height: 2.25rem;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);
@@ -22,22 +80,69 @@
 
 .filament-search__input {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   color: var(--pc-color-ink-primary);
   font: inherit;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
 
-  &::placeholder {
-    color: var(--pc-color-ink-muted);
-  }
-
-  &:focus {
-    outline: none;
-  }
+  &::placeholder { color: var(--pc-color-ink-muted); }
+  &:focus { outline: none; }
 }
 
-/* ── Filter chips ───────────────────────────────────────── */
+// ── Mobile Hero ───────────────────────────────────────────
+
+.filament-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-3);
+  padding: var(--pc-space-3) 0 var(--pc-space-1);
+}
+
+.filament-hero__icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--pc-radius-md);
+  background: var(--pc-color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  box-shadow: 0 2px 8px rgb(196 98 45 / 30%);
+}
+
+.filament-hero__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filament-hero__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--pc-color-ink-label);
+}
+
+.filament-hero__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--pc-color-ink-primary);
+}
+
+.filament-hero__subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--pc-color-ink-secondary);
+}
+
+// ── Filter Chips ──────────────────────────────────────────
 
 .filament-filter-row {
   display: flex;
@@ -46,10 +151,8 @@
   padding-bottom: 2px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-}
 
-.filament-filter-row::-webkit-scrollbar {
-  display: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
 .filament-filter-chip {
@@ -64,15 +167,15 @@
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  &--active {
+    border-color: var(--pc-color-primary);
+    background: var(--pc-color-primary);
+    color: #fff;
+  }
 }
 
-.filament-filter-chip--active {
-  border-color: var(--pc-color-primary);
-  background: var(--pc-color-primary);
-  color: #fff;
-}
-
-/* ── Empty states ───────────────────────────────────────── */
+// ── Empty States ──────────────────────────────────────────
 
 .filament-empty-card {
   display: grid;
@@ -89,34 +192,48 @@
   color: var(--pc-color-ink-secondary);
 }
 
-/* ── List ───────────────────────────────────────────────── */
+// ── Desktop Two-column Layout ─────────────────────────────
+
+.filament-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--pc-space-4);
+  align-items: start;
+}
+
+// ── Column headers (desktop only) ─────────────────────────
+
+.filament-col-heads {
+  display: none;
+}
+
+// ── Filament List ─────────────────────────────────────────
 
 .filament-list {
   display: grid;
   gap: var(--pc-space-2);
   margin: 0;
-  padding: 0;
+  padding: 0 0 5rem; // bottom padding for FAB
   list-style: none;
-  padding-bottom: 5rem; /* space for FAB */
 }
 
 .filament-list__item {
   display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr);
-  grid-template-rows: auto auto;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
   grid-template-areas:
-    'dot content'
-    'dot actions';
+    'dot  name  price'
+    'dot  meta  meta '
+    'dot  acts  acts ';
+  column-gap: var(--pc-space-2);
+  row-gap: 0.375rem;
   align-items: start;
   padding: var(--pc-space-3);
   border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-card);
   background: var(--pc-color-surface-card);
   transition: box-shadow 0.15s ease;
-}
 
-.filament-list__item:hover {
-  box-shadow: 0 2px 8px rgb(44 62 80 / 6%);
+  &:hover { box-shadow: 0 2px 8px rgb(44 62 80 / 6%); }
 }
 
 .filament-list__color-dot {
@@ -127,26 +244,13 @@
   border-radius: 50%;
   border: 1.5px solid rgb(0 0 0 / 10%);
   box-shadow: inset 0 0 0 2px rgb(255 255 255 / 20%);
+  align-self: start;
   margin-top: 2px;
-}
-
-.filament-list__content {
-  grid-area: content;
-  display: grid;
-  gap: var(--pc-space-1);
-  min-width: 0;
-  padding-bottom: var(--pc-space-2);
-}
-
-.filament-list__top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--pc-space-2);
-  min-width: 0;
+  flex-shrink: 0;
 }
 
 .filament-list__name {
+  grid-area: name;
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 700;
@@ -154,6 +258,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  align-self: center;
 }
 
 .filament-list__manufacturer {
@@ -161,17 +266,12 @@
   color: var(--pc-color-ink-secondary);
 }
 
-.filament-list__price {
-  flex-shrink: 0;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--pc-color-primary);
-}
-
-.filament-list__stock-row {
+.filament-list__meta {
+  grid-area: meta;
   display: flex;
   align-items: center;
   gap: var(--pc-space-2);
+  flex-wrap: wrap;
   min-width: 0;
 }
 
@@ -190,8 +290,9 @@
   letter-spacing: 0.04em;
 }
 
-.filament-list__stock-bar-wrap {
+.filament-list__bar-wrap {
   flex: 1;
+  min-width: 3rem;
   height: 4px;
   border-radius: 9999px;
   background: var(--pc-color-surface-muted);
@@ -203,35 +304,41 @@
   border-radius: 9999px;
   background: var(--pc-color-primary);
   transition: width 0.3s ease;
-}
 
-.filament-list__stock-bar--low {
-  background: #e07b2c;
-}
-
-.filament-list__stock-bar--empty {
-  background: #b34a1a;
-  width: 0 !important;
+  &--low  { background: #e07b2c; }
+  &--empty { background: #b34a1a; width: 0 !important; }
 }
 
 .filament-list__stock-value {
   flex-shrink: 0;
   font-size: 0.75rem;
   color: var(--pc-color-ink-muted);
+
+  &.filament-list__stock-badge--empty { color: #b34a1a; }
 }
 
-/* ── List item actions ──────────────────────────────────── */
+.filament-list__price {
+  grid-area: price;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--pc-color-primary);
+  align-self: center;
+  text-align: right;
+}
 
 .filament-list__actions {
-  grid-area: actions;
+  grid-area: acts;
   display: flex;
   gap: var(--pc-space-2);
   padding-top: var(--pc-space-2);
   border-top: 1px solid var(--pc-color-border-muted);
-  margin-top: var(--pc-space-1);
 }
 
-.filament-list__edit {
+.filament-list__edit-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-1);
   min-height: 1.875rem;
   border: 1.5px solid var(--pc-color-primary);
   border-radius: var(--pc-radius-sm);
@@ -243,12 +350,13 @@
   cursor: pointer;
   transition: background 0.15s ease;
 
-  &:hover {
-    background: var(--pc-color-surface-accent-soft);
-  }
+  &:hover { background: var(--pc-color-surface-accent-soft); }
 }
 
-.filament-list__delete {
+.filament-list__delete-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-1);
   min-height: 1.875rem;
   border: 1.5px solid #d4443a;
   border-radius: var(--pc-radius-sm);
@@ -260,12 +368,75 @@
   cursor: pointer;
   transition: background 0.15s ease;
 
-  &:hover {
-    background: #fde8e8;
+  &:hover { background: #fde8e8; }
+}
+
+.filament-list__btn-icon { display: none; } // shown as icon-only on desktop
+
+// ── Stats Panel ───────────────────────────────────────────
+
+.filament-panel {
+  display: none; // hidden on mobile
+}
+
+.filament-panel__heading {
+  margin: 0 0 var(--pc-space-3);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pc-color-ink-primary);
+}
+
+.filament-panel__card {
+  display: grid;
+  gap: var(--pc-space-1);
+  padding: var(--pc-space-4);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-color-surface-card);
+  margin-bottom: var(--pc-space-3);
+
+  &--accent {
+    background: var(--pc-color-surface-accent-soft);
+    border-color: transparent;
   }
 }
 
-/* ── FAB ────────────────────────────────────────────────── */
+.filament-panel__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--pc-space-3);
+  margin-bottom: var(--pc-space-3);
+
+  .filament-panel__card { margin-bottom: 0; }
+}
+
+.filament-panel__stat-label {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--pc-color-ink-label);
+}
+
+.filament-panel__stat-value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pc-color-ink-primary);
+  line-height: 1.1;
+
+  &--large { font-size: 2rem; }
+  &--primary { color: var(--pc-color-primary); font-size: 1.5rem; }
+}
+
+.filament-panel__stat-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--pc-color-ink-muted);
+}
+
+// ── Mobile FAB ────────────────────────────────────────────
 
 .filament-fab {
   position: fixed;
@@ -282,20 +453,18 @@
   padding: 0 var(--pc-space-5);
   box-shadow: 0 6px 20px rgb(196 98 45 / 35%);
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
   z-index: 10;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
 
   &:hover {
     box-shadow: 0 8px 24px rgb(196 98 45 / 45%);
     transform: translateY(-1px);
   }
 
-  &:active {
-    transform: translateY(0);
-  }
+  &:active { transform: translateY(0); }
 }
 
-/* ── Sheet (dialog) ─────────────────────────────────────── */
+// ── Sheet / Dialog ────────────────────────────────────────
 
 .sheet-backdrop {
   position: fixed;
@@ -333,10 +502,13 @@
 .sheet-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--pc-space-3);
-  padding: var(--pc-space-2) var(--pc-space-4) var(--pc-space-4);
+  padding: var(--pc-space-3) var(--pc-space-4) var(--pc-space-4);
+  border-bottom: 1px solid var(--pc-color-border-muted);
 }
+
+.sheet-header__text { min-width: 0; }
 
 .sheet-header__title {
   margin: 0;
@@ -345,7 +517,14 @@
   color: var(--pc-color-ink-primary);
 }
 
+.sheet-header__subtitle {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--pc-color-ink-secondary);
+}
+
 .sheet-header__close {
+  flex-shrink: 0;
   width: 2rem;
   height: 2rem;
   border: 1.5px solid var(--pc-color-border-subtle);
@@ -358,23 +537,20 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  flex-shrink: 0;
   transition: background 0.15s ease;
 
-  &:hover {
-    background: var(--pc-color-surface-accent-soft);
-  }
+  &:hover { background: var(--pc-color-surface-accent-soft); }
 }
 
 .sheet-body {
-  padding: 0 var(--pc-space-4) calc(var(--pc-space-6) + env(safe-area-inset-bottom));
+  padding: var(--pc-space-4) var(--pc-space-4) calc(var(--pc-space-6) + env(safe-area-inset-bottom));
 }
 
-/* ── Filament form ──────────────────────────────────────── */
+// ── Form ──────────────────────────────────────────────────
 
 .filament-form {
   display: grid;
-  gap: var(--pc-space-3);
+  gap: var(--pc-space-4);
   min-width: 0;
 }
 
@@ -388,15 +564,24 @@
   margin-bottom: var(--pc-space-1);
 }
 
-.filament-form__row {
+.filament-form__field {
   display: grid;
   gap: var(--pc-space-1);
 }
 
-.filament-form__two-col {
+.filament-form__grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--pc-space-3);
+}
+
+.filament-form__grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--pc-space-3);
+
+  // MATERIAL spans full width on mobile, others side by side
+  > :first-child { grid-column: 1 / -1; }
 }
 
 .filament-form__input {
@@ -406,44 +591,104 @@
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);
-  background: var(--pc-color-surface-card);
+  background: var(--pc-color-surface-muted);
   font: inherit;
   color: var(--pc-color-ink-primary);
 
-  &::placeholder {
-    color: var(--pc-color-ink-muted);
-  }
+  &::placeholder { color: var(--pc-color-ink-muted); }
 }
 
-.filament-form__color-row {
+// Input with colour dot inside (BEZEICHNUNG)
+.filament-form__input-wrap {
+  position: relative;
+
+  .filament-form__input { padding-right: 2.5rem; }
+}
+
+.filament-form__color-preview {
+  position: absolute;
+  right: var(--pc-space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  border: 1.5px solid rgb(0 0 0 / 12%);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+// Input with suffix unit (g, €, kg)
+.filament-form__input-unit {
+  position: relative;
+
+  .filament-form__input { padding-right: 2.75rem; }
+}
+
+.filament-form__unit {
+  position: absolute;
+  right: var(--pc-space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8125rem;
+  color: var(--pc-color-ink-muted);
+  pointer-events: none;
+}
+
+// ── Colour Swatches ───────────────────────────────────────
+
+.filament-form__swatches {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: var(--pc-space-2);
+  align-items: center;
+}
+
+.filament-form__swatch {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+
+  &:hover { transform: scale(1.1); }
+
+  &--active {
+    border-color: var(--pc-color-ink-primary);
+    box-shadow: 0 0 0 2px var(--pc-color-surface-card), 0 0 0 4px var(--pc-color-ink-primary);
+  }
+
+  // Custom picker swatch
+  &--custom {
+    background: var(--pc-color-surface-muted);
+    border: 1.5px dashed var(--pc-color-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pc-color-ink-muted);
+    font-size: 1.125rem;
+    font-weight: 400;
+    cursor: pointer;
+
+    span { pointer-events: none; }
+  }
 }
 
 .filament-form__color-picker {
-  flex-shrink: 0;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 2px;
-  border: 1.5px solid var(--pc-color-border-subtle);
-  border-radius: var(--pc-radius-input);
-  background: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-
-  &::-webkit-color-swatch-wrapper {
-    padding: 0;
-  }
-
-  &::-webkit-color-swatch {
-    border: none;
-    border-radius: calc(var(--pc-radius-input) - 4px);
-  }
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
+// ── Purchases (hidden on mobile) ─────────────────────────
+
 .filament-form__purchases {
+  display: none;
   border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-md);
   padding: var(--pc-space-3);
@@ -451,7 +696,6 @@
   display: grid;
   gap: var(--pc-space-2);
   min-width: 0;
-  width: 100%;
 }
 
 .filament-form__purchase-row {
@@ -460,28 +704,14 @@
   gap: var(--pc-space-2);
   align-items: start;
 
-  input[type='date'] {
-    grid-column: 1 / -1;
-  }
-
-  .filament-form__remove-purchase {
-    grid-column: 2;
-    justify-self: end;
-  }
+  .filament-form__input--date { grid-column: 1 / -1; }
 }
 
 @media (min-width: 36rem) {
   .filament-form__purchase-row {
     grid-template-columns: 1fr 1fr 1fr auto;
 
-    input[type='date'] {
-      grid-column: auto;
-    }
-
-    .filament-form__remove-purchase {
-      grid-column: auto;
-      justify-self: auto;
-    }
+    .filament-form__input--date { grid-column: auto; }
   }
 }
 
@@ -496,6 +726,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 0.875rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover { color: #d4443a; border-color: #d4443a; }
 }
 
 .filament-form__add-purchase {
@@ -510,6 +744,9 @@
   padding: 0 var(--pc-space-3);
   cursor: pointer;
   justify-self: start;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--pc-color-surface-accent-soft); }
 }
 
 .filament-form__error {
@@ -518,6 +755,8 @@
   font-size: 0.75rem;
   font-weight: 500;
 }
+
+// ── Form Actions ──────────────────────────────────────────
 
 .filament-form__actions {
   display: grid;
@@ -536,6 +775,9 @@
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--pc-color-surface-muted); }
 }
 
 .filament-form__submit {
@@ -548,24 +790,202 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 10px rgb(196 98 45 / 20%);
+  transition: opacity 0.15s ease;
 
-  &:disabled {
-    opacity: 0.5;
-    box-shadow: none;
-    cursor: not-allowed;
+  &:disabled { opacity: 0.5; box-shadow: none; cursor: not-allowed; }
+  &:not(:disabled):hover { opacity: 0.92; }
+}
+
+// ── Tablet ────────────────────────────────────────────────
+
+@media (min-width: 48rem) {
+  .filament-form__grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+
+    > :first-child { grid-column: auto; }
   }
 }
 
+// ── Desktop ───────────────────────────────────────────────
+
 @media (min-width: 56rem) {
+
+  .filament-hero { display: none; }
+
+  .filament-header__filter-btn { display: none; }
+  .filament-header__add-btn { display: flex; align-items: center; }
+
+  // On desktop: header becomes 3 columns (h1 | search | add-btn)
+  .filament-header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto;
+    h1 { grid-column: 1; grid-row: 1; }
+  }
+
+  .filament-header__actions {
+    grid-column: 2 / -1;
+    grid-row: 1;
+  }
+
+  .filament-search { flex: 1; }
+
+  // Two-column layout
+  .filament-layout {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+  }
+
+  // Column headers
+  .filament-col-heads {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(5rem, 8rem) 7rem 3rem;
+    gap: var(--pc-space-3);
+    padding: var(--pc-space-2) var(--pc-space-3);
+    margin-bottom: var(--pc-space-1);
+
+    span {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--pc-color-ink-label);
+    }
+  }
+
+  // List: remove card-gap, use table rows
+  .filament-list {
+    display: block;
+    padding: 0;
+    border: 1px solid var(--pc-color-border-subtle);
+    border-radius: var(--pc-radius-card);
+    background: var(--pc-color-surface-card);
+    overflow: hidden;
+  }
+
+  .filament-list__item {
+    // Named-area grid for 7 columns
+    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(5rem, 8rem) 7rem 3rem;
+    grid-template-areas: 'dot name material price bar stock acts';
+    grid-template-rows: auto;
+    column-gap: var(--pc-space-3);
+    row-gap: 0;
+    align-items: center;
+    padding: var(--pc-space-3);
+    border: none;
+    border-bottom: 1px solid var(--pc-color-border-muted);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: var(--pc-color-surface-muted); box-shadow: none; }
+  }
+
+  .filament-list__color-dot {
+    grid-area: dot;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0;
+    align-self: center;
+  }
+
+  .filament-list__name {
+    grid-area: name;
+    font-size: 0.875rem;
+    align-self: center;
+  }
+
+  // meta: explode children into named grid areas
+  .filament-list__meta {
+    display: contents;
+  }
+
+  .filament-list__material-tag { grid-area: material; }
+
+  .filament-list__bar-wrap {
+    grid-area: bar;
+    flex: none;
+    width: 100%;
+    min-width: unset;
+  }
+
+  .filament-list__stock-value {
+    grid-area: stock;
+    font-size: 0.8125rem;
+    text-align: right;
+    flex: none;
+  }
+
+  .filament-list__price {
+    grid-area: price;
+    font-size: 0.875rem;
+    text-align: right;
+    align-self: center;
+  }
+
+  .filament-list__actions {
+    grid-area: acts;
+    padding: 0;
+    border: none;
+    justify-content: flex-end;
+    gap: var(--pc-space-1);
+    align-self: center;
+  }
+
+  // Icon-only action buttons on desktop
+  .filament-list__edit-btn,
+  .filament-list__delete-btn {
+    width: 1.875rem;
+    min-height: 1.875rem;
+    padding: 0;
+    justify-content: center;
+    border-radius: var(--pc-radius-sm);
+  }
+
+  .filament-list__btn-label { display: none; }
+  .filament-list__btn-icon { display: block; font-size: 0.875rem; }
+
+  // Stats panel visible on desktop
+  .filament-panel { display: block; }
+
+  // FAB moves to bottom-right corner
   .filament-fab {
     bottom: var(--pc-space-6);
     right: var(--pc-space-6);
   }
+
+  // Dialog: centered modal
+  .filament-sheet {
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    width: min(90vw, 38rem);
+    max-height: 88dvh;
+    border-radius: var(--pc-radius-card);
+    box-shadow: 0 24px 60px rgb(44 62 80 / 30%);
+    animation: pc-dialog-in 0.2s ease both;
+  }
+
+  .sheet-handle { display: none; }
+
+  .sheet-body {
+    padding: var(--pc-space-4) var(--pc-space-5) var(--pc-space-5);
+  }
 }
+
+// ── Reduced motion ────────────────────────────────────────
 
 @media (prefers-reduced-motion: reduce) {
   .filament-sheet,
   .sheet-backdrop {
     animation: none;
+  }
+
+  .filament-list__stock-bar,
+  .filament-list__item,
+  .filament-filter-chip,
+  .filament-form__swatch {
+    transition: none;
   }
 }
