@@ -398,18 +398,35 @@
         </div>
 
         @if (!form.controls.modelExists.value) {
-          <label class="calc-field" for="modelingCostEur">
-            <span class="calc-field__label">Modellierung (€)</span>
-            <input
-              id="modelingCostEur"
-              data-testid="modeling-cost"
-              type="number"
-              min="0"
-              step="1"
-              formControlName="modelingCostEur"
-              class="calc-field__input"
-            />
-          </label>
+          <div class="calc-field-row">
+            <label class="calc-field" for="modelingHourlyRateEur">
+              <span class="calc-field__label">Stundenlohn (€/h)</span>
+              <input
+                id="modelingHourlyRateEur"
+                data-testid="modeling-rate"
+                type="number"
+                min="0"
+                step="1"
+                formControlName="modelingHourlyRateEur"
+                class="calc-field__input"
+              />
+            </label>
+            <label class="calc-field" for="modelingHours">
+              <span class="calc-field__label">Stunden</span>
+              <input
+                id="modelingHours"
+                data-testid="modeling-hours"
+                type="number"
+                min="0"
+                step="0.25"
+                formControlName="modelingHours"
+                class="calc-field__input"
+              />
+            </label>
+          </div>
+          @if (modelingCostEur() > 0) {
+            <p class="calc-plate-hint">Modellierung: {{ formatCurrency(modelingCostEur()) }}</p>
+          }
         }
       </div>
 

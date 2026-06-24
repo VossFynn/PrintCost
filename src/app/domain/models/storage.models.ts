@@ -160,7 +160,12 @@ export interface TemplateCalculationInputRecord {
   printQuantity: number;
   partsPerPlate: number;
   modelExists: boolean;
+  /** Effective modelling cost for the job (hourly rate × hours). Kept for back-compat. */
   modelingCostEur: number;
+  /** Modelling hourly rate (€/h). Optional for templates saved before the rate/hours split. */
+  modelingHourlyRateEur?: number;
+  /** Modelling hours. Optional for templates saved before the rate/hours split. */
+  modelingHours?: number;
   extraWorkFeePercent: number;
   profitMarginPercent: number;
   filamentLines: TemplateFilamentLineRecord[];

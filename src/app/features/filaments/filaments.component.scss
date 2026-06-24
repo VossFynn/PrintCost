@@ -901,6 +901,15 @@
   // Stats panel visible on desktop
   .filament-panel { display: block; }
 
+  // Line the "Übersicht" heading up with the table's column-header bar so the
+  // two columns start at the same height instead of looking misaligned.
+  .filament-panel__heading {
+    display: flex;
+    align-items: center;
+    min-height: 2rem;
+    margin: 0 0 var(--pc-space-3);
+  }
+
   // Dialog: centered modal
   .filament-sheet {
     left: 50%;

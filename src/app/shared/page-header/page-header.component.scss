@@ -68,6 +68,10 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--pc-space-2);
+  /* Keep the actions flush to the right edge — even when the title + actions
+     are too wide to share one line and the actions wrap onto their own row.
+     (Without this, space-between on a single-item line left-aligns them.) */
+  margin-left: auto;
 }
 
 /* On phones, actions drop to their own full-width row below the title. */

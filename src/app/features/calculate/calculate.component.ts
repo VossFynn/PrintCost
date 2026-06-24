@@ -18,7 +18,8 @@ const RESULT_ANNOUNCEMENT_DEBOUNCE_MS = 300;
 const DEFAULT_PRINT_QUANTITY = 1;
 const DEFAULT_PARTS_PER_PLATE = 1;
 const DEFAULT_EXTRA_WORK_FEE_PERCENT = 0;
-const DEFAULT_MODELING_COST_EUR = 0;
+const DEFAULT_MODELING_HOURLY_RATE_EUR = 0;
+const DEFAULT_MODELING_HOURS = 0;
 const DEFAULT_PROFIT_MARGIN_PERCENT = 0;
 
 type CalculationFieldName = 'projectName' | 'printerId' | 'printHours';
@@ -113,7 +114,8 @@ export class CalculateComponent {
     printQuantity: [DEFAULT_PRINT_QUANTITY, [Validators.required, Validators.min(1)]],
     partsPerPlate: [DEFAULT_PARTS_PER_PLATE, [Validators.required, Validators.min(1)]],
     modelExists: [false, [Validators.required]],
-    modelingCostEur: [DEFAULT_MODELING_COST_EUR, [Validators.required, Validators.min(0)]],
+    modelingHourlyRateEur: [DEFAULT_MODELING_HOURLY_RATE_EUR, [Validators.required, Validators.min(0)]],
+    modelingHours: [DEFAULT_MODELING_HOURS, [Validators.required, Validators.min(0)]],
     extraWorkFeePercent: [DEFAULT_EXTRA_WORK_FEE_PERCENT, [Validators.required, Validators.min(0), Validators.max(100)]],
     profitMarginPercent: [DEFAULT_PROFIT_MARGIN_PERCENT, [Validators.required, Validators.min(0)]]
   });
@@ -302,13 +304,14 @@ export class CalculateComponent {
   private applySettingsDefaults(): void {
     const settings = this.#settingsService.settings();
     const profitMargin = settings['defaultProfitMarginPercent'];
-    const modelingCost = settings['defaultModelingCostEur'];
+    const modelingHourlyRate = settings['defaultModelingCostEur'];
     const extraWorkFee = settings['defaultExtraWorkFeePercent'];
 
     this.form.patchValue(
       {
         profitMarginPercent: typeof profitMargin === 'number' ? profitMargin : DEFAULT_PROFIT_MARGIN_PERCENT,
-        modelingCostEur: typeof modelingCost === 'number' ? modelingCost : DEFAULT_MODELING_COST_EUR,
+        // The "Modellierung" default is now an hourly rate (€/h); hours start at 0.
+        modelingHourlyRateEur: typeof modelingHourlyRate === 'number' ? modelingHourlyRate : DEFAULT_MODELING_HOURLY_RATE_EUR,
         extraWorkFeePercent: typeof extraWorkFee === 'number' ? extraWorkFee : DEFAULT_EXTRA_WORK_FEE_PERCENT
       },
       { emitEvent: false }
@@ -453,6 +456,21 @@ export class CalculateComponent {
     return total / this.totalPieces();
   }
 
+  /** Modelling cost for the whole job: hourly rate × hours (0 when a model already exists). */
+  modelingCostEur(): number {
+    if (this.form.controls.modelExists.value) {
+      return 0;
+    }
+
+    const rate = Number(this.form.controls.modelingHourlyRateEur.value);
+    const hours = Number(this.form.controls.modelingHours.value);
+    if (!Number.isFinite(rate) || !Number.isFinite(hours) || rate < 0 || hours < 0) {
+      return 0;
+    }
+
+    return rate * hours;
+  }
+
   totalForAll(perPlateCost: number): number {
     return perPlateCost * this.totalPieces();
   }
@@ -544,7 +562,9 @@ export class CalculateComponent {
       printQuantity: Number(this.form.controls.printQuantity.value),
       partsPerPlate: Number(this.form.controls.partsPerPlate.value),
       modelExists: this.form.controls.modelExists.value,
-      modelingCostEur: Number(this.form.controls.modelingCostEur.value),
+      modelingCostEur: this.modelingCostEur(),
+      modelingHourlyRateEur: Number(this.form.controls.modelingHourlyRateEur.value),
+      modelingHours: Number(this.form.controls.modelingHours.value),
       extraWorkFeePercent: Number(this.form.controls.extraWorkFeePercent.value),
       profitMarginPercent: Number(this.form.controls.profitMarginPercent.value),
       filamentLines: this.filamentLines.controls.map((line) => ({
@@ -568,7 +588,12 @@ export class CalculateComponent {
         printQuantity: templateInput.printQuantity,
         partsPerPlate: templateInput.partsPerPlate,
         modelExists: templateInput.modelExists,
-        modelingCostEur: templateInput.modelingCostEur,
+        // Prefer the stored rate/hours split; fall back to the legacy flat cost
+        // (rate = cost, 1 h) so older templates keep their modelling amount.
+        modelingHourlyRateEur:
+          templateInput.modelingHourlyRateEur ?? templateInput.modelingCostEur,
+        modelingHours:
+          templateInput.modelingHours ?? (templateInput.modelingCostEur > 0 ? 1 : 0),
         extraWorkFeePercent: templateInput.extraWorkFeePercent,
         profitMarginPercent: templateInput.profitMarginPercent
       },
@@ -667,7 +692,7 @@ export class CalculateComponent {
       partsPerPlate: Number(this.form.controls.partsPerPlate.value),
       extraWorkFeePercent: Number(this.form.controls.extraWorkFeePercent.value),
       modelExists: this.form.controls.modelExists.value,
-      modelingCostEur: Number(this.form.controls.modelingCostEur.value),
+      modelingCostEur: this.modelingCostEur(),
       profitMarginPercent: Number(this.form.controls.profitMarginPercent.value),
       powerWatts: printer.powerWatts,
       electricityPriceEurKwh,
