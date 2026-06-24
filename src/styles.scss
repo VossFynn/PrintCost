@@ -123,6 +123,22 @@ textarea {
   font: inherit;
 }
 
+/* ── Hide native number steppers app-wide ──────────────
+   The spin buttons otherwise overlap unit suffixes (g, €, h …)
+   that are positioned inside the input. Inputs use an explicit
+   "input + unit" pattern instead. */
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* ── Elegant focus states ──────────────────────────── */
 input:not([type='checkbox']):not([type='radio']):focus,
 select:focus,

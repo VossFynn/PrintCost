@@ -81,6 +81,41 @@ export class FilamentsComponent {
     });
   });
 
+  /** Distinct material types in stock (e.g. PLA, PETG, ABS). */
+  readonly materialTypeCount = computed(
+    () => new Set(this.filaments().map((filament) => this.materialTag(filament.type))).size
+  );
+
+  /** Comma-separated distinct materials, e.g. "PLA, PETG, ABS". */
+  readonly materialTypeList = computed(() =>
+    [...new Set(this.filaments().map((filament) => this.materialTag(filament.type)))].join(', ')
+  );
+
+  /** Total remaining filament across all spools, in grams. */
+  readonly totalRemainingG = computed(() =>
+    this.filaments().reduce((sum, filament) => sum + (filament.remainingG ?? 0), 0)
+  );
+
+  /** Spools running low (≤ 25 % of roll remaining, but not empty). */
+  readonly lowStockCount = computed(
+    () =>
+      this.filaments().filter((filament) => {
+        const remaining = filament.remainingG ?? 0;
+        return remaining > 0 && this.stockPercent(filament) <= 25;
+      }).length
+  );
+
+  /** Total inventory value (remaining grams × price/g) across all spools. */
+  readonly totalStockValueEur = computed(() =>
+    this.filaments().reduce((sum, filament) => sum + (filament.remainingG ?? 0) * this.pricePerGram(filament), 0)
+  );
+
+  /** Average €/g weighted across remaining stock. */
+  readonly averagePricePerGramEur = computed(() => {
+    const totalG = this.totalRemainingG();
+    return totalG > 0 ? this.totalStockValueEur() / totalG : 0;
+  });
+
   get purchaseGroups() {
     return this.purchases.controls;
   }
@@ -356,6 +391,28 @@ export class FilamentsComponent {
     const normalized = type.trim().toUpperCase() as FilamentFilter;
     // Unknown materials collapse into "Anderes" so the chip row stays small and predictable.
     return this.filamentFilters.includes(normalized) ? normalized : 'Anderes';
+  }
+
+  /** Resolves a numeric €/g for a filament (weighted average, else fixed price, else 0). */
+  pricePerGram(filament: FilamentRecord): number {
+    if (filament.purchases && filament.purchases.length > 0) {
+      try {
+        return this.#filamentService.weightedAveragePricePerGram(filament);
+      } catch {
+        return filament.fixedPriceEurG ?? 0;
+      }
+    }
+    return filament.fixedPriceEurG ?? 0;
+  }
+
+  /** Formats a gram amount with German grouping (e.g. "2.934 g"). */
+  formatWeightG(grams: number): string {
+    return `${Math.round(grams).toLocaleString('de-DE')} g`;
+  }
+
+  /** Formats an EUR amount for the stats panel. */
+  formatEur(value: number): string {
+    return `${value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
   }
 
   formatPricePerGram(filament: FilamentRecord): string {

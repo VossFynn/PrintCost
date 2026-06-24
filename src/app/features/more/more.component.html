@@ -52,7 +52,7 @@
               <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
               <div>
                 <p class="printer-list__name">{{ customer.name }}</p>
-                <p class="printer-list__meta">{{ customerPreview(customer.contact, customer.note) }}</p>
+                <p class="printer-list__meta">{{ customerSubline(customer.contact, customer.note, customer.paymentMethod) }}</p>
               </div>
             </div>
             <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
@@ -153,7 +153,7 @@
                 <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
                 <div>
                   <p class="printer-list__name">{{ customer.name }}</p>
-                  <p class="printer-list__meta">{{ customerPreview(customer.contact, customer.note) }}</p>
+                  <p class="printer-list__meta">{{ customerSubline(customer.contact, customer.note, customer.paymentMethod) }}</p>
                 </div>
               </div>
               <div class="printer-list__actions">
@@ -499,9 +499,35 @@
         <div class="printer-form__row printer-form__row--full">
           <p class="printer-form__label">Bevorzugte Zahlungsart</p>
           <div class="printer-form__payment-group" role="group" aria-label="Zahlungsart wählen">
-            <button type="button" class="printer-form__payment-btn printer-form__payment-btn--active">Bar</button>
-            <button type="button" class="printer-form__payment-btn">Überweisung</button>
-            <button type="button" class="printer-form__payment-btn">Rechnung</button>
+            @for (option of paymentMethodOptions; track option.value) {
+              <button
+                type="button"
+                class="printer-form__payment-btn"
+                [class.printer-form__payment-btn--active]="customerForm.controls.paymentMethod.value === option.value"
+                [attr.aria-pressed]="customerForm.controls.paymentMethod.value === option.value"
+                (click)="selectPaymentMethod(option.value)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="printer-form__grid printer-form__grid--2col">
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="customerType">Kundentyp</label>
+            <select id="customerType" data-testid="customer-type" formControlName="customerType" class="printer-form__input printer-form__select">
+              @for (option of customerTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="customerDiscount">Rabatt</label>
+            <div class="printer-form__input-wrap">
+              <input id="customerDiscount" data-testid="customer-discount" type="number" inputmode="numeric" min="0" max="100" step="1" formControlName="discountPercent" class="printer-form__input" />
+              <span class="printer-form__unit">%</span>
+            </div>
           </div>
         </div>
 

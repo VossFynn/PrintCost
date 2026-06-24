@@ -9,7 +9,7 @@ import { FilamentService } from '../../core/filaments/filament.service';
 import { PartService } from '../../core/inventory/part.service';
 import { PrinterPayload, PrinterService } from '../../core/printers/printer.service';
 import { SettingsService } from '../../core/settings/settings.service';
-import { BackupFormat } from '../../domain/models/storage.models';
+import { BackupFormat, CustomerPaymentMethod, CustomerType } from '../../domain/models/storage.models';
 
 type PrinterFormFieldName = 'name' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
 
@@ -70,8 +70,22 @@ export class MoreComponent {
   readonly customerForm = this.#formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     contact: ['', [Validators.maxLength(160)]],
+    paymentMethod: ['cash' as CustomerPaymentMethod, [Validators.required]],
+    customerType: ['private' as CustomerType, [Validators.required]],
+    discountPercent: [0, [Validators.min(0), Validators.max(100)]],
     note: ['', [Validators.maxLength(500)]]
   });
+
+  readonly paymentMethodOptions: ReadonlyArray<{ value: CustomerPaymentMethod; label: string }> = [
+    { value: 'cash', label: 'Bar' },
+    { value: 'transfer', label: 'Überweisung' },
+    { value: 'invoice', label: 'Rechnung' }
+  ];
+
+  readonly customerTypeOptions: ReadonlyArray<{ value: CustomerType; label: string }> = [
+    { value: 'private', label: 'Privatkunde' },
+    { value: 'business', label: 'Geschäftskunde' }
+  ];
 
   // --- Settings form (5.1) ---
   readonly settingsForm = this.#formBuilder.nonNullable.group({
@@ -447,6 +461,9 @@ export class MoreComponent {
     this.customerForm.setValue({
       name: customer.name,
       contact: customer.contact ?? '',
+      paymentMethod: customer.paymentMethod ?? 'cash',
+      customerType: customer.customerType ?? 'private',
+      discountPercent: customer.discountPercent ?? 0,
       note: customer.note ?? ''
     });
     this.customerForm.markAsPristine();
@@ -533,6 +550,26 @@ export class MoreComponent {
     return 'Kein Kontakt oder Notiz';
   }
 
+  selectPaymentMethod(method: CustomerPaymentMethod): void {
+    this.customerForm.controls.paymentMethod.setValue(method);
+    this.customerForm.controls.paymentMethod.markAsDirty();
+  }
+
+  paymentMethodLabel(method: CustomerPaymentMethod | undefined): string {
+    return this.paymentMethodOptions.find((option) => option.value === method)?.label ?? '';
+  }
+
+  /** Builds the secondary list line, e.g. "+49 170 · Bar" (falls back to note). */
+  customerSubline(
+    contact: string | undefined,
+    note: string | undefined,
+    paymentMethod: CustomerPaymentMethod | undefined
+  ): string {
+    const primary = contact?.trim() || note?.trim();
+    const parts = [primary, this.paymentMethodLabel(paymentMethod)].filter((part): part is string => !!part);
+    return parts.length > 0 ? parts.join(' · ') : 'Kein Kontakt oder Notiz';
+  }
+
   getError(field: PrinterFormFieldName): string | null {
     const control = this.form.controls[field];
     if (!control.touched || !control.invalid) {
@@ -605,6 +642,9 @@ export class MoreComponent {
     this.customerForm.reset({
       name: '',
       contact: '',
+      paymentMethod: 'cash',
+      customerType: 'private',
+      discountPercent: 0,
       note: ''
     });
     this.customerForm.markAsPristine();

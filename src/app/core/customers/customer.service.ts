@@ -2,7 +2,7 @@ import { Inject, Injectable, InjectionToken, WritableSignal, computed, signal } 
 import { IDBPDatabase } from 'idb';
 
 import { PrintCostDbSchema, initializePrintCostDatabase } from '../db/printcost-db';
-import { CustomerRecord } from '../../domain/models/storage.models';
+import { CustomerPaymentMethod, CustomerRecord, CustomerType } from '../../domain/models/storage.models';
 
 type DatabaseProvider = () => Promise<IDBPDatabase<PrintCostDbSchema>>;
 
@@ -16,6 +16,9 @@ export interface CustomerPayload {
   name: string;
   contact?: string;
   note?: string;
+  paymentMethod?: CustomerPaymentMethod;
+  customerType?: CustomerType;
+  discountPercent?: number;
 }
 
 /**
@@ -142,10 +145,30 @@ export class CustomerService {
       throw new Error('Customer note is too long');
     }
 
+    const paymentMethod =
+      payload.paymentMethod && ['cash', 'transfer', 'invoice'].includes(payload.paymentMethod)
+        ? payload.paymentMethod
+        : undefined;
+
+    const customerType =
+      payload.customerType && ['private', 'business'].includes(payload.customerType) ? payload.customerType : undefined;
+
+    let discountPercent: number | undefined;
+    if (payload.discountPercent !== undefined && payload.discountPercent !== null) {
+      const value = Number(payload.discountPercent);
+      if (!Number.isFinite(value) || value < 0 || value > 100) {
+        throw new Error('Customer discount must be between 0 and 100');
+      }
+      discountPercent = value > 0 ? value : undefined;
+    }
+
     return {
       name,
       contact,
-      note
+      note,
+      paymentMethod,
+      customerType,
+      discountPercent
     };
   }
 }

@@ -54,6 +54,9 @@ export class InventoryComponent {
   readonly visibleDruckeCards = computed(() =>
     this.druckeCards().filter((card) => matchesDruckeFilter(card, this.activeDruckeFilter()))
   );
+  readonly totalPrinted = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesPrinted, 0));
+  readonly totalSold = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesSold, 0));
+  readonly totalInStock = computed(() => this.druckeCards().reduce((sum, card) => sum + card.remainingCount, 0));
   readonly activeDetailId = computed(() => this.#routeDetailId() ?? this.#localDetailId());
   readonly detailFilamentSummary = computed(() => {
     const detail = this.selectedDetail();

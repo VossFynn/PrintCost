@@ -149,18 +149,18 @@
 
         <div class="inventory-panel__card">
           <span class="inventory-panel__stat-label">Gesamt gedruckt</span>
-          <strong class="inventory-panel__stat-value inventory-panel__stat-value--large">{{ savedCalculations().length }}</strong>
-          <span class="inventory-panel__stat-sub">{{ savedCalculations().length }} Projekte</span>
+          <strong class="inventory-panel__stat-value inventory-panel__stat-value--large">{{ totalPrinted() }}</strong>
+          <span class="inventory-panel__stat-sub">{{ savedCalculations().length }} Projekt{{ savedCalculations().length !== 1 ? 'e' : '' }}</span>
         </div>
 
         <div class="inventory-panel__row">
           <div class="inventory-panel__card">
             <span class="inventory-panel__stat-label">Verkauft</span>
-            <strong class="inventory-panel__stat-value">—</strong>
+            <strong class="inventory-panel__stat-value">{{ totalSold() }}</strong>
           </div>
           <div class="inventory-panel__card">
             <span class="inventory-panel__stat-label">Auf Lager</span>
-            <strong class="inventory-panel__stat-value">—</strong>
+            <strong class="inventory-panel__stat-value">{{ totalInStock() }}</strong>
           </div>
         </div>
 

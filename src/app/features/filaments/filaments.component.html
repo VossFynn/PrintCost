@@ -30,7 +30,9 @@
     <div class="filament-hero__content">
       <span class="filament-hero__eyebrow">Spulen &amp; Farben</span>
       <p class="filament-hero__title">Filamente</p>
-      <p class="filament-hero__subtitle">{{ filaments().length }} Spule{{ filaments().length !== 1 ? 'n' : '' }}</p>
+      <p class="filament-hero__subtitle">
+        {{ filaments().length }} Spule{{ filaments().length !== 1 ? 'n' : '' }}@if (materialTypeList()) {&nbsp;· {{ materialTypeList() }}}
+      </p>
     </div>
   </div>
 
@@ -156,24 +158,24 @@
         <div class="filament-panel__card">
           <span class="filament-panel__stat-label">Spulen gesamt</span>
           <strong class="filament-panel__stat-value filament-panel__stat-value--large">{{ filaments().length }}</strong>
-          <span class="filament-panel__stat-sub">{{ filaments().length }} Spulen</span>
+          <span class="filament-panel__stat-sub">{{ materialTypeCount() }} Materialtyp{{ materialTypeCount() !== 1 ? 'en' : '' }}</span>
         </div>
 
         <div class="filament-panel__row">
           <div class="filament-panel__card">
             <span class="filament-panel__stat-label">Gesamtgewicht</span>
-            <strong class="filament-panel__stat-value">— g</strong>
+            <strong class="filament-panel__stat-value">{{ formatWeightG(totalRemainingG()) }}</strong>
           </div>
           <div class="filament-panel__card filament-panel__card--accent">
             <span class="filament-panel__stat-label">Wenig Vorrat</span>
-            <strong class="filament-panel__stat-value">—</strong>
+            <strong class="filament-panel__stat-value">{{ lowStockCount() }}</strong>
           </div>
         </div>
 
         <div class="filament-panel__card">
           <span class="filament-panel__stat-label">Warenwert</span>
-          <strong class="filament-panel__stat-value filament-panel__stat-value--primary">— €</strong>
-          <span class="filament-panel__stat-sub">über alle Spulen</span>
+          <strong class="filament-panel__stat-value filament-panel__stat-value--primary">{{ formatEur(totalStockValueEur()) }}</strong>
+          <span class="filament-panel__stat-sub">Ø {{ formatEur(averagePricePerGramEur()) }}/g über alle Spulen</span>
         </div>
       </aside>
 
