@@ -309,8 +309,32 @@
         <!-- ── Material + Spulengewicht + Restmenge ───── -->
         <div class="filament-form__grid-3">
           <div class="filament-form__field">
-            <label for="type" class="filament-form__label">Material *</label>
-            <input id="type" type="text" formControlName="type" class="filament-form__input" />
+            <span class="filament-form__label">Material *</span>
+            <div class="filament-form__material-group" role="group" aria-label="Material wählen">
+              @for (material of materialPresets; track material) {
+                <button
+                  type="button"
+                  class="filament-form__material-chip"
+                  [class.filament-form__material-chip--active]="isMaterialPresetActive(material)"
+                  [attr.aria-pressed]="isMaterialPresetActive(material)"
+                  (click)="selectMaterialPreset(material)"
+                >
+                  {{ material }}
+                </button>
+              }
+              <button
+                type="button"
+                class="filament-form__material-chip"
+                [class.filament-form__material-chip--active]="isCustomMaterialActive()"
+                [attr.aria-pressed]="isCustomMaterialActive()"
+                (click)="enableCustomMaterial()"
+              >
+                Andere
+              </button>
+            </div>
+            @if (isCustomMaterialActive()) {
+              <input id="type" type="text" formControlName="type" class="filament-form__input filament-form__input--custom-material" placeholder="z. B. PC, Nylon…" />
+            }
             @if (getError('type'); as message) {
               <p class="filament-form__error">{{ message }}</p>
             }

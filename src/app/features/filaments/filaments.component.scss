@@ -594,6 +594,38 @@
   > :first-child { grid-column: 1 / -1; }
 }
 
+.filament-form__material-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-2);
+}
+
+.filament-form__material-chip {
+  min-height: 2.5rem;
+  padding: 0 var(--pc-space-3);
+  border: 1.5px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-ink-secondary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  &:hover { border-color: var(--pc-color-primary); }
+
+  &--active {
+    border-color: var(--pc-color-primary);
+    background: var(--pc-color-primary);
+    color: var(--pc-color-primary-foreground);
+  }
+}
+
+.filament-form__input--custom-material {
+  margin-top: var(--pc-space-2);
+}
+
 .filament-form__input {
   min-height: 2.75rem;
   min-width: 0;

@@ -55,6 +55,8 @@ export class FilamentsComponent {
   readonly searchTerm = signal('');
   readonly selectedFilter = signal<FilamentFilter>('Alle');
   readonly filamentFilters = ['Alle', 'PLA', 'PETG', 'ABS', 'TPU', 'Anderes'] as const;
+  readonly materialPresets = ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'PA'] as const;
+  readonly showCustomMaterial = signal(false);
 
   readonly filaments = this.#filamentService.activeFilaments;
   readonly visibleFilaments = computed(() => {
@@ -153,6 +155,32 @@ export class FilamentsComponent {
     this.selectedFilter.set(filter);
   }
 
+  /** Sets the material type from a preset chip. */
+  selectMaterialPreset(material: string): void {
+    this.form.controls.type.setValue(material);
+    this.form.controls.type.markAsDirty();
+    this.showCustomMaterial.set(false);
+  }
+
+  isMaterialPresetActive(material: string): boolean {
+    return !this.showCustomMaterial() && this.form.controls.type.value.trim().toUpperCase() === material;
+  }
+
+  /** Reveals the free-text field for a material outside the preset list. */
+  enableCustomMaterial(): void {
+    this.showCustomMaterial.set(true);
+    const current = this.form.controls.type.value.trim().toUpperCase();
+    if ((this.materialPresets as readonly string[]).includes(current)) {
+      this.form.controls.type.setValue('');
+    }
+  }
+
+  /** Whether the "Andere" chip should appear active (custom material entered). */
+  isCustomMaterialActive(): boolean {
+    const current = this.form.controls.type.value.trim().toUpperCase();
+    return this.showCustomMaterial() || (!!current && !(this.materialPresets as readonly string[]).includes(current));
+  }
+
   async requestDelete(filamentId: string): Promise<void> {
     // Deletion stays a confirm-first action because the service keeps history alive.
     const confirmed = window.confirm(
@@ -193,6 +221,9 @@ export class FilamentsComponent {
       multiColorSurchargeEurKg: filament.multiColorSurchargeEurKg ?? 0,
       fixedPriceEurG: filament.fixedPriceEurG ?? 0
     });
+
+    const editType = filament.type.trim().toUpperCase();
+    this.showCustomMaterial.set(!!editType && !(this.materialPresets as readonly string[]).includes(editType));
 
     while (this.purchases.length > 0) {
       this.purchases.removeAt(0);
@@ -478,6 +509,7 @@ export class FilamentsComponent {
 
   private resetForm(): void {
     this.editingFilamentId.set(null);
+    this.showCustomMaterial.set(false);
     this.form.reset({
       name: '',
       type: '',
