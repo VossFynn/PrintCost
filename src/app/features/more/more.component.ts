@@ -72,7 +72,32 @@ export class MoreComponent {
   readonly customerServiceError = signal<string | null>(null);
   readonly editingCustomerId = signal<string | null>(null);
   readonly customers = this.#customerService.activeCustomers;
+  readonly savedCalculations = this.#calculationService.activeSavedCalculations;
   readonly customerSearchTerm = signal('');
+  readonly customerDetailId = signal<string | null>(null);
+  readonly customerDetail = computed(() => this.customers().find((customer) => customer.id === this.customerDetailId()) ?? null);
+
+  /** Orders (saved calculations) linked to the open customer, newest first. */
+  readonly customerOrders = computed(() => {
+    const id = this.customerDetailId();
+    if (!id) {
+      return [];
+    }
+    return this.savedCalculations()
+      .filter((record) => record.customerId === id)
+      .map((record) => ({
+        id: record.id,
+        projectName: record.projectName,
+        dateLabel: this.formatDate(record.updatedAt),
+        quantity: Math.max(record.timesSold ?? 0, record.timesPrinted ?? 0),
+        amountEur: record.calculationResult.roundedFinalPriceEur
+      }))
+      .sort((left, right) => right.dateLabel.localeCompare(left.dateLabel));
+  });
+
+  readonly customerRevenueEur = computed(() =>
+    this.customerOrders().reduce((sum, order) => sum + order.amountEur * Math.max(order.quantity, 1), 0)
+  );
   readonly visibleCustomers = computed(() => {
     const term = this.customerSearchTerm().trim().toLowerCase();
     if (!term) {
@@ -145,7 +170,8 @@ export class MoreComponent {
     void Promise.all([
       this.#printerService.refresh(),
       this.#customerService.refresh(),
-      this.#settingsService.refresh()
+      this.#settingsService.refresh(),
+      this.#calculationService.refresh()
     ]);
 
     effect(() => {
@@ -576,6 +602,34 @@ export class MoreComponent {
     }
 
     return 'Kein Kontakt oder Notiz';
+  }
+
+  openCustomerDetail(customerId: string): void {
+    this.customerDetailId.set(customerId);
+  }
+
+  closeCustomerDetail(): void {
+    this.customerDetailId.set(null);
+  }
+
+  editCustomerFromDetail(customerId: string): void {
+    this.closeCustomerDetail();
+    this.startEditCustomer(customerId);
+  }
+
+  customerTypeLabel(type: CustomerType | undefined): string {
+    return this.customerTypeOptions.find((option) => option.value === type)?.label ?? 'Privatkunde';
+  }
+
+  formatDate(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.valueOf())
+      ? '—'
+      : new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+  }
+
+  formatEur(value: number): string {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value);
   }
 
   selectPaymentMethod(method: CustomerPaymentMethod): void {

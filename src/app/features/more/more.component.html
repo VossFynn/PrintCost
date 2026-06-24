@@ -48,14 +48,14 @@
       <ul class="customer-list mehr-customer-preview__list" aria-label="Kunden">
         @for (customer of customers().slice(0, 3); track customer.id) {
           <li class="customer-list__item">
-            <div class="customer-list__identity">
+            <button type="button" class="customer-list__identity customer-list__identity--btn customer-list__identity--full" (click)="openCustomerDetail(customer.id)">
               <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
               <div>
                 <p class="printer-list__name">{{ customer.name }}</p>
                 <p class="printer-list__meta">{{ customerSubline(customer.contact, customer.note, customer.paymentMethod) }}</p>
               </div>
-            </div>
-            <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
+              <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
+            </button>
           </li>
         }
       </ul>
@@ -161,13 +161,13 @@
         <ul class="customer-list" aria-label="Aktive Kunden">
           @for (customer of visibleCustomers(); track customer.id) {
             <li class="customer-list__item">
-              <div class="customer-list__identity">
+              <button type="button" class="customer-list__identity customer-list__identity--btn" data-testid="open-customer-detail" (click)="openCustomerDetail(customer.id)">
                 <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
                 <div>
                   <p class="printer-list__name">{{ customer.name }}</p>
                   <p class="printer-list__meta">{{ customerSubline(customer.contact, customer.note, customer.paymentMethod) }}</p>
                 </div>
-              </div>
+              </button>
               <div class="printer-list__actions">
                 <button type="button" class="printer-list__edit" (click)="startEditCustomer(customer.id)" aria-label="Kunde bearbeiten">✎</button>
                 <button type="button" data-testid="delete-customer" class="printer-list__delete" (click)="requestDeleteCustomer(customer.id)" aria-label="Kunde löschen">✕</button>
@@ -586,6 +586,73 @@
           </button>
         </div>
       </form>
+    </div>
+  </section>
+}
+
+<!-- ── KUNDE DETAIL ───────────────────────────────────────── -->
+@if (customerDetail(); as customer) {
+  <div class="sheet-backdrop" (click)="closeCustomerDetail()"></div>
+  <section class="mehr-dialog customer-detail" role="dialog" aria-modal="true" aria-label="Kundendetails" data-testid="customer-detail">
+    <div class="sheet-handle"></div>
+    <div class="mehr-dialog__header">
+      <div class="customer-detail__identity">
+        <span class="customer-list__initials customer-list__initials--lg">{{ customerInitials(customer.name) }}</span>
+        <div>
+          <h2 class="mehr-dialog__title">{{ customer.name }}</h2>
+          <p class="mehr-dialog__subtitle">
+            {{ customerTypeLabel(customer.customerType) }}@if (customer.discountPercent) {&nbsp;· {{ customer.discountPercent }}% Rabatt}
+          </p>
+        </div>
+      </div>
+      <button type="button" class="sheet-header__close" (click)="closeCustomerDetail()" aria-label="Schließen">×</button>
+    </div>
+    <div class="mehr-dialog__body">
+
+      <div class="customer-detail__cards">
+        <div class="customer-detail__card">
+          <span class="customer-detail__card-label">Kontakt</span>
+          <strong class="customer-detail__card-value">{{ customer.contact || '—' }}</strong>
+        </div>
+        <div class="customer-detail__card">
+          <span class="customer-detail__card-label">Zahlung</span>
+          <strong class="customer-detail__card-value">{{ paymentMethodLabel(customer.paymentMethod) || '—' }}</strong>
+          <span class="customer-detail__card-sub">{{ customer.discountPercent ? customer.discountPercent + '% Rabatt' : 'Kein Rabatt' }}</span>
+        </div>
+        <div class="customer-detail__card">
+          <span class="customer-detail__card-label">Umsatz gesamt</span>
+          <strong class="customer-detail__card-value customer-detail__card-value--primary">{{ formatEur(customerRevenueEur()) }}</strong>
+          <span class="customer-detail__card-sub">{{ customerOrders().length }} Auftrag{{ customerOrders().length !== 1 ? 'e' : '' }}</span>
+        </div>
+      </div>
+
+      @if (customer.note) {
+        <div class="customer-detail__notes">
+          <span class="customer-detail__card-label">Notizen</span>
+          <p class="customer-detail__notes-text">{{ customer.note }}</p>
+        </div>
+      }
+
+      <p class="customer-detail__section-label">Auftragshistorie</p>
+      @if (customerOrders().length > 0) {
+        <ul class="customer-detail__orders">
+          @for (order of customerOrders(); track order.id) {
+            <li class="customer-detail__order">
+              <span class="customer-detail__order-name">{{ order.projectName }}</span>
+              <span class="customer-detail__order-date">{{ order.dateLabel }}</span>
+              <span class="customer-detail__order-qty">{{ order.quantity }}×</span>
+              <span class="customer-detail__order-amount">{{ formatEur(order.amountEur) }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="customer-detail__empty">Noch keine Aufträge mit diesem Kunden verknüpft.</p>
+      }
+
+      <div class="printer-form__actions">
+        <button type="button" class="printer-form__cancel" (click)="closeCustomerDetail()">Schließen</button>
+        <button type="button" class="printer-form__submit" (click)="editCustomerFromDetail(customer.id)">Bearbeiten</button>
+      </div>
     </div>
   </section>
 }
