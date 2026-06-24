@@ -189,7 +189,7 @@
           @for (purchase of purchaseGroups; track $index) {
             <div class="filament-form__purchase-row" [formGroup]="purchase">
               <input type="number" min="0.0001" step="0.01" placeholder="Preis (€)" formControlName="priceEur" class="filament-form__input" />
-              <input type="number" min="0.0001" step="0.001" placeholder="Menge (kg)" formControlName="quantityKg" class="filament-form__input" />
+              <input type="number" min="0.0001" step="0.1" placeholder="Menge (kg)" formControlName="quantityKg" class="filament-form__input" />
               <input type="date" formControlName="purchasedAt" class="filament-form__input" />
               <button type="button" class="filament-form__remove-purchase" (click)="removePurchase($index)" aria-label="Einkauf entfernen">✕</button>
             </div>

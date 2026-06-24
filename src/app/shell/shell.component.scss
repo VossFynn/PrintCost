@@ -54,7 +54,7 @@
 
 .shell__nav {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: var(--pc-space-2) var(--pc-space-2) calc(var(--pc-space-2) + env(safe-area-inset-bottom));
   border-top: 1px solid var(--pc-color-border-muted);
   background: color-mix(in srgb, var(--pc-color-surface-card) 97%, transparent);

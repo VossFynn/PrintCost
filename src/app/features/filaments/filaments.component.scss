@@ -456,9 +456,33 @@
 
 .filament-form__purchase-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr;
   gap: var(--pc-space-2);
   align-items: start;
+
+  input[type='date'] {
+    grid-column: 1 / -1;
+  }
+
+  .filament-form__remove-purchase {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+@media (min-width: 36rem) {
+  .filament-form__purchase-row {
+    grid-template-columns: 1fr 1fr 1fr auto;
+
+    input[type='date'] {
+      grid-column: auto;
+    }
+
+    .filament-form__remove-purchase {
+      grid-column: auto;
+      justify-self: auto;
+    }
+  }
 }
 
 .filament-form__remove-purchase {

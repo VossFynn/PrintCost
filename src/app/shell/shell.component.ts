@@ -32,7 +32,7 @@ export class ShellComponent {
 
   protected readonly navItems: NavItem[] = [
     { path: '/calculate', label: 'Kalkulation', ariaLabel: 'Kalkulation öffnen', icon: '◎' },
-    { path: '/inventory', label: 'Bestand', ariaLabel: 'Bestand öffnen', icon: '▦', desktopOnly: true },
+    { path: '/inventory', label: 'Bestand', ariaLabel: 'Bestand öffnen', icon: '▦' },
     { path: '/filaments', label: 'Filamente', ariaLabel: 'Filamente öffnen', icon: '◐' },
     { path: '/more', label: 'Mehr', ariaLabel: 'Mehr öffnen', icon: '⋯', mobileOnly: true }
   ];

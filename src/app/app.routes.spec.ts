@@ -35,10 +35,10 @@ describe('app routes', () => {
       .map((styleNode) => styleNode.textContent ?? '')
       .join('\n');
 
-    expect(labels).toEqual(['Kalkulation', 'Filamente', 'Mehr']);
+    expect(labels).toEqual(['Kalkulation', 'Bestand', 'Filamente', 'Mehr']);
     expect(root.querySelector('a[aria-current="page"]')?.textContent).toContain('Kalkulation');
     expect(root.querySelector('[aria-label="Primäre Navigation"]')).toBeTruthy();
-    expect(mobileNavLinks).toHaveLength(3);
+    expect(mobileNavLinks).toHaveLength(4);
     expect(mobileNavLinks.every((node) => node.getAttribute('aria-label')?.endsWith('öffnen'))).toBe(true);
     expect(styleText).toContain('prefers-reduced-motion');
     expect(document.querySelector('link[href*="fonts.googleapis.com"]')).toBeNull();

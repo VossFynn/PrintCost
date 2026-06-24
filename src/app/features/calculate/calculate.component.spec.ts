@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { computed, signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { describe, expect, it } from 'vitest';
 import { vi } from 'vitest';
 
@@ -216,6 +217,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -240,6 +242,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -274,6 +277,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -305,6 +309,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -355,6 +360,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -399,6 +405,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -427,6 +434,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -486,6 +494,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },
@@ -532,6 +541,7 @@ describe('CalculateComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
       providers: [
+        provideRouter([]),
         { provide: PrinterService, useValue: printerService },
         { provide: SettingsService, useValue: settingsService },
         { provide: FilamentService, useValue: filamentService },

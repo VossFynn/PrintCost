@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { CalculationService, CalculationTemplateInput } from '../../core/calculations/calculation.service';
 import { CustomerService } from '../../core/customers/customer.service';
@@ -36,7 +37,7 @@ type FilamentLineForm = FormGroup<{
 @Component({
   selector: 'app-calculate',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './calculate.component.html',
   styleUrl: './calculate.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -435,14 +436,18 @@ export class CalculateComponent {
     return this.#currencyFormatter.format(value);
   }
 
+  totalPieces(): number {
+    const plates = Math.max(1, Number(this.form.controls.printQuantity.value) || 1);
+    const ppp = Math.max(1, Number(this.form.controls.partsPerPlate.value) || 1);
+    return plates * ppp;
+  }
+
   perUnit(total: number): number {
-    const qty = Math.max(1, Number(this.form.controls.printQuantity.value) || 1);
-    return total / qty;
+    return total / this.totalPieces();
   }
 
   totalForAll(perPlateCost: number): number {
-    const qty = Math.max(1, Number(this.form.controls.printQuantity.value) || 1);
-    return perPlateCost * qty;
+    return perPlateCost * this.totalPieces();
   }
 
   private createFilamentLine(filamentId: string): FilamentLineForm {
@@ -651,7 +656,7 @@ export class CalculateComponent {
     return {
       filamentLines: filamentLines.filter((line): line is NonNullable<typeof line> => line !== null),
       printMinutes: Number(this.form.controls.printHours.value) * 60,
-      printQuantity: Number(this.form.controls.printQuantity.value),
+      printQuantity: Number(this.form.controls.printQuantity.value) * Number(this.form.controls.partsPerPlate.value),
       partsPerPlate: Number(this.form.controls.partsPerPlate.value),
       extraWorkFeePercent: Number(this.form.controls.extraWorkFeePercent.value),
       modelExists: this.form.controls.modelExists.value,

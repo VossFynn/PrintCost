@@ -50,7 +50,7 @@
       <div class="calc-section">
         <p class="calc-section__label" data-testid="calculate-section-title">Projekt</p>
         <label class="calc-field" for="projectName">
-          <span class="calc-field__label">Projektname</span>
+          <span class="calc-field__label">Name</span>
           <input
             id="projectName"
             data-testid="project-name"
@@ -72,7 +72,7 @@
         @if (!hasActivePrinters()) {
           <div class="calc-empty-state" data-testid="calculate-printer-empty">
             <p>Noch kein aktives Druckerprofil vorhanden.</p>
-            <a href="/more">Erst Drucker anlegen</a>
+            <a routerLink="/more">Erst Drucker anlegen</a>
           </div>
         } @else {
           <div class="calc-field-row">
@@ -123,7 +123,7 @@
         @if (!hasActiveFilaments()) {
           <div class="calc-empty-state" data-testid="filament-empty">
             <p>Noch kein aktives Filament vorhanden.</p>
-            <a href="/filaments">Filament hinzufügen</a>
+            <a routerLink="/filaments">Filament hinzufügen</a>
           </div>
         } @else {
           <div class="calc-chip-row" aria-label="Filamente auswählen">
@@ -164,7 +164,7 @@
                         data-testid="filament-grams"
                         type="number"
                         min="0.0001"
-                        step="0.1"
+                        step="1"
                         class="calc-filament-line__input"
                         [formControl]="line.controls.grams"
                       />
@@ -228,7 +228,7 @@
               data-testid="print-hours"
               type="number"
               min="0.0001"
-              step="0.1"
+              step="0.25"
               formControlName="printHours"
               class="calc-druck-metric__input"
             />
@@ -246,7 +246,7 @@
             />
           </label>
           <label class="calc-druck-metric">
-            <span class="calc-druck-metric__label">Anzahl</span>
+            <span class="calc-druck-metric__label">Platten</span>
             <input
               id="printQuantity"
               data-testid="print-quantity"
@@ -270,7 +270,7 @@
               type="number"
               min="0"
               max="100"
-              step="0.1"
+              step="1"
               formControlName="extraWorkFeePercent"
               class="calc-field__input"
             />
@@ -313,7 +313,7 @@
                 data-testid="filament-fixed-price"
                 type="number"
                 min="0.0001"
-                step="0.0001"
+                step="0.001"
                 class="calc-field__input"
                 [formControl]="line.controls.fixedPriceEurG"
               />
@@ -405,7 +405,7 @@
               data-testid="modeling-cost"
               type="number"
               min="0"
-              step="0.01"
+              step="1"
               formControlName="modelingCostEur"
               class="calc-field__input"
             />
@@ -439,7 +439,7 @@
             data-testid="profit-margin"
             type="number"
             min="0"
-            step="0.1"
+            step="1"
             formControlName="profitMarginPercent"
             class="calc-field__input"
           />
@@ -466,9 +466,9 @@
               class="calc-result__price-value calculate-result__price-value--dominant"
               data-testid="result-price-value"
             >{{ formatCurrency(perUnit(result.roundedFinalPriceEur)) }}</p>
-            @if (form.controls.printQuantity.value > 1) {
+            @if (totalPieces() > 1) {
               <p class="calc-result__price-total">
-                {{ form.controls.printQuantity.value }}× = {{ formatCurrency(result.roundedFinalPriceEur) }} gesamt
+                {{ totalPieces() }}× = {{ formatCurrency(result.roundedFinalPriceEur) }} gesamt
               </p>
             }
           </div>
