@@ -2,7 +2,12 @@
 
   <!-- ── Page header ──────────────────────────────────────── -->
   <div class="calc-page-header">
-    <div>
+    <div class="calc-page-header__title">
+      <span class="calc-page-header__breadcrumb">Kalkulation</span>
+      <div class="calc-page-hero" aria-hidden="true">
+        <div class="calc-hero-icon">◈</div>
+        <span class="calc-hero-eyebrow">Neue Kalkulation</span>
+      </div>
       <h1>{{ form.controls.projectName.value || 'Neue Kalkulation' }}</h1>
     </div>
     <div class="calc-header-actions">
@@ -222,7 +227,7 @@
         <p class="calc-section__label">Druckparameter</p>
         <div class="calc-druck-metrics">
           <label class="calc-druck-metric">
-            <span class="calc-druck-metric__label">Druckzeit (h)</span>
+            <span class="calc-druck-metric__label">Druckzeit</span>
             <input
               id="printHours"
               data-testid="print-hours"
@@ -246,7 +251,7 @@
             />
           </label>
           <label class="calc-druck-metric">
-            <span class="calc-druck-metric__label">Platten</span>
+            <span class="calc-druck-metric__label">Anzahl</span>
             <input
               id="printQuantity"
               data-testid="print-quantity"
@@ -512,10 +517,52 @@
               <span class="calc-result__stat-value">{{ formatCurrency(perUnit(result.subtotalEur)) }}</span>
             </div>
             <div class="calc-result__stat">
+              <span class="calc-result__stat-label">Gewinn · {{ form.controls.profitMarginPercent.value }}%</span>
+              <span class="calc-result__stat-value calc-result__stat-value--pos">+{{ formatCurrency(profitAmountEur() ?? 0) }}</span>
+            </div>
+            <div class="calc-result__stat">
               <span class="calc-result__stat-label">Gewinnmarge</span>
               <span class="calc-result__stat-value">{{ gewinnmarge() }} %</span>
             </div>
           </div>
+
+          <!-- Kostenanteil bars (desktop only) -->
+          @if (result.subtotalEur > 0) {
+            <div class="calc-result__kostenanteil">
+              <p class="calc-result__kostenanteil-label">Kostenanteil</p>
+              <div class="calc-result__kosten-bar">
+                <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--material"
+                  [style.width.%]="result.materialCostEur / result.subtotalEur * 100"></span>
+                <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--strom"
+                  [style.width.%]="result.electricityCostEur / result.subtotalEur * 100"
+                  [style.left.%]="result.materialCostEur / result.subtotalEur * 100"></span>
+                <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--afa"
+                  [style.width.%]="result.depreciationCostEur / result.subtotalEur * 100"
+                  [style.left.%]="(result.materialCostEur + result.electricityCostEur) / result.subtotalEur * 100"></span>
+                <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--model"
+                  [style.width.%]="result.modelingCostEur / result.subtotalEur * 100"
+                  [style.left.%]="(result.materialCostEur + result.electricityCostEur + result.depreciationCostEur) / result.subtotalEur * 100"></span>
+              </div>
+              <div class="calc-result__kosten-legend">
+                <span class="calc-result__kosten-legend-item">
+                  <span class="calc-result__kosten-dot calc-result__kosten-dot--material"></span>
+                  Material {{ (result.materialCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                </span>
+                <span class="calc-result__kosten-legend-item">
+                  <span class="calc-result__kosten-dot calc-result__kosten-dot--strom"></span>
+                  Strom {{ (result.electricityCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                </span>
+                <span class="calc-result__kosten-legend-item">
+                  <span class="calc-result__kosten-dot calc-result__kosten-dot--afa"></span>
+                  AfA {{ (result.depreciationCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                </span>
+                <span class="calc-result__kosten-legend-item">
+                  <span class="calc-result__kosten-dot calc-result__kosten-dot--model"></span>
+                  Modell {{ (result.modelingCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                </span>
+              </div>
+            </div>
+          }
           <!-- Preis label kept for test text-content check -->
           <p class="calc-result__preis-hidden" aria-hidden="true">Preis</p>
         } @else {

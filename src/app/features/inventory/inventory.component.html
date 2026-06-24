@@ -94,15 +94,15 @@
 
                 <div class="inventory-card__info">
                   <h3 class="inventory-card__title" data-testid="inventory-card-title">{{ card.projectName }}</h3>
-                  <p class="inventory-card__meta">{{ card.updatedAtLabel }} · {{ card.roundedPriceEur }} €</p>
+                  <p class="inventory-card__meta">Aktualisiert: {{ card.updatedAtLabel }} · Preis: {{ card.roundedPriceEur }} €</p>
                 </div>
 
                 <span class="inventory-card__printed">
-                  {{ card.timesPrinted }}×
+                  Gedruckt: {{ card.timesPrinted }}
                 </span>
 
                 <span class="inventory-card__sold">
-                  {{ card.timesSold }}×
+                  Verkauft: {{ card.timesSold }}
                 </span>
 
                 <!-- Mobile badges row -->
@@ -199,7 +199,7 @@
 
       <dl class="inventory-detail__props">
         <div class="inventory-detail__prop">
-          <dt>Drucker</dt>
+          <dt>Drucker: </dt>
           <dd>{{ detail.record.printerSnapshot.name }}</dd>
         </div>
         <div class="inventory-detail__prop">
@@ -207,7 +207,7 @@
           <dd>{{ detailFilamentSummary() }}</dd>
         </div>
         <div class="inventory-detail__prop">
-          <dt>Druckzeit</dt>
+          <dt>Druckzeit: </dt>
           <dd>{{ detailPrintDurationLabel() }}</dd>
         </div>
         <div class="inventory-detail__prop">
@@ -231,20 +231,20 @@
       <p class="inventory-detail__section-label">Verlauf</p>
       <div class="inventory-detail__counters">
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Gedruckt: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.printedCount }}</span>
-          <span class="inventory-detail__counter-key">Gedruckt</span>
         </div>
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Verkauft: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.soldCount }}</span>
-          <span class="inventory-detail__counter-key">Verkauft</span>
         </div>
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Verschenkt: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.giftedCount }}</span>
-          <span class="inventory-detail__counter-key">Verschenkt</span>
         </div>
         <div class="inventory-detail__counter">
+          <span class="inventory-detail__counter-key">Verbleibend: </span>
           <span class="inventory-detail__counter-val">{{ detail.history.remainingCount }}</span>
-          <span class="inventory-detail__counter-key">Verbleibend</span>
         </div>
       </div>
 
