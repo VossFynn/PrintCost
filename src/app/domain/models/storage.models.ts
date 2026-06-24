@@ -12,6 +12,8 @@ export interface PrinterRecord {
   lifetimeHours: number;
   electricityPriceEurKwh?: number;
   annualBaseFeeEur?: number;
+  bedType?: string;
+  compatibleMaterials?: string[];
   note?: string;
   deleted: boolean;
   createdAt: string;

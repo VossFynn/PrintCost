@@ -11,7 +11,7 @@ import { PrinterPayload, PrinterService } from '../../core/printers/printer.serv
 import { SettingsService } from '../../core/settings/settings.service';
 import { BackupFormat, CustomerPaymentMethod, CustomerType } from '../../domain/models/storage.models';
 
-type PrinterFormFieldName = 'name' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
+type PrinterFormFieldName = 'name' | 'bedType' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
 
 type CustomerFormFieldName = 'name' | 'contact' | 'note';
 
@@ -47,11 +47,17 @@ export class MoreComponent {
   // --- Printer form ---
   readonly form = this.#formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
+    bedType: ['PEI-Platte', [Validators.maxLength(60)]],
     powerWatts: [0, [Validators.required, Validators.min(0.0001)]],
     purchasePriceEur: [0, [Validators.required, Validators.min(0.0001)]],
     lifetimeHours: [0, [Validators.required, Validators.min(0.0001)]],
     note: ['', [Validators.maxLength(500)]]
   });
+
+  readonly bedTypeOptions = ['PEI-Platte', 'Glasplatte', 'Federstahl (PEO)', 'Andere'] as const;
+  readonly materialOptions = ['PLA', 'PETG', 'ABS', 'ASA', 'TPU', 'PA'] as const;
+  /** Compatible materials selected in the printer dialog (chip toggles). */
+  readonly selectedMaterials = signal<string[]>([]);
 
   readonly isSaving = signal(false);
   readonly isDialogOpen = signal(false);
@@ -361,7 +367,10 @@ export class MoreComponent {
 
     this.isSaving.set(true);
     try {
-      const payload = this.form.getRawValue() as PrinterPayload;
+      const payload: PrinterPayload = {
+        ...this.form.getRawValue(),
+        compatibleMaterials: this.selectedMaterials()
+      };
       const editId = this.editingPrinterId();
       // Reuse the same payload path for create and update so the form stays simple.
       if (editId) {
@@ -387,11 +396,13 @@ export class MoreComponent {
     this.editingPrinterId.set(printer.id);
     this.form.setValue({
       name: printer.name,
+      bedType: printer.bedType ?? 'PEI-Platte',
       powerWatts: printer.powerWatts,
       purchasePriceEur: printer.purchasePriceEur,
       lifetimeHours: printer.lifetimeHours,
       note: printer.note ?? ''
     });
+    this.selectedMaterials.set([...(printer.compatibleMaterials ?? [])]);
     this.form.markAsPristine();
     this.form.markAsUntouched();
     this.isDialogOpen.set(true);
@@ -623,6 +634,8 @@ export class MoreComponent {
         return 'Bitte Kaufpreis eingeben';
       case 'lifetimeHours':
         return 'Bitte Lebensdauer eingeben';
+      case 'bedType':
+        return 'Bitte Druckbett-Typ prüfen';
       case 'note':
         return 'Bitte Notiz prüfen';
     }
@@ -645,13 +658,43 @@ export class MoreComponent {
     this.editingPrinterId.set(null);
     this.form.reset({
       name: '',
+      bedType: 'PEI-Platte',
       powerWatts: 250,
       purchasePriceEur: 0,
       lifetimeHours: 2000,
       note: ''
     });
+    this.selectedMaterials.set([]);
     this.form.markAsPristine();
     this.form.markAsUntouched();
+  }
+
+  // --- Compatible materials (printer dialog chips) ---
+
+  toggleMaterial(material: string): void {
+    this.selectedMaterials.update((materials) =>
+      materials.includes(material) ? materials.filter((entry) => entry !== material) : [...materials, material]
+    );
+    this.form.markAsDirty();
+  }
+
+  isMaterialSelected(material: string): boolean {
+    return this.selectedMaterials().includes(material);
+  }
+
+  /** List meta line for a printer, e.g. "PEI-Platte · PLA / PETG / ASA". */
+  printerMeta(printer: { bedType?: string; compatibleMaterials?: string[]; note?: string; powerWatts: number; lifetimeHours: number }): string {
+    const parts: string[] = [];
+    if (printer.bedType) {
+      parts.push(printer.bedType);
+    }
+    if (printer.compatibleMaterials && printer.compatibleMaterials.length > 0) {
+      parts.push(printer.compatibleMaterials.join(' / '));
+    }
+    if (parts.length > 0) {
+      return parts.join(' · ');
+    }
+    return printer.note || `${printer.powerWatts} W · ${printer.lifetimeHours} h Lebensdauer`;
   }
 
   private resetCustomerForm(): void {

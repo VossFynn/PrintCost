@@ -116,6 +116,21 @@ export class FilamentsComponent {
     return totalG > 0 ? this.totalStockValueEur() / totalG : 0;
   });
 
+  /** Visible filaments grouped by material, in a stable display order. */
+  readonly groupedFilaments = computed(() => {
+    const order: FilamentFilter[] = ['PLA', 'PETG', 'ABS', 'TPU', 'Anderes'];
+    const buckets = new Map<FilamentFilter, FilamentRecord[]>();
+    for (const filament of this.visibleFilaments()) {
+      const material = this.materialTag(filament.type);
+      const bucket = buckets.get(material) ?? [];
+      bucket.push(filament);
+      buckets.set(material, bucket);
+    }
+    return order
+      .filter((material) => buckets.has(material))
+      .map((material) => ({ material, items: buckets.get(material)! }));
+  });
+
   get purchaseGroups() {
     return this.purchases.controls;
   }

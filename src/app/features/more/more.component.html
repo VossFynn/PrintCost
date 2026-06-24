@@ -101,7 +101,7 @@
                 <span class="printer-list__status-dot" aria-hidden="true"></span>
                 <div class="printer-list__info">
                   <p class="printer-list__name">{{ printer.name }}</p>
-                  <p class="printer-list__meta">{{ printer.note || (printer.powerWatts + ' W · ' + printer.lifetimeHours + ' h Lebensdauer') }}</p>
+                  <p class="printer-list__meta">{{ printerMeta(printer) }}</p>
                 </div>
                 <span class="printer-list__col">{{ printer.powerWatts }}&thinsp;W</span>
                 <span class="printer-list__col">{{ settingsForm.controls.electricityPriceEurKwh.value | number:'1.2-2' }}&thinsp;€</span>
@@ -398,12 +398,21 @@
       <form class="printer-form" [formGroup]="form" (ngSubmit)="savePrinter()">
 
         <div class="printer-form__grid printer-form__grid--2col">
-          <div class="printer-form__row printer-form__row--wide">
+          <div class="printer-form__row">
             <label class="printer-form__label" for="name">Druckername *</label>
             <input id="name" data-testid="name" type="text" formControlName="name" class="printer-form__input printer-form__input--focus" placeholder="z. B. Prusa MK4" />
             @if (getError('name'); as message) {
               <p class="printer-form__error">{{ message }}</p>
             }
+          </div>
+
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="bedType">Druckbett-Typ</label>
+            <select id="bedType" data-testid="bed-type" formControlName="bedType" class="printer-form__input printer-form__select">
+              @for (option of bedTypeOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
           </div>
 
           <div class="printer-form__row">
@@ -440,8 +449,25 @@
           </div>
 
           <div class="printer-form__row printer-form__row--wide">
+            <span class="printer-form__label">Kompatible Materialien</span>
+            <div class="printer-form__material-group" role="group" aria-label="Kompatible Materialien wählen">
+              @for (material of materialOptions; track material) {
+                <button
+                  type="button"
+                  class="printer-form__material-chip"
+                  [class.printer-form__material-chip--active]="isMaterialSelected(material)"
+                  [attr.aria-pressed]="isMaterialSelected(material)"
+                  (click)="toggleMaterial(material)"
+                >
+                  {{ material }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="printer-form__row printer-form__row--wide">
             <label class="printer-form__label" for="note">Notiz (optional)</label>
-            <textarea id="note" rows="2" formControlName="note" class="printer-form__input printer-form__textarea" placeholder="z. B. AMS vorhanden, PEI-Platte…"></textarea>
+            <textarea id="note" rows="2" formControlName="note" class="printer-form__input printer-form__textarea" placeholder="z. B. AMS vorhanden, Ersatzdüse…"></textarea>
             @if (getError('note'); as message) {
               <p class="printer-form__error">{{ message }}</p>
             }

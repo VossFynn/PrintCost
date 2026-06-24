@@ -1042,6 +1042,34 @@
   cursor: pointer;
 }
 
+.printer-form__material-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-2);
+}
+
+.printer-form__material-chip {
+  min-height: 2.25rem;
+  padding: 0 var(--pc-space-3);
+  border: 1.5px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-ink-secondary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  &:hover { border-color: var(--pc-color-primary); }
+
+  &--active {
+    border-color: var(--pc-color-primary);
+    background: var(--pc-color-primary);
+    color: var(--pc-color-primary-foreground);
+  }
+}
+
 .printer-form__computed {
   display: flex;
   align-items: center;

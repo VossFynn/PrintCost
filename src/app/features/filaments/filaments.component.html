@@ -80,9 +80,11 @@
           <span></span>
         </div>
 
-        <!-- List -->
+        <!-- List (grouped by material) -->
         <ul class="filament-list" aria-label="Aktive Filamente">
-          @for (filament of visibleFilaments(); track trackByFilamentId($index, filament)) {
+          @for (group of groupedFilaments(); track group.material) {
+            <li class="filament-list__group-head">{{ group.material }}</li>
+            @for (filament of group.items; track trackByFilamentId($index, filament)) {
             <li class="filament-list__item" data-testid="filament-item">
 
               <span class="filament-list__color-dot" [style.background-color]="filament.colorHex"></span>
@@ -147,6 +149,7 @@
               </div>
 
             </li>
+            }
           }
         </ul>
       </div>

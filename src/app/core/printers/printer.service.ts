@@ -28,6 +28,8 @@ export interface PrinterPayload {
   powerWatts: number;
   purchasePriceEur: number;
   lifetimeHours: number;
+  bedType?: string;
+  compatibleMaterials?: string[];
   note?: string;
 }
 
@@ -165,10 +167,21 @@ export class PrinterService {
       throw new Error('Note is too long');
     }
 
+    const bedType = payload.bedType?.trim();
+    if (bedType && bedType.length > 60) {
+      throw new Error('Bed type is too long');
+    }
+
+    const compatibleMaterials = Array.isArray(payload.compatibleMaterials)
+      ? [...new Set(payload.compatibleMaterials.map((material) => material.trim()).filter((material) => material.length > 0))]
+      : undefined;
+
     return {
       ...payload,
       name,
-      note
+      note,
+      bedType: bedType || undefined,
+      compatibleMaterials: compatibleMaterials && compatibleMaterials.length > 0 ? compatibleMaterials : undefined
     };
   }
 }
