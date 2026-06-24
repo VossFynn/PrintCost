@@ -143,11 +143,23 @@
       </div>
       <label class="mehr-panel__search" aria-label="Kunden suchen">
         <span class="mehr-panel__search-icon" aria-hidden="true">⌕</span>
-        <input type="search" class="mehr-panel__search-input" placeholder="Kunden suchen…" />
+        <input
+          #customerSearchInput
+          type="search"
+          class="mehr-panel__search-input"
+          placeholder="Kunden suchen…"
+          data-testid="customer-search"
+          [value]="customerSearchTerm()"
+          (input)="customerSearchTerm.set(customerSearchInput.value)"
+        />
       </label>
-      @if (customers().length > 0) {
+      @if (customers().length === 0) {
+        <p class="customer-list__empty">Noch kein aktiver Kunde vorhanden.</p>
+      } @else if (visibleCustomers().length === 0) {
+        <p class="customer-list__empty">Keine Kunden gefunden.</p>
+      } @else {
         <ul class="customer-list" aria-label="Aktive Kunden">
-          @for (customer of customers(); track customer.id) {
+          @for (customer of visibleCustomers(); track customer.id) {
             <li class="customer-list__item">
               <div class="customer-list__identity">
                 <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
@@ -163,8 +175,6 @@
             </li>
           }
         </ul>
-      } @else {
-        <p class="customer-list__empty">Noch kein aktiver Kunde vorhanden.</p>
       }
       <button type="button" class="customer-add-btn" (click)="openCreateCustomerDialog()">+ Kunde hinzufügen</button>
     </aside>
@@ -297,7 +307,7 @@
             }
 
             <div class="settings-form__actions">
-              <button type="button" class="settings-form__cancel">Abbrechen</button>
+              <button type="button" class="settings-form__cancel" [disabled]="!settingsForm.dirty" (click)="cancelSettings()">Abbrechen</button>
               <button type="submit" data-testid="save-settings" class="settings-form__btn" [disabled]="isSavingSettings() || settingsForm.invalid">
                 Speichern
               </button>

@@ -26,9 +26,16 @@
           <span class="shell__brand-sub">Druckkosten-Rechner</span>
         </div>
       </div>
-      <label class="shell__search" aria-label="Suchen">
+      <label class="shell__search" aria-label="Drucker suchen">
         <span class="shell__search-icon" aria-hidden="true">⌕</span>
-        <input type="search" class="shell__search-input" placeholder="Suchen…" />
+        <input
+          #sidebarSearchInput
+          type="search"
+          class="shell__search-input"
+          placeholder="Drucker suchen…"
+          [value]="sidebarSearch()"
+          (input)="sidebarSearch.set(sidebarSearchInput.value)"
+        />
       </label>
     </div>
 
@@ -67,7 +74,7 @@
       }
     </a>
 
-    @for (printer of activePrinters(); track printer.id) {
+    @for (printer of filteredPrinters(); track printer.id) {
       <a class="shell__sub-link" routerLink="/more">
         <span class="shell__sub-dot" aria-hidden="true"></span>
         <span>{{ printer.name }}</span>

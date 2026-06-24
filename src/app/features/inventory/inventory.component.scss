@@ -18,21 +18,33 @@
   gap: var(--pc-space-2);
 }
 
-.inventory-header__search-btn {
-  display: flex;
+.inventory-search {
+  display: none; // mobile: search lives in the filter row context; hidden here
   align-items: center;
-  gap: var(--pc-space-1);
-  min-height: 2rem;
+  gap: var(--pc-space-2);
+  min-height: 2.25rem;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   background: var(--pc-color-surface-card);
-  color: var(--pc-color-ink-secondary);
+  padding: 0 var(--pc-space-3);
+}
+
+.inventory-search__icon {
+  font-size: 0.9375rem;
+  color: var(--pc-color-ink-muted);
+  flex-shrink: 0;
+}
+
+.inventory-search__input {
+  border: none;
+  background: transparent;
   font: inherit;
   font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 0 var(--pc-space-3);
-  cursor: pointer;
-  white-space: nowrap;
+  color: var(--pc-color-ink-primary);
+  outline: none;
+  min-width: 12rem;
+
+  &::placeholder { color: var(--pc-color-ink-muted); }
 }
 
 .inventory-header__book-btn {
@@ -737,7 +749,7 @@ textarea.form-group__control {
 
   .inventory-hero { display: none; }
 
-  .inventory-header__search-btn { display: none; }
+  .inventory-search { display: flex; }
   .inventory-header__book-btn { display: flex; align-items: center; }
 
   // Two-column layout

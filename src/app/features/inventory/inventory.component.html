@@ -4,9 +4,19 @@
   <div class="inventory-header">
     <h1>Bestand</h1>
     <div class="inventory-header__actions">
-      <button type="button" class="inventory-header__search-btn" aria-label="Suchen">
-        <span aria-hidden="true">⌕</span> Suchen
-      </button>
+      <label class="inventory-search" for="inventory-search-input">
+        <span class="inventory-search__icon" aria-hidden="true">⌕</span>
+        <input
+          id="inventory-search-input"
+          #inventorySearchInput
+          type="search"
+          data-testid="inventory-search"
+          placeholder="Bestand suchen…"
+          [value]="searchTerm()"
+          (input)="searchTerm.set(inventorySearchInput.value)"
+          class="inventory-search__input"
+        />
+      </label>
       <button type="button" class="inventory-header__book-btn" (click)="openDetail('')" aria-label="Drucklauf buchen">
         + Drucklauf buchen
       </button>

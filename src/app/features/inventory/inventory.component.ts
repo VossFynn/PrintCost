@@ -45,15 +45,21 @@ export class InventoryComponent {
   readonly druckeFilters: DruckeFilter[] = ['Alle', 'Auf Lager', 'Teilweise', 'Vollständig', 'Verschenkt'];
   readonly activeArea = signal<InventoryArea>('drucke');
   readonly activeDruckeFilter = signal<DruckeFilter>('Alle');
+  readonly searchTerm = signal('');
   readonly actionFeedback = signal<string | null>(null);
   readonly detailError = signal<string | null>(null);
   readonly #routeDetailId = signal<string | null>(null);
   readonly #localDetailId = signal<string | null>(null);
   readonly selectedDetail = signal<CalculationDetailView | null>(null);
   readonly druckeCards = computed(() => this.savedCalculations().map((record) => mapInventoryCard(record)));
-  readonly visibleDruckeCards = computed(() =>
-    this.druckeCards().filter((card) => matchesDruckeFilter(card, this.activeDruckeFilter()))
-  );
+  readonly visibleDruckeCards = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    return this.druckeCards().filter(
+      (card) =>
+        matchesDruckeFilter(card, this.activeDruckeFilter()) &&
+        (!term || card.projectName.toLowerCase().includes(term))
+    );
+  });
   readonly totalPrinted = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesPrinted, 0));
   readonly totalSold = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesSold, 0));
   readonly totalInStock = computed(() => this.druckeCards().reduce((sum, card) => sum + card.remainingCount, 0));

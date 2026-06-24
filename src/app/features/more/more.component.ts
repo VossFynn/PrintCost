@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { BackupService } from '../../core/backup/backup.service';
@@ -66,6 +66,16 @@ export class MoreComponent {
   readonly customerServiceError = signal<string | null>(null);
   readonly editingCustomerId = signal<string | null>(null);
   readonly customers = this.#customerService.activeCustomers;
+  readonly customerSearchTerm = signal('');
+  readonly visibleCustomers = computed(() => {
+    const term = this.customerSearchTerm().trim().toLowerCase();
+    if (!term) {
+      return this.customers();
+    }
+    return this.customers().filter((customer) =>
+      [customer.name, customer.contact ?? '', customer.note ?? ''].join(' ').toLowerCase().includes(term)
+    );
+  });
 
   readonly customerForm = this.#formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -179,6 +189,13 @@ export class MoreComponent {
     } finally {
       this.isSavingSettings.set(false);
     }
+  }
+
+  /** Discards unsaved settings edits and restores persisted values. */
+  cancelSettings(): void {
+    this.settingsSaveError.set(null);
+    this.settingsSaveSuccess.set(false);
+    this.populateSettingsForm();
   }
 
   getSettingsError(field: SettingsFormFieldName): string | null {
