@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { BackupService } from '../../core/backup/backup.service';
 import { CalculationService } from '../../core/calculations/calculation.service';
@@ -9,9 +10,10 @@ import { FilamentService } from '../../core/filaments/filament.service';
 import { PartService } from '../../core/inventory/part.service';
 import { PrinterPayload, PrinterService } from '../../core/printers/printer.service';
 import { SettingsService } from '../../core/settings/settings.service';
-import { BackupFormat } from '../../domain/models/storage.models';
+import { BackupFormat, CustomerPaymentMethod, CustomerType } from '../../domain/models/storage.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
-type PrinterFormFieldName = 'name' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
+type PrinterFormFieldName = 'name' | 'bedType' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
 
 type CustomerFormFieldName = 'name' | 'contact' | 'note';
 
@@ -29,7 +31,7 @@ type SettingsFormFieldName =
 @Component({
   selector: 'app-more',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
   templateUrl: './more.component.html',
   styleUrl: './more.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -43,15 +45,22 @@ export class MoreComponent {
   readonly #calculationService = inject(CalculationService);
   readonly #partService = inject(PartService);
   readonly #formBuilder = inject(FormBuilder);
+  readonly #route = inject(ActivatedRoute, { optional: true });
 
   // --- Printer form ---
   readonly form = this.#formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
+    bedType: ['PEI-Platte', [Validators.maxLength(60)]],
     powerWatts: [0, [Validators.required, Validators.min(0.0001)]],
     purchasePriceEur: [0, [Validators.required, Validators.min(0.0001)]],
     lifetimeHours: [0, [Validators.required, Validators.min(0.0001)]],
     note: ['', [Validators.maxLength(500)]]
   });
+
+  readonly bedTypeOptions = ['PEI-Platte', 'Glasplatte', 'Federstahl (PEO)', 'Andere'] as const;
+  readonly materialOptions = ['PLA', 'PETG', 'ABS', 'ASA', 'TPU', 'PA'] as const;
+  /** Compatible materials selected in the printer dialog (chip toggles). */
+  readonly selectedMaterials = signal<string[]>([]);
 
   readonly isSaving = signal(false);
   readonly isDialogOpen = signal(false);
@@ -66,12 +75,66 @@ export class MoreComponent {
   readonly customerServiceError = signal<string | null>(null);
   readonly editingCustomerId = signal<string | null>(null);
   readonly customers = this.#customerService.activeCustomers;
+  readonly savedCalculations = this.#calculationService.activeSavedCalculations;
+  readonly headerSubtitle = computed(() => {
+    const printerCount = this.printers().length;
+    const customerCount = this.customers().length;
+    return `${printerCount} Drucker · ${customerCount} Kunden`;
+  });
+  readonly customerSearchTerm = signal('');
+  readonly customerDetailId = signal<string | null>(null);
+  readonly customerDetail = computed(() => this.customers().find((customer) => customer.id === this.customerDetailId()) ?? null);
+
+  /** Orders (saved calculations) linked to the open customer, newest first. */
+  readonly customerOrders = computed(() => {
+    const id = this.customerDetailId();
+    if (!id) {
+      return [];
+    }
+    return this.savedCalculations()
+      .filter((record) => record.customerId === id)
+      .map((record) => ({
+        id: record.id,
+        projectName: record.projectName,
+        dateLabel: this.formatDate(record.updatedAt),
+        quantity: Math.max(record.timesSold ?? 0, record.timesPrinted ?? 0),
+        amountEur: record.calculationResult.roundedFinalPriceEur
+      }))
+      .sort((left, right) => right.dateLabel.localeCompare(left.dateLabel));
+  });
+
+  readonly customerRevenueEur = computed(() =>
+    this.customerOrders().reduce((sum, order) => sum + order.amountEur * Math.max(order.quantity, 1), 0)
+  );
+  readonly visibleCustomers = computed(() => {
+    const term = this.customerSearchTerm().trim().toLowerCase();
+    if (!term) {
+      return this.customers();
+    }
+    return this.customers().filter((customer) =>
+      [customer.name, customer.contact ?? '', customer.note ?? ''].join(' ').toLowerCase().includes(term)
+    );
+  });
 
   readonly customerForm = this.#formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     contact: ['', [Validators.maxLength(160)]],
+    paymentMethod: ['cash' as CustomerPaymentMethod, [Validators.required]],
+    customerType: ['private' as CustomerType, [Validators.required]],
+    discountPercent: [0, [Validators.min(0), Validators.max(100)]],
     note: ['', [Validators.maxLength(500)]]
   });
+
+  readonly paymentMethodOptions: ReadonlyArray<{ value: CustomerPaymentMethod; label: string }> = [
+    { value: 'cash', label: 'Bar' },
+    { value: 'transfer', label: 'Überweisung' },
+    { value: 'invoice', label: 'Rechnung' }
+  ];
+
+  readonly customerTypeOptions: ReadonlyArray<{ value: CustomerType; label: string }> = [
+    { value: 'private', label: 'Privatkunde' },
+    { value: 'business', label: 'Geschäftskunde' }
+  ];
 
   // --- Settings form (5.1) ---
   readonly settingsForm = this.#formBuilder.nonNullable.group({
@@ -115,8 +178,18 @@ export class MoreComponent {
     void Promise.all([
       this.#printerService.refresh(),
       this.#customerService.refresh(),
-      this.#settingsService.refresh()
+      this.#settingsService.refresh(),
+      this.#calculationService.refresh()
     ]);
+
+    // Deep-links such as /more?neu=drucker (from the calculation empty state)
+    // open the matching create dialog immediately.
+    const neu = this.#route?.snapshot.queryParamMap.get('neu');
+    if (neu === 'drucker') {
+      this.openCreateDialog();
+    } else if (neu === 'kunde') {
+      this.openCreateCustomerDialog();
+    }
 
     effect(() => {
       const settings = this.#settingsService.settings();
@@ -165,6 +238,13 @@ export class MoreComponent {
     } finally {
       this.isSavingSettings.set(false);
     }
+  }
+
+  /** Discards unsaved settings edits and restores persisted values. */
+  cancelSettings(): void {
+    this.settingsSaveError.set(null);
+    this.settingsSaveSuccess.set(false);
+    this.populateSettingsForm();
   }
 
   getSettingsError(field: SettingsFormFieldName): string | null {
@@ -330,7 +410,10 @@ export class MoreComponent {
 
     this.isSaving.set(true);
     try {
-      const payload = this.form.getRawValue() as PrinterPayload;
+      const payload: PrinterPayload = {
+        ...this.form.getRawValue(),
+        compatibleMaterials: this.selectedMaterials()
+      };
       const editId = this.editingPrinterId();
       // Reuse the same payload path for create and update so the form stays simple.
       if (editId) {
@@ -356,11 +439,13 @@ export class MoreComponent {
     this.editingPrinterId.set(printer.id);
     this.form.setValue({
       name: printer.name,
+      bedType: printer.bedType ?? 'PEI-Platte',
       powerWatts: printer.powerWatts,
       purchasePriceEur: printer.purchasePriceEur,
       lifetimeHours: printer.lifetimeHours,
       note: printer.note ?? ''
     });
+    this.selectedMaterials.set([...(printer.compatibleMaterials ?? [])]);
     this.form.markAsPristine();
     this.form.markAsUntouched();
     this.isDialogOpen.set(true);
@@ -447,6 +532,9 @@ export class MoreComponent {
     this.customerForm.setValue({
       name: customer.name,
       contact: customer.contact ?? '',
+      paymentMethod: customer.paymentMethod ?? 'cash',
+      customerType: customer.customerType ?? 'private',
+      discountPercent: customer.discountPercent ?? 0,
       note: customer.note ?? ''
     });
     this.customerForm.markAsPristine();
@@ -533,6 +621,54 @@ export class MoreComponent {
     return 'Kein Kontakt oder Notiz';
   }
 
+  openCustomerDetail(customerId: string): void {
+    this.customerDetailId.set(customerId);
+  }
+
+  closeCustomerDetail(): void {
+    this.customerDetailId.set(null);
+  }
+
+  editCustomerFromDetail(customerId: string): void {
+    this.closeCustomerDetail();
+    this.startEditCustomer(customerId);
+  }
+
+  customerTypeLabel(type: CustomerType | undefined): string {
+    return this.customerTypeOptions.find((option) => option.value === type)?.label ?? 'Privatkunde';
+  }
+
+  formatDate(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.valueOf())
+      ? '—'
+      : new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+  }
+
+  formatEur(value: number): string {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value);
+  }
+
+  selectPaymentMethod(method: CustomerPaymentMethod): void {
+    this.customerForm.controls.paymentMethod.setValue(method);
+    this.customerForm.controls.paymentMethod.markAsDirty();
+  }
+
+  paymentMethodLabel(method: CustomerPaymentMethod | undefined): string {
+    return this.paymentMethodOptions.find((option) => option.value === method)?.label ?? '';
+  }
+
+  /** Builds the secondary list line, e.g. "+49 170 · Bar" (falls back to note). */
+  customerSubline(
+    contact: string | undefined,
+    note: string | undefined,
+    paymentMethod: CustomerPaymentMethod | undefined
+  ): string {
+    const primary = contact?.trim() || note?.trim();
+    const parts = [primary, this.paymentMethodLabel(paymentMethod)].filter((part): part is string => !!part);
+    return parts.length > 0 ? parts.join(' · ') : 'Kein Kontakt oder Notiz';
+  }
+
   getError(field: PrinterFormFieldName): string | null {
     const control = this.form.controls[field];
     if (!control.touched || !control.invalid) {
@@ -569,6 +705,8 @@ export class MoreComponent {
         return 'Bitte Kaufpreis eingeben';
       case 'lifetimeHours':
         return 'Bitte Lebensdauer eingeben';
+      case 'bedType':
+        return 'Bitte Druckbett-Typ prüfen';
       case 'note':
         return 'Bitte Notiz prüfen';
     }
@@ -591,13 +729,43 @@ export class MoreComponent {
     this.editingPrinterId.set(null);
     this.form.reset({
       name: '',
+      bedType: 'PEI-Platte',
       powerWatts: 250,
       purchasePriceEur: 0,
       lifetimeHours: 2000,
       note: ''
     });
+    this.selectedMaterials.set([]);
     this.form.markAsPristine();
     this.form.markAsUntouched();
+  }
+
+  // --- Compatible materials (printer dialog chips) ---
+
+  toggleMaterial(material: string): void {
+    this.selectedMaterials.update((materials) =>
+      materials.includes(material) ? materials.filter((entry) => entry !== material) : [...materials, material]
+    );
+    this.form.markAsDirty();
+  }
+
+  isMaterialSelected(material: string): boolean {
+    return this.selectedMaterials().includes(material);
+  }
+
+  /** List meta line for a printer, e.g. "PEI-Platte · PLA / PETG / ASA". */
+  printerMeta(printer: { bedType?: string; compatibleMaterials?: string[]; note?: string; powerWatts: number; lifetimeHours: number }): string {
+    const parts: string[] = [];
+    if (printer.bedType) {
+      parts.push(printer.bedType);
+    }
+    if (printer.compatibleMaterials && printer.compatibleMaterials.length > 0) {
+      parts.push(printer.compatibleMaterials.join(' / '));
+    }
+    if (parts.length > 0) {
+      return parts.join(' · ');
+    }
+    return printer.note || `${printer.powerWatts} W · ${printer.lifetimeHours} h Lebensdauer`;
   }
 
   private resetCustomerForm(): void {
@@ -605,6 +773,9 @@ export class MoreComponent {
     this.customerForm.reset({
       name: '',
       contact: '',
+      paymentMethod: 'cash',
+      customerType: 'private',
+      discountPercent: 0,
       note: ''
     });
     this.customerForm.markAsPristine();

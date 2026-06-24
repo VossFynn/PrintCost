@@ -1,83 +1,5 @@
 @use '../../shared/page-styles';
 
-// ── Page Header ───────────────────────────────────────────
-
-.mehr-page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--pc-space-3);
-  flex-wrap: wrap;
-
-  h1 { margin: 0; }
-}
-
-.mehr-page-header__actions { display: none; } // mobile: hidden
-
-.mehr-page-header__btn {
-  min-height: 2.25rem;
-  border: none;
-  border-radius: var(--pc-radius-input);
-  background: var(--pc-color-primary);
-  color: #fff;
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 700;
-  padding: 0 var(--pc-space-4);
-  cursor: pointer;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-1);
-  transition: opacity 0.15s ease;
-
-  &:hover { opacity: 0.9; }
-}
-
-// ── Mobile Hero ───────────────────────────────────────────
-
-.mehr-hero {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-3);
-  padding: var(--pc-space-3) 0 var(--pc-space-1);
-}
-
-.mehr-hero__icon {
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--pc-radius-md);
-  background: var(--pc-color-primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgb(196 98 45 / 30%);
-}
-
-.mehr-hero__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.mehr-hero__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--pc-color-ink-label);
-}
-
-.mehr-hero__subtitle {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--pc-color-ink-secondary);
-}
-
 // ── Group structure ───────────────────────────────────────
 
 .mehr-group {
@@ -391,6 +313,7 @@
   display: flex;
   gap: var(--pc-space-3);
   align-items: flex-start;
+  margin-top: var(--pc-space-3);
   padding: var(--pc-space-3) var(--pc-space-4);
   border-radius: var(--pc-radius-md);
   background: var(--pc-color-surface-accent-soft);
@@ -422,12 +345,12 @@
 // ── Kunden panel ──────────────────────────────────────────
 
 .mehr-panel {
-  display: grid;
+  // Mobile uses the compact customer preview above; the full searchable panel
+  // is a desktop-only affordance. Hiding it here removes the duplicate customer
+  // list and its extra add buttons on phones.
+  display: none;
   gap: var(--pc-space-3);
   align-content: start;
-  margin-top: var(--pc-space-4);
-
-  @media (min-width: 56rem) { margin-top: 0; }
 }
 
 .mehr-panel__header {
@@ -530,6 +453,27 @@
   min-width: 0;
 }
 
+.customer-list__identity--btn {
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  border-radius: var(--pc-radius-md);
+
+  &:hover .printer-list__name { color: var(--pc-color-primary); }
+}
+
+.customer-list__identity--full {
+  flex: 1;
+  justify-content: flex-start;
+
+  > div { flex: 1; min-width: 0; }
+  .mehr-nav-row__chevron { margin-left: auto; }
+}
+
 .customer-list__initials {
   display: inline-flex;
   align-items: center;
@@ -551,6 +495,127 @@
   font-size: 0.875rem;
   color: var(--pc-color-ink-secondary);
   text-align: center;
+}
+
+// ── Customer detail sheet ─────────────────────────────────
+
+.customer-detail__identity {
+  display: flex;
+  gap: var(--pc-space-3);
+  align-items: center;
+  min-width: 0;
+}
+
+.customer-list__initials--lg {
+  width: 3rem;
+  height: 3rem;
+  font-size: 0.9375rem;
+}
+
+.customer-detail__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pc-space-3);
+  margin-bottom: var(--pc-space-4);
+}
+
+.customer-detail__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-1);
+  padding: var(--pc-space-3);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-color-surface-card);
+}
+
+.customer-detail__card-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pc-color-ink-label);
+}
+
+.customer-detail__card-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pc-color-ink-primary);
+  overflow-wrap: anywhere;
+
+  &--primary { color: var(--pc-color-primary); font-size: 1.25rem; }
+}
+
+.customer-detail__card-sub {
+  font-size: 0.75rem;
+  color: var(--pc-color-ink-secondary);
+}
+
+.customer-detail__notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-1);
+  margin-bottom: var(--pc-space-4);
+  padding: var(--pc-space-3);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  background: var(--pc-color-surface-card);
+}
+
+.customer-detail__notes-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--pc-color-ink-secondary);
+  line-height: 1.5;
+}
+
+.customer-detail__section-label {
+  margin: 0 0 var(--pc-space-2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pc-color-ink-label);
+}
+
+.customer-detail__orders {
+  list-style: none;
+  margin: 0 0 var(--pc-space-4);
+  padding: 0;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+  overflow: hidden;
+}
+
+.customer-detail__order {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: var(--pc-space-3);
+  align-items: center;
+  padding: var(--pc-space-3);
+  border-bottom: 1px solid var(--pc-color-border-muted);
+  font-size: 0.875rem;
+
+  &:last-child { border-bottom: none; }
+}
+
+.customer-detail__order-name { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.customer-detail__order-date { color: var(--pc-color-ink-secondary); font-size: 0.8125rem; }
+.customer-detail__order-qty { color: var(--pc-color-ink-secondary); }
+.customer-detail__order-amount { font-weight: 700; text-align: right; }
+
+.customer-detail__empty {
+  margin: 0 0 var(--pc-space-4);
+  padding: var(--pc-space-4);
+  font-size: 0.875rem;
+  color: var(--pc-color-ink-secondary);
+  text-align: center;
+  border: 1px dashed var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-card);
+}
+
+@media (max-width: 30rem) {
+  .customer-detail__cards { grid-template-columns: 1fr; }
 }
 
 // ── Add customer button ───────────────────────────────────
@@ -967,6 +1032,8 @@
   position: relative;
   display: flex;
   align-items: center;
+
+  .printer-form__input { padding-right: 3rem; }
 }
 
 .printer-form__unit {
@@ -1027,6 +1094,44 @@
     background: var(--pc-color-surface-accent-soft);
     color: var(--pc-color-primary);
     font-weight: 700;
+  }
+}
+
+.printer-form__select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238c97a2' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+
+.printer-form__material-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-2);
+}
+
+.printer-form__material-chip {
+  min-height: 2.25rem;
+  padding: 0 var(--pc-space-3);
+  border: 1.5px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-ink-secondary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  &:hover { border-color: var(--pc-color-primary); }
+
+  &--active {
+    border-color: var(--pc-color-primary);
+    background: var(--pc-color-primary);
+    color: var(--pc-color-primary-foreground);
   }
 }
 
@@ -1105,11 +1210,7 @@
 
 @media (min-width: 56rem) {
 
-  // Header
-  .mehr-page-header__actions { display: flex; }
-
-  // Hide mobile hero and customer preview
-  .mehr-hero { display: none; }
+  // Hide mobile customer preview
   .mehr-customer-preview { display: none; }
 
   // Hide mobile nav
@@ -1121,12 +1222,17 @@
     margin-top: 0;
   }
 
-  // Drucker column headers
+  // Drucker column headers → styled like a real table header row
   .mehr-drucker__col-heads {
     display: grid;
     grid-template-columns: 1.75rem minmax(0, 1fr) 5rem 5rem 5.5rem 5.5rem 5.5rem 5.5rem;
     gap: var(--pc-space-2);
     padding: var(--pc-space-2) var(--pc-space-4);
+    margin-bottom: 0;
+    background: var(--pc-color-surface-muted);
+    border: 1px solid var(--pc-color-border-subtle);
+    border-bottom: none;
+    border-radius: var(--pc-radius-card) var(--pc-radius-card) 0 0;
 
     span {
       font-size: 0.625rem;
@@ -1144,9 +1250,10 @@
   // Text link button visible
   .mehr-text-link-btn { display: block; }
 
-  // Printer list → table rows
+  // Printer list → flat table rows between the header row and the add row
   .printer-list {
-    border-radius: var(--pc-radius-card);
+    border-radius: 0;
+    border-top: none;
   }
 
   .printer-list__item {
@@ -1183,8 +1290,9 @@
     &:hover { background: var(--pc-color-surface-muted); }
   }
 
-  // Kunden panel → in grid (no extra margin)
+  // Kunden panel → visible, in grid (no extra margin)
   .mehr-panel {
+    display: grid;
     border: 1px solid var(--pc-color-border-subtle);
     border-radius: var(--pc-radius-card);
     background: var(--pc-color-surface-card);
@@ -1233,7 +1341,7 @@
     max-height: 90dvh;
     border-radius: var(--pc-radius-card);
     box-shadow: 0 20px 60px rgb(44 62 80 / 25%);
-    animation: pc-dialog-in 0.22s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    animation: pc-dialog-center-in 0.22s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 
     &--sm { width: min(90vw, 28rem); }
   }

@@ -1,38 +1,24 @@
 <section class="page">
 
   <!-- ── Page Header ────────────────────────────────────── -->
-  <div class="filament-header">
-    <h1>Filamente</h1>
-    <button type="button" class="filament-header__filter-btn" aria-label="Filtern">≡</button>
-    <div class="filament-header__actions">
-      <label class="filament-search" for="filament-search-input">
-        <span class="filament-search__icon" aria-hidden="true">○</span>
-        <input
-          id="filament-search-input"
-          #searchInput
-          data-testid="filament-search"
-          type="search"
-          placeholder="Filament suchen…"
-          [value]="searchTerm()"
-          (input)="setSearchTerm(searchInput.value)"
-          class="filament-search__input"
-        />
-      </label>
-      <button type="button" class="filament-header__add-btn" (click)="openCreateDialog()">
-        + Filament hinzufügen
-      </button>
-    </div>
-  </div>
-
-  <!-- ── Mobile hero ───────────────────────────────────── -->
-  <div class="filament-hero">
-    <div class="filament-hero__icon" aria-hidden="true">⊚</div>
-    <div class="filament-hero__content">
-      <span class="filament-hero__eyebrow">Spulen &amp; Farben</span>
-      <p class="filament-hero__title">Filamente</p>
-      <p class="filament-hero__subtitle">{{ filaments().length }} Spule{{ filaments().length !== 1 ? 'n' : '' }}</p>
-    </div>
-  </div>
+  <app-page-header icon="◐" eyebrow="Spulen &amp; Farben" heading="Filamente" [subtitle]="headerSubtitle()">
+    <label class="filament-search" for="filament-search-input">
+      <span class="filament-search__icon" aria-hidden="true">⌕</span>
+      <input
+        id="filament-search-input"
+        #searchInput
+        data-testid="filament-search"
+        type="search"
+        placeholder="Filament suchen…"
+        [value]="searchTerm()"
+        (input)="setSearchTerm(searchInput.value)"
+        class="filament-search__input"
+      />
+    </label>
+    <button type="button" data-testid="open-filament-dialog" class="filament-header__add-btn" (click)="openCreateDialog()">
+      + Filament hinzufügen
+    </button>
+  </app-page-header>
 
   <!-- ── Filter Chips ───────────────────────────────────── -->
   <div class="filament-filter-row" aria-label="Filamentfilter">
@@ -74,13 +60,14 @@
           <span>Material</span>
           <span>Preis / g</span>
           <span>Restbestand</span>
-          <span>Restmenge</span>
           <span></span>
         </div>
 
-        <!-- List -->
+        <!-- List (grouped by material) -->
         <ul class="filament-list" aria-label="Aktive Filamente">
-          @for (filament of visibleFilaments(); track trackByFilamentId($index, filament)) {
+          @for (group of groupedFilaments(); track group.material) {
+            <li class="filament-list__group-head">{{ group.material }}</li>
+            @for (filament of group.items; track trackByFilamentId($index, filament)) {
             <li class="filament-list__item" data-testid="filament-item">
 
               <span class="filament-list__color-dot" [style.background-color]="filament.colorHex"></span>
@@ -95,27 +82,29 @@
               <!-- meta: on mobile = flex row below name; on desktop = display:contents → individual grid cells -->
               <div class="filament-list__meta">
                 <span class="filament-list__material-tag">{{ materialTag(filament.type) }}</span>
-                @if ((filament.remainingG ?? 0) > 0) {
-                  <div class="filament-list__bar-wrap">
-                    <div
-                      class="filament-list__stock-bar"
-                      [class.filament-list__stock-bar--low]="stockStateTone(filament.remainingG ?? 0) === 'low'"
-                      [class.filament-list__stock-bar--empty]="stockStateTone(filament.remainingG ?? 0) === 'empty'"
-                      [style.width.%]="stockPercent(filament)"
-                    ></div>
-                  </div>
-                }
-                <span
-                  data-testid="filament-stock-badge"
-                  class="filament-list__stock-value"
-                  [class.filament-list__stock-badge--empty]="(filament.remainingG ?? 0) === 0"
-                >
-                  @if ((filament.remainingG ?? 0) === 0) {
-                    Kein Bestand
-                  } @else {
-                    {{ filament.remainingG ?? 0 }} g
+                <div class="filament-list__stock">
+                  <span
+                    data-testid="filament-stock-badge"
+                    class="filament-list__stock-value"
+                    [class.filament-list__stock-badge--empty]="(filament.remainingG ?? 0) === 0"
+                  >
+                    @if ((filament.remainingG ?? 0) === 0) {
+                      Kein Bestand
+                    } @else {
+                      {{ filament.remainingG ?? 0 }} g
+                    }
+                  </span>
+                  @if ((filament.remainingG ?? 0) > 0) {
+                    <div class="filament-list__bar-wrap">
+                      <div
+                        class="filament-list__stock-bar"
+                        [class.filament-list__stock-bar--low]="stockStateTone(filament.remainingG ?? 0) === 'low'"
+                        [class.filament-list__stock-bar--empty]="stockStateTone(filament.remainingG ?? 0) === 'empty'"
+                        [style.width.%]="stockPercent(filament)"
+                      ></div>
+                    </div>
                   }
-                </span>
+                </div>
               </div>
 
               <span class="filament-list__price" data-testid="filament-price">
@@ -145,6 +134,7 @@
               </div>
 
             </li>
+            }
           }
         </ul>
       </div>
@@ -156,40 +146,29 @@
         <div class="filament-panel__card">
           <span class="filament-panel__stat-label">Spulen gesamt</span>
           <strong class="filament-panel__stat-value filament-panel__stat-value--large">{{ filaments().length }}</strong>
-          <span class="filament-panel__stat-sub">{{ filaments().length }} Spulen</span>
+          <span class="filament-panel__stat-sub">{{ materialTypeCount() }} Materialtyp{{ materialTypeCount() !== 1 ? 'en' : '' }}</span>
         </div>
 
         <div class="filament-panel__row">
           <div class="filament-panel__card">
             <span class="filament-panel__stat-label">Gesamtgewicht</span>
-            <strong class="filament-panel__stat-value">— g</strong>
+            <strong class="filament-panel__stat-value">{{ formatWeightG(totalRemainingG()) }}</strong>
           </div>
           <div class="filament-panel__card filament-panel__card--accent">
             <span class="filament-panel__stat-label">Wenig Vorrat</span>
-            <strong class="filament-panel__stat-value">—</strong>
+            <strong class="filament-panel__stat-value">{{ lowStockCount() }}</strong>
           </div>
         </div>
 
         <div class="filament-panel__card">
           <span class="filament-panel__stat-label">Warenwert</span>
-          <strong class="filament-panel__stat-value filament-panel__stat-value--primary">— €</strong>
-          <span class="filament-panel__stat-sub">über alle Spulen</span>
+          <strong class="filament-panel__stat-value filament-panel__stat-value--primary">{{ formatEur(totalStockValueEur()) }}</strong>
+          <span class="filament-panel__stat-sub">Ø {{ formatEur(averagePricePerGramEur()) }}/g über alle Spulen</span>
         </div>
       </aside>
 
     </div>
   }
-
-  <!-- ── Mobile FAB ─────────────────────────────────────── -->
-  <button
-    type="button"
-    data-testid="open-filament-dialog"
-    class="filament-fab"
-    (click)="openCreateDialog()"
-    aria-label="Neues Filament hinzufügen"
-  >
-    + Filament
-  </button>
 
 </section>
 
@@ -304,8 +283,32 @@
         <!-- ── Material + Spulengewicht + Restmenge ───── -->
         <div class="filament-form__grid-3">
           <div class="filament-form__field">
-            <label for="type" class="filament-form__label">Material *</label>
-            <input id="type" type="text" formControlName="type" class="filament-form__input" />
+            <span class="filament-form__label">Material *</span>
+            <div class="filament-form__material-group" role="group" aria-label="Material wählen">
+              @for (material of materialPresets; track material) {
+                <button
+                  type="button"
+                  class="filament-form__material-chip"
+                  [class.filament-form__material-chip--active]="isMaterialPresetActive(material)"
+                  [attr.aria-pressed]="isMaterialPresetActive(material)"
+                  (click)="selectMaterialPreset(material)"
+                >
+                  {{ material }}
+                </button>
+              }
+              <button
+                type="button"
+                class="filament-form__material-chip"
+                [class.filament-form__material-chip--active]="isCustomMaterialActive()"
+                [attr.aria-pressed]="isCustomMaterialActive()"
+                (click)="enableCustomMaterial()"
+              >
+                Andere
+              </button>
+            </div>
+            @if (isCustomMaterialActive()) {
+              <input id="type" type="text" formControlName="type" class="filament-form__input filament-form__input--custom-material" placeholder="z. B. PC, Nylon…" />
+            }
             @if (getError('type'); as message) {
               <p class="filament-form__error">{{ message }}</p>
             }

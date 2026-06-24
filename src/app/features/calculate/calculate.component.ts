@@ -11,6 +11,7 @@ import { PrinterService } from '../../core/printers/printer.service';
 import { SettingsService } from '../../core/settings/settings.service';
 import { calculate, CalculationInput, CalculationResult } from '../../domain/calculation/calculate';
 import { CalculationFilamentLineSnapshot, FilamentRecord, TemplateRecord } from '../../domain/models/storage.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 const LAST_USED_PRINTER_SETTING_KEY = 'lastUsedPrinterProfileId';
 const RESULT_ANNOUNCEMENT_DEBOUNCE_MS = 300;
@@ -37,7 +38,7 @@ type FilamentLineForm = FormGroup<{
 @Component({
   selector: 'app-calculate',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent],
   templateUrl: './calculate.component.html',
   styleUrl: './calculate.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -434,6 +435,12 @@ export class CalculateComponent {
    */
   formatCurrency(value: number): string {
     return this.#currencyFormatter.format(value);
+  }
+
+  /** Header subtitle, e.g. "Prusa MK4 · noch nicht gespeichert". */
+  headerSubtitle(): string {
+    const printer = this.activePrinters().find((entry) => entry.id === this.form.controls.printerId.value);
+    return printer ? `${printer.name} · noch nicht gespeichert` : 'Noch nicht gespeichert';
   }
 
   totalPieces(): number {

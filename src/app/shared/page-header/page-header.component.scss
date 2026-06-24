@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pc-space-3) var(--pc-space-4);
+  padding-bottom: var(--pc-space-4);
+  border-bottom: 1px solid var(--pc-color-border-subtle);
+}
+
+.page-header__lead {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-3);
+  min-width: 0;
+}
+
+.page-header__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--pc-radius-md);
+  background: var(--pc-color-surface-accent-soft);
+  color: var(--pc-color-primary);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.page-header__text {
+  min-width: 0;
+}
+
+.page-header__eyebrow {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--pc-color-ink-label);
+  margin-bottom: 0.15rem;
+}
+
+.page-header__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--pc-color-ink-primary);
+  overflow-wrap: anywhere;
+}
+
+.page-header__subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.875rem;
+  color: var(--pc-color-ink-secondary);
+  line-height: 1.4;
+}
+
+.page-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+
+/* On phones, actions drop to their own full-width row below the title. */
+@media (max-width: 47.999rem) {
+  .page-header__actions {
+    width: 100%;
+  }
+
+  /* The eyebrow ("Verwaltung & System" etc.) is redundant next to the large
+     title on phones and only adds visual clutter — hide it there. */
+  .page-header__eyebrow {
+    display: none;
+  }
+}

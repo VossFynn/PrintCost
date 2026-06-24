@@ -1,27 +1,21 @@
 <section class="page">
 
   <!-- ── Page Header ────────────────────────────────────── -->
-  <div class="inventory-header">
-    <h1>Bestand</h1>
-    <div class="inventory-header__actions">
-      <button type="button" class="inventory-header__search-btn" aria-label="Suchen">
-        <span aria-hidden="true">⌕</span> Suchen
-      </button>
-      <button type="button" class="inventory-header__book-btn" (click)="openDetail('')" aria-label="Drucklauf buchen">
-        + Drucklauf buchen
-      </button>
-    </div>
-  </div>
-
-  <!-- ── Mobile hero ────────────────────────────────────── -->
-  <div class="inventory-hero">
-    <div class="inventory-hero__icon" aria-hidden="true">⊡</div>
-    <div class="inventory-hero__content">
-      <span class="inventory-hero__eyebrow">Drucke &amp; Teile</span>
-      <p class="inventory-hero__title">Bestand</p>
-      <p class="inventory-hero__subtitle">{{ savedCalculations().length }} Drucke</p>
-    </div>
-  </div>
+  <app-page-header icon="▦" eyebrow="Drucke &amp; Teile" heading="Bestand" [subtitle]="headerSubtitle()">
+    <label class="inventory-search" for="inventory-search-input">
+      <span class="inventory-search__icon" aria-hidden="true">⌕</span>
+      <input
+        id="inventory-search-input"
+        #inventorySearchInput
+        type="search"
+        data-testid="inventory-search"
+        placeholder="Bestand suchen…"
+        [value]="searchTerm()"
+        (input)="searchTerm.set(inventorySearchInput.value)"
+        class="inventory-search__input"
+      />
+    </label>
+  </app-page-header>
 
   <!-- ── Tabs ───────────────────────────────────────────── -->
   <nav class="inventory-tabs" role="tablist" aria-label="Bestandsbereiche">
@@ -149,18 +143,18 @@
 
         <div class="inventory-panel__card">
           <span class="inventory-panel__stat-label">Gesamt gedruckt</span>
-          <strong class="inventory-panel__stat-value inventory-panel__stat-value--large">{{ savedCalculations().length }}</strong>
-          <span class="inventory-panel__stat-sub">{{ savedCalculations().length }} Projekte</span>
+          <strong class="inventory-panel__stat-value inventory-panel__stat-value--large">{{ totalPrinted() }}</strong>
+          <span class="inventory-panel__stat-sub">{{ savedCalculations().length }} Projekt{{ savedCalculations().length !== 1 ? 'e' : '' }}</span>
         </div>
 
         <div class="inventory-panel__row">
           <div class="inventory-panel__card">
             <span class="inventory-panel__stat-label">Verkauft</span>
-            <strong class="inventory-panel__stat-value">—</strong>
+            <strong class="inventory-panel__stat-value">{{ totalSold() }}</strong>
           </div>
           <div class="inventory-panel__card">
             <span class="inventory-panel__stat-label">Auf Lager</span>
-            <strong class="inventory-panel__stat-value">—</strong>
+            <strong class="inventory-panel__stat-value">{{ totalInStock() }}</strong>
           </div>
         </div>
 

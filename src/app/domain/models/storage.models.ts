@@ -12,6 +12,8 @@ export interface PrinterRecord {
   lifetimeHours: number;
   electricityPriceEurKwh?: number;
   annualBaseFeeEur?: number;
+  bedType?: string;
+  compatibleMaterials?: string[];
   note?: string;
   deleted: boolean;
   createdAt: string;
@@ -121,11 +123,17 @@ export interface SaleRecord {
 /**
  * Customer record stored in IndexedDB.
  */
+export type CustomerPaymentMethod = 'cash' | 'transfer' | 'invoice';
+export type CustomerType = 'private' | 'business';
+
 export interface CustomerRecord {
   id: string;
   name: string;
   contact?: string;
   note?: string;
+  paymentMethod?: CustomerPaymentMethod;
+  customerType?: CustomerType;
+  discountPercent?: number;
   deleted: boolean;
   createdAt: string;
   updatedAt: string;

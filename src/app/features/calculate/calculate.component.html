@@ -1,43 +1,38 @@
 <section class="page calculate-shell" data-testid="calculate-shell">
 
   <!-- ── Page header ──────────────────────────────────────── -->
-  <div class="calc-page-header">
-    <div class="calc-page-header__title">
-      <span class="calc-page-header__breadcrumb">Kalkulation</span>
-      <div class="calc-page-hero" aria-hidden="true">
-        <div class="calc-hero-icon">◈</div>
-        <span class="calc-hero-eyebrow">Neue Kalkulation</span>
-      </div>
-      <h1>{{ form.controls.projectName.value || 'Neue Kalkulation' }}</h1>
-    </div>
-    <div class="calc-header-actions">
-      <button
-        data-testid="load-template"
-        type="button"
-        class="calc-page-header__load-btn"
-        [disabled]="isTemplateLoadBlocked() || !hasTemplates()"
-        (click)="loadTemplateSelection()"
-      >
-        Vorlage laden
-      </button>
-      <button
-        type="button"
-        class="calc-header-actions__btn"
-        [disabled]="isSaveDisabled()"
-        (click)="saveAsTemplate()"
-      >
-        Als Vorlage
-      </button>
-      <button
-        type="button"
-        class="calc-header-actions__btn calc-header-actions__btn--primary"
-        [disabled]="isSaveDisabled()"
-        (click)="saveCalculationDraft()"
-      >
-        Speichern
-      </button>
-    </div>
-  </div>
+  <app-page-header
+    icon="▣"
+    eyebrow="Neue Kalkulation"
+    [heading]="form.controls.projectName.value || 'Neue Kalkulation'"
+    [subtitle]="headerSubtitle()"
+  >
+    <button
+      data-testid="load-template"
+      type="button"
+      class="calc-page-header__load-btn"
+      [disabled]="isTemplateLoadBlocked() || !hasTemplates()"
+      (click)="loadTemplateSelection()"
+    >
+      Vorlage laden
+    </button>
+    <button
+      type="button"
+      class="calc-header-actions__btn"
+      [disabled]="isSaveDisabled()"
+      (click)="saveAsTemplate()"
+    >
+      Als Vorlage
+    </button>
+    <button
+      type="button"
+      class="calc-header-actions__btn calc-header-actions__btn--primary"
+      [disabled]="isSaveDisabled()"
+      (click)="saveCalculationDraft()"
+    >
+      Speichern
+    </button>
+  </app-page-header>
 
   @if (loadError(); as loadMessage) {
     <p class="calc-error">{{ loadMessage }}</p>
@@ -77,7 +72,7 @@
         @if (!hasActivePrinters()) {
           <div class="calc-empty-state" data-testid="calculate-printer-empty">
             <p>Noch kein aktives Druckerprofil vorhanden.</p>
-            <a routerLink="/more">Erst Drucker anlegen</a>
+            <a routerLink="/more" [queryParams]="{ neu: 'drucker' }">Erst Drucker anlegen</a>
           </div>
         } @else {
           <div class="calc-field-row">
@@ -128,7 +123,7 @@
         @if (!hasActiveFilaments()) {
           <div class="calc-empty-state" data-testid="filament-empty">
             <p>Noch kein aktives Filament vorhanden.</p>
-            <a routerLink="/filaments">Filament hinzufügen</a>
+            <a routerLink="/filaments" [queryParams]="{ neu: '1' }">Filament hinzufügen</a>
           </div>
         } @else {
           <div class="calc-chip-row" aria-label="Filamente auswählen">

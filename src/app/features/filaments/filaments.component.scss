@@ -1,46 +1,11 @@
 @use '../../shared/page-styles';
 
-// ── Page Header ───────────────────────────────────────────
-
-.filament-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  align-items: center;
-  gap: var(--pc-space-2) var(--pc-space-3);
-
-  h1 { margin: 0; grid-column: 1; grid-row: 1; }
-}
-
-// Mobile filter button (top-right next to h1)
-.filament-header__filter-btn {
-  grid-column: 2;
-  grid-row: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.25rem;
-  min-width: 2.25rem;
-  border: 1.5px solid var(--pc-color-border-subtle);
-  border-radius: var(--pc-radius-input);
-  background: var(--pc-color-surface-card);
-  color: var(--pc-color-ink-secondary);
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-// Search + add button: full width on row 2 on mobile
-.filament-header__actions {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-2);
-}
+// ── Header actions (projected into app-page-header) ───────
 
 .filament-header__add-btn {
-  display: none; // FAB handles this on mobile
-  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
   border: none;
   border-radius: var(--pc-radius-input);
   background: var(--pc-color-primary);
@@ -57,14 +22,13 @@
   &:hover { opacity: 0.9; }
 }
 
-// ── Search ────────────────────────────────────────────────
-
 .filament-search {
   display: flex;
   align-items: center;
   gap: var(--pc-space-2);
   flex: 1;
-  min-height: 2.25rem;
+  min-width: 11rem;
+  min-height: 2.5rem;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);
@@ -89,57 +53,6 @@
 
   &::placeholder { color: var(--pc-color-ink-muted); }
   &:focus { outline: none; }
-}
-
-// ── Mobile Hero ───────────────────────────────────────────
-
-.filament-hero {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-3);
-  padding: var(--pc-space-3) 0 var(--pc-space-1);
-}
-
-.filament-hero__icon {
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--pc-radius-md);
-  background: var(--pc-color-primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  box-shadow: 0 2px 8px rgb(196 98 45 / 30%);
-}
-
-.filament-hero__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.filament-hero__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--pc-color-ink-label);
-}
-
-.filament-hero__title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--pc-color-ink-primary);
-}
-
-.filament-hero__subtitle {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--pc-color-ink-secondary);
 }
 
 // ── Filter Chips ──────────────────────────────────────────
@@ -213,8 +126,18 @@
   display: grid;
   gap: var(--pc-space-2);
   margin: 0;
-  padding: 0 0 5rem; // bottom padding for FAB
+  padding: 0 0 var(--pc-space-4);
   list-style: none;
+}
+
+.filament-list__group-head {
+  list-style: none;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pc-color-ink-label);
+  padding: var(--pc-space-2) var(--pc-space-1) 0;
 }
 
 .filament-list__item {
@@ -288,6 +211,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.filament-list__stock {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  flex: 1;
+  min-width: 0;
 }
 
 .filament-list__bar-wrap {
@@ -436,34 +367,6 @@
   color: var(--pc-color-ink-muted);
 }
 
-// ── Mobile FAB ────────────────────────────────────────────
-
-.filament-fab {
-  position: fixed;
-  bottom: calc(5.5rem + env(safe-area-inset-bottom));
-  right: max(var(--pc-space-4), calc(50% - 24rem + var(--pc-space-4)));
-  min-height: 3rem;
-  border: none;
-  border-radius: 9999px;
-  background: var(--pc-color-primary);
-  color: #fff;
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  padding: 0 var(--pc-space-5);
-  box-shadow: 0 6px 20px rgb(196 98 45 / 35%);
-  cursor: pointer;
-  z-index: 10;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
-
-  &:hover {
-    box-shadow: 0 8px 24px rgb(196 98 45 / 45%);
-    transform: translateY(-1px);
-  }
-
-  &:active { transform: translateY(0); }
-}
-
 // ── Sheet / Dialog ────────────────────────────────────────
 
 .sheet-backdrop {
@@ -584,6 +487,38 @@
   > :first-child { grid-column: 1 / -1; }
 }
 
+.filament-form__material-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-2);
+}
+
+.filament-form__material-chip {
+  min-height: 2.5rem;
+  padding: 0 var(--pc-space-3);
+  border: 1.5px solid var(--pc-color-border-subtle);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-ink-secondary);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  &:hover { border-color: var(--pc-color-primary); }
+
+  &--active {
+    border-color: var(--pc-color-primary);
+    background: var(--pc-color-primary);
+    color: var(--pc-color-primary-foreground);
+  }
+}
+
+.filament-form__input--custom-material {
+  margin-top: var(--pc-space-2);
+}
+
 .filament-form__input {
   min-height: 2.75rem;
   min-width: 0;
@@ -700,24 +635,38 @@
 
 .filament-form__purchase-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr auto;
+  grid-template-areas:
+    'price qty  remove'
+    'date  date remove';
   gap: var(--pc-space-2);
-  align-items: start;
+  align-items: center;
 
-  .filament-form__input--date { grid-column: 1 / -1; }
+  // Price/quantity sit on the top row, the date spans the width below them,
+  // and the remove button stays anchored on the right across both rows —
+  // instead of the ✕ wrapping to a lonely line at the bottom.
+  > .filament-form__input-unit:nth-of-type(1) { grid-area: price; }
+  > .filament-form__input-unit:nth-of-type(2) { grid-area: qty; }
+  .filament-form__input--date { grid-area: date; }
+  .filament-form__remove-purchase { grid-area: remove; }
 }
 
 @media (min-width: 36rem) {
   .filament-form__purchase-row {
     grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-areas: none;
 
-    .filament-form__input--date { grid-column: auto; }
+    > .filament-form__input-unit:nth-of-type(1),
+    > .filament-form__input-unit:nth-of-type(2),
+    .filament-form__input--date,
+    .filament-form__remove-purchase { grid-area: auto; }
   }
 }
 
 .filament-form__remove-purchase {
   width: 2.75rem;
   height: 2.75rem;
+  align-self: center;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-sm);
   background: transparent;
@@ -810,37 +759,25 @@
 
 @media (min-width: 56rem) {
 
-  .filament-hero { display: none; }
-
-  .filament-header__filter-btn { display: none; }
-  .filament-header__add-btn { display: flex; align-items: center; }
-
-  // On desktop: header becomes 3 columns (h1 | search | add-btn)
-  .filament-header {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-rows: auto;
-    h1 { grid-column: 1; grid-row: 1; }
-  }
-
-  .filament-header__actions {
-    grid-column: 2 / -1;
-    grid-row: 1;
-  }
-
-  .filament-search { flex: 1; }
+  // On desktop the search keeps a comfortable fixed width instead of stretching.
+  .filament-search { flex: 0 1 18rem; }
 
   // Two-column layout
   .filament-layout {
     grid-template-columns: minmax(0, 1fr) 17rem;
   }
 
-  // Column headers
+  // Column headers → styled like a table header row
   .filament-col-heads {
     display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(5rem, 8rem) 7rem 3rem;
+    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(6rem, 9rem) 3rem;
     gap: var(--pc-space-3);
     padding: var(--pc-space-2) var(--pc-space-3);
-    margin-bottom: var(--pc-space-1);
+    margin-bottom: 0;
+    background: var(--pc-color-surface-muted);
+    border: 1px solid var(--pc-color-border-subtle);
+    border-bottom: none;
+    border-radius: var(--pc-radius-card) var(--pc-radius-card) 0 0;
 
     span {
       font-size: 0.6875rem;
@@ -848,23 +785,32 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--pc-color-ink-label);
+
+      &:nth-child(5) { text-align: right; }
     }
   }
 
-  // List: remove card-gap, use table rows
+  // List: remove card-gap, use table rows (attached beneath the header row)
   .filament-list {
     display: block;
     padding: 0;
     border: 1px solid var(--pc-color-border-subtle);
-    border-radius: var(--pc-radius-card);
+    border-top: none;
+    border-radius: 0 0 var(--pc-radius-card) var(--pc-radius-card);
     background: var(--pc-color-surface-card);
     overflow: hidden;
   }
 
+  .filament-list__group-head {
+    padding: var(--pc-space-2) var(--pc-space-3);
+    background: var(--pc-color-surface-muted);
+    border-bottom: 1px solid var(--pc-color-border-muted);
+  }
+
   .filament-list__item {
-    // Named-area grid for 7 columns
-    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(5rem, 8rem) 7rem 3rem;
-    grid-template-areas: 'dot name material price bar stock acts';
+    // Named-area grid for 6 columns
+    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(6rem, 9rem) 3rem;
+    grid-template-areas: 'dot name material price stock acts';
     grid-template-rows: auto;
     column-gap: var(--pc-space-3);
     row-gap: 0;
@@ -901,16 +847,24 @@
 
   .filament-list__material-tag { grid-area: material; }
 
+  // Restbestand cell: current stock value with the level bar beneath it.
+  .filament-list__stock {
+    grid-area: stock;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
   .filament-list__bar-wrap {
-    grid-area: bar;
     flex: none;
     width: 100%;
     min-width: unset;
   }
 
   .filament-list__stock-value {
-    grid-area: stock;
     font-size: 0.8125rem;
+    font-weight: 600;
     text-align: right;
     flex: none;
   }
@@ -947,12 +901,6 @@
   // Stats panel visible on desktop
   .filament-panel { display: block; }
 
-  // FAB moves to bottom-right corner
-  .filament-fab {
-    bottom: var(--pc-space-6);
-    right: var(--pc-space-6);
-  }
-
   // Dialog: centered modal
   .filament-sheet {
     left: 50%;
@@ -964,7 +912,7 @@
     max-height: 88dvh;
     border-radius: var(--pc-radius-card);
     box-shadow: 0 24px 60px rgb(44 62 80 / 30%);
-    animation: pc-dialog-in 0.2s ease both;
+    animation: pc-dialog-center-in 0.2s ease both;
   }
 
   .sheet-handle { display: none; }

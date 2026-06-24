@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { FilamentPayload, FilamentService } from '../../core/filaments/filament.service';
 import { FilamentRecord } from '../../domain/models/storage.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 type FilamentFormFieldName =
   | 'name'
@@ -26,7 +28,7 @@ type FilamentFilter = 'Alle' | 'PLA' | 'PETG' | 'ABS' | 'TPU' | 'Anderes';
 @Component({
   selector: 'app-filaments',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
   templateUrl: './filaments.component.html',
   styleUrl: './filaments.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -34,6 +36,7 @@ type FilamentFilter = 'Alle' | 'PLA' | 'PETG' | 'ABS' | 'TPU' | 'Anderes';
 export class FilamentsComponent {
   readonly #filamentService = inject(FilamentService);
   readonly #formBuilder = inject(FormBuilder);
+  readonly #route = inject(ActivatedRoute, { optional: true });
   readonly #materialFilters = new Set<Exclude<FilamentFilter, 'Alle' | 'Anderes'>>(['PLA', 'PETG', 'ABS', 'TPU']);
 
   readonly form = this.#formBuilder.nonNullable.group({
@@ -55,6 +58,8 @@ export class FilamentsComponent {
   readonly searchTerm = signal('');
   readonly selectedFilter = signal<FilamentFilter>('Alle');
   readonly filamentFilters = ['Alle', 'PLA', 'PETG', 'ABS', 'TPU', 'Anderes'] as const;
+  readonly materialPresets = ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'PA'] as const;
+  readonly showCustomMaterial = signal(false);
 
   readonly filaments = this.#filamentService.activeFilaments;
   readonly visibleFilaments = computed(() => {
@@ -81,12 +86,76 @@ export class FilamentsComponent {
     });
   });
 
+  /** Distinct material types in stock (e.g. PLA, PETG, ABS). */
+  readonly materialTypeCount = computed(
+    () => new Set(this.filaments().map((filament) => this.materialTag(filament.type))).size
+  );
+
+  /** Comma-separated distinct materials, e.g. "PLA, PETG, ABS". */
+  readonly materialTypeList = computed(() =>
+    [...new Set(this.filaments().map((filament) => this.materialTag(filament.type)))].join(', ')
+  );
+
+  /** Header subtitle, e.g. "6 Spulen · PLA, PETG, ABS". */
+  readonly headerSubtitle = computed(() => {
+    const count = this.filaments().length;
+    const base = `${count} Spule${count !== 1 ? 'n' : ''}`;
+    const materials = this.materialTypeList();
+    return materials ? `${base} · ${materials}` : base;
+  });
+
+  /** Total remaining filament across all spools, in grams. */
+  readonly totalRemainingG = computed(() =>
+    this.filaments().reduce((sum, filament) => sum + (filament.remainingG ?? 0), 0)
+  );
+
+  /** Spools running low (≤ 25 % of roll remaining, but not empty). */
+  readonly lowStockCount = computed(
+    () =>
+      this.filaments().filter((filament) => {
+        const remaining = filament.remainingG ?? 0;
+        return remaining > 0 && this.stockPercent(filament) <= 25;
+      }).length
+  );
+
+  /** Total inventory value (remaining grams × price/g) across all spools. */
+  readonly totalStockValueEur = computed(() =>
+    this.filaments().reduce((sum, filament) => sum + (filament.remainingG ?? 0) * this.pricePerGram(filament), 0)
+  );
+
+  /** Average €/g weighted across remaining stock. */
+  readonly averagePricePerGramEur = computed(() => {
+    const totalG = this.totalRemainingG();
+    return totalG > 0 ? this.totalStockValueEur() / totalG : 0;
+  });
+
+  /** Visible filaments grouped by material, in a stable display order. */
+  readonly groupedFilaments = computed(() => {
+    const order: FilamentFilter[] = ['PLA', 'PETG', 'ABS', 'TPU', 'Anderes'];
+    const buckets = new Map<FilamentFilter, FilamentRecord[]>();
+    for (const filament of this.visibleFilaments()) {
+      const material = this.materialTag(filament.type);
+      const bucket = buckets.get(material) ?? [];
+      bucket.push(filament);
+      buckets.set(material, bucket);
+    }
+    return order
+      .filter((material) => buckets.has(material))
+      .map((material) => ({ material, items: buckets.get(material)! }));
+  });
+
   get purchaseGroups() {
     return this.purchases.controls;
   }
 
   constructor() {
     void this.#filamentService.refresh();
+
+    // Opening with ?neu=1 (e.g. from the calculation empty state) jumps straight
+    // into the create dialog instead of just landing on the list.
+    if (this.#route?.snapshot.queryParamMap.has('neu')) {
+      this.openCreateDialog();
+    }
   }
 
   openCreateDialog(): void {
@@ -101,6 +170,32 @@ export class FilamentsComponent {
 
   selectFilter(filter: FilamentFilter): void {
     this.selectedFilter.set(filter);
+  }
+
+  /** Sets the material type from a preset chip. */
+  selectMaterialPreset(material: string): void {
+    this.form.controls.type.setValue(material);
+    this.form.controls.type.markAsDirty();
+    this.showCustomMaterial.set(false);
+  }
+
+  isMaterialPresetActive(material: string): boolean {
+    return !this.showCustomMaterial() && this.form.controls.type.value.trim().toUpperCase() === material;
+  }
+
+  /** Reveals the free-text field for a material outside the preset list. */
+  enableCustomMaterial(): void {
+    this.showCustomMaterial.set(true);
+    const current = this.form.controls.type.value.trim().toUpperCase();
+    if ((this.materialPresets as readonly string[]).includes(current)) {
+      this.form.controls.type.setValue('');
+    }
+  }
+
+  /** Whether the "Andere" chip should appear active (custom material entered). */
+  isCustomMaterialActive(): boolean {
+    const current = this.form.controls.type.value.trim().toUpperCase();
+    return this.showCustomMaterial() || (!!current && !(this.materialPresets as readonly string[]).includes(current));
   }
 
   async requestDelete(filamentId: string): Promise<void> {
@@ -143,6 +238,9 @@ export class FilamentsComponent {
       multiColorSurchargeEurKg: filament.multiColorSurchargeEurKg ?? 0,
       fixedPriceEurG: filament.fixedPriceEurG ?? 0
     });
+
+    const editType = filament.type.trim().toUpperCase();
+    this.showCustomMaterial.set(!!editType && !(this.materialPresets as readonly string[]).includes(editType));
 
     while (this.purchases.length > 0) {
       this.purchases.removeAt(0);
@@ -358,6 +456,28 @@ export class FilamentsComponent {
     return this.filamentFilters.includes(normalized) ? normalized : 'Anderes';
   }
 
+  /** Resolves a numeric €/g for a filament (weighted average, else fixed price, else 0). */
+  pricePerGram(filament: FilamentRecord): number {
+    if (filament.purchases && filament.purchases.length > 0) {
+      try {
+        return this.#filamentService.weightedAveragePricePerGram(filament);
+      } catch {
+        return filament.fixedPriceEurG ?? 0;
+      }
+    }
+    return filament.fixedPriceEurG ?? 0;
+  }
+
+  /** Formats a gram amount with German grouping (e.g. "2.934 g"). */
+  formatWeightG(grams: number): string {
+    return `${Math.round(grams).toLocaleString('de-DE')} g`;
+  }
+
+  /** Formats an EUR amount for the stats panel. */
+  formatEur(value: number): string {
+    return `${value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+  }
+
   formatPricePerGram(filament: FilamentRecord): string {
     if (!filament.purchases || filament.purchases.length === 0) {
       return '–';
@@ -406,6 +526,7 @@ export class FilamentsComponent {
 
   private resetForm(): void {
     this.editingFilamentId.set(null);
+    this.showCustomMaterial.set(false);
     this.form.reset({
       name: '',
       type: '',

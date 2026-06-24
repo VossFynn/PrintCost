@@ -7,6 +7,7 @@ import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CalculationDetailView, CalculationService } from '../../core/calculations/calculation.service';
 import { CustomerService } from '../../core/customers/customer.service';
 import { CalculationRecord } from '../../domain/models/storage.models';
+import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 type InventoryArea = 'drucke' | 'teile';
 type DruckeFilter = 'Alle' | 'Auf Lager' | 'Teilweise' | 'Vollständig' | 'Verschenkt';
@@ -27,7 +28,7 @@ interface InventoryCardViewModel {
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
   templateUrl: './inventory.component.html',
   styleUrl: './inventory.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -45,15 +46,28 @@ export class InventoryComponent {
   readonly druckeFilters: DruckeFilter[] = ['Alle', 'Auf Lager', 'Teilweise', 'Vollständig', 'Verschenkt'];
   readonly activeArea = signal<InventoryArea>('drucke');
   readonly activeDruckeFilter = signal<DruckeFilter>('Alle');
+  readonly searchTerm = signal('');
   readonly actionFeedback = signal<string | null>(null);
   readonly detailError = signal<string | null>(null);
   readonly #routeDetailId = signal<string | null>(null);
   readonly #localDetailId = signal<string | null>(null);
   readonly selectedDetail = signal<CalculationDetailView | null>(null);
   readonly druckeCards = computed(() => this.savedCalculations().map((record) => mapInventoryCard(record)));
-  readonly visibleDruckeCards = computed(() =>
-    this.druckeCards().filter((card) => matchesDruckeFilter(card, this.activeDruckeFilter()))
-  );
+  readonly visibleDruckeCards = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    return this.druckeCards().filter(
+      (card) =>
+        matchesDruckeFilter(card, this.activeDruckeFilter()) &&
+        (!term || card.projectName.toLowerCase().includes(term))
+    );
+  });
+  readonly headerSubtitle = computed(() => {
+    const count = this.savedCalculations().length;
+    return `${count} Druck${count !== 1 ? 'e' : ''}`;
+  });
+  readonly totalPrinted = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesPrinted, 0));
+  readonly totalSold = computed(() => this.druckeCards().reduce((sum, card) => sum + card.timesSold, 0));
+  readonly totalInStock = computed(() => this.druckeCards().reduce((sum, card) => sum + card.remainingCount, 0));
   readonly activeDetailId = computed(() => this.#routeDetailId() ?? this.#localDetailId());
   readonly detailFilamentSummary = computed(() => {
     const detail = this.selectedDetail();

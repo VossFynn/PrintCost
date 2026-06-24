@@ -1,21 +1,7 @@
 <section class="page">
 
   <!-- ── Page Header ─────────────────────────────────────── -->
-  <div class="mehr-page-header">
-    <h1>Mehr</h1>
-    <div class="mehr-page-header__actions">
-      <button type="button" class="mehr-page-header__btn" (click)="openCreateDialog()">+ Hinzufügen</button>
-    </div>
-  </div>
-
-  <!-- ── Mobile hero ─────────────────────────────────────── -->
-  <div class="mehr-hero">
-    <div class="mehr-hero__icon" aria-hidden="true">⋯</div>
-    <div class="mehr-hero__content">
-      <span class="mehr-hero__eyebrow">Einstellungen</span>
-      <p class="mehr-hero__subtitle">{{ printers().length }} Drucker · {{ customers().length }} Kunden</p>
-    </div>
-  </div>
+  <app-page-header icon="⋯" eyebrow="Verwaltung &amp; System" heading="Mehr" [subtitle]="headerSubtitle()"></app-page-header>
 
   <!-- ── Mobile nav card (hidden on desktop) ─────────────── -->
   <section class="mehr-mobile-nav mehr-group" aria-label="Verwaltung">
@@ -29,15 +15,6 @@
         </div>
         <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
       </button>
-      <div class="mehr-nav-divider"></div>
-      <button type="button" class="mehr-nav-row" data-testid="open-customer-dialog" (click)="openCreateCustomerDialog()">
-        <span class="mehr-nav-row__icon" aria-hidden="true">◎</span>
-        <div class="mehr-nav-row__body">
-          <p class="mehr-nav-row__title">Kunden</p>
-          <p class="mehr-nav-row__meta">{{ customers().length }} Kunden · Name, Notiz, Kontakt</p>
-        </div>
-        <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
-      </button>
     </div>
   </section>
 
@@ -48,14 +25,14 @@
       <ul class="customer-list mehr-customer-preview__list" aria-label="Kunden">
         @for (customer of customers().slice(0, 3); track customer.id) {
           <li class="customer-list__item">
-            <div class="customer-list__identity">
+            <button type="button" class="customer-list__identity customer-list__identity--btn customer-list__identity--full" (click)="openCustomerDetail(customer.id)">
               <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
               <div>
                 <p class="printer-list__name">{{ customer.name }}</p>
-                <p class="printer-list__meta">{{ customerPreview(customer.contact, customer.note) }}</p>
+                <p class="printer-list__meta">{{ customerSubline(customer.contact, customer.note, customer.paymentMethod) }}</p>
               </div>
-            </div>
-            <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
+              <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
+            </button>
           </li>
         }
       </ul>
@@ -85,6 +62,7 @@
 
         <!-- Desktop column headers -->
         <div class="mehr-drucker__col-heads" aria-hidden="true">
+          <span></span>
           <span>Drucker</span>
           <span>Leistung</span>
           <span>Strom €/kWh</span>
@@ -101,7 +79,7 @@
                 <span class="printer-list__status-dot" aria-hidden="true"></span>
                 <div class="printer-list__info">
                   <p class="printer-list__name">{{ printer.name }}</p>
-                  <p class="printer-list__meta">{{ printer.note || (printer.powerWatts + ' W · ' + printer.lifetimeHours + ' h Lebensdauer') }}</p>
+                  <p class="printer-list__meta">{{ printerMeta(printer) }}</p>
                 </div>
                 <span class="printer-list__col">{{ printer.powerWatts }}&thinsp;W</span>
                 <span class="printer-list__col">{{ settingsForm.controls.electricityPriceEurKwh.value | number:'1.2-2' }}&thinsp;€</span>
@@ -139,23 +117,35 @@
           <h2 class="mehr-panel__title">Kunden</h2>
           <p class="mehr-panel__subtitle">{{ customers().length }} Einträge</p>
         </div>
-        <button type="button" class="mehr-panel__add-btn" (click)="openCreateCustomerDialog()">+ Neu</button>
+        <button type="button" class="mehr-panel__add-btn" data-testid="open-customer-dialog" (click)="openCreateCustomerDialog()">+ Neu</button>
       </div>
       <label class="mehr-panel__search" aria-label="Kunden suchen">
         <span class="mehr-panel__search-icon" aria-hidden="true">⌕</span>
-        <input type="search" class="mehr-panel__search-input" placeholder="Kunden suchen…" />
+        <input
+          #customerSearchInput
+          type="search"
+          class="mehr-panel__search-input"
+          placeholder="Kunden suchen…"
+          data-testid="customer-search"
+          [value]="customerSearchTerm()"
+          (input)="customerSearchTerm.set(customerSearchInput.value)"
+        />
       </label>
-      @if (customers().length > 0) {
+      @if (customers().length === 0) {
+        <p class="customer-list__empty">Noch kein aktiver Kunde vorhanden.</p>
+      } @else if (visibleCustomers().length === 0) {
+        <p class="customer-list__empty">Keine Kunden gefunden.</p>
+      } @else {
         <ul class="customer-list" aria-label="Aktive Kunden">
-          @for (customer of customers(); track customer.id) {
+          @for (customer of visibleCustomers(); track customer.id) {
             <li class="customer-list__item">
-              <div class="customer-list__identity">
+              <button type="button" class="customer-list__identity customer-list__identity--btn" data-testid="open-customer-detail" (click)="openCustomerDetail(customer.id)">
                 <span class="customer-list__initials">{{ customerInitials(customer.name) }}</span>
                 <div>
                   <p class="printer-list__name">{{ customer.name }}</p>
-                  <p class="printer-list__meta">{{ customerPreview(customer.contact, customer.note) }}</p>
+                  <p class="printer-list__meta">{{ customerSubline(customer.contact, customer.note, customer.paymentMethod) }}</p>
                 </div>
-              </div>
+              </button>
               <div class="printer-list__actions">
                 <button type="button" class="printer-list__edit" (click)="startEditCustomer(customer.id)" aria-label="Kunde bearbeiten">✎</button>
                 <button type="button" data-testid="delete-customer" class="printer-list__delete" (click)="requestDeleteCustomer(customer.id)" aria-label="Kunde löschen">✕</button>
@@ -163,10 +153,7 @@
             </li>
           }
         </ul>
-      } @else {
-        <p class="customer-list__empty">Noch kein aktiver Kunde vorhanden.</p>
       }
-      <button type="button" class="customer-add-btn" (click)="openCreateCustomerDialog()">+ Kunde hinzufügen</button>
     </aside>
 
   </div>
@@ -297,7 +284,7 @@
             }
 
             <div class="settings-form__actions">
-              <button type="button" class="settings-form__cancel">Abbrechen</button>
+              <button type="button" class="settings-form__cancel" [disabled]="!settingsForm.dirty" (click)="cancelSettings()">Abbrechen</button>
               <button type="submit" data-testid="save-settings" class="settings-form__btn" [disabled]="isSavingSettings() || settingsForm.invalid">
                 Speichern
               </button>
@@ -388,12 +375,21 @@
       <form class="printer-form" [formGroup]="form" (ngSubmit)="savePrinter()">
 
         <div class="printer-form__grid printer-form__grid--2col">
-          <div class="printer-form__row printer-form__row--wide">
+          <div class="printer-form__row">
             <label class="printer-form__label" for="name">Druckername *</label>
             <input id="name" data-testid="name" type="text" formControlName="name" class="printer-form__input printer-form__input--focus" placeholder="z. B. Prusa MK4" />
             @if (getError('name'); as message) {
               <p class="printer-form__error">{{ message }}</p>
             }
+          </div>
+
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="bedType">Druckbett-Typ</label>
+            <select id="bedType" data-testid="bed-type" formControlName="bedType" class="printer-form__input printer-form__select">
+              @for (option of bedTypeOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
           </div>
 
           <div class="printer-form__row">
@@ -430,8 +426,25 @@
           </div>
 
           <div class="printer-form__row printer-form__row--wide">
+            <span class="printer-form__label">Kompatible Materialien</span>
+            <div class="printer-form__material-group" role="group" aria-label="Kompatible Materialien wählen">
+              @for (material of materialOptions; track material) {
+                <button
+                  type="button"
+                  class="printer-form__material-chip"
+                  [class.printer-form__material-chip--active]="isMaterialSelected(material)"
+                  [attr.aria-pressed]="isMaterialSelected(material)"
+                  (click)="toggleMaterial(material)"
+                >
+                  {{ material }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="printer-form__row printer-form__row--wide">
             <label class="printer-form__label" for="note">Notiz (optional)</label>
-            <textarea id="note" rows="2" formControlName="note" class="printer-form__input printer-form__textarea" placeholder="z. B. AMS vorhanden, PEI-Platte…"></textarea>
+            <textarea id="note" rows="2" formControlName="note" class="printer-form__input printer-form__textarea" placeholder="z. B. AMS vorhanden, Ersatzdüse…"></textarea>
             @if (getError('note'); as message) {
               <p class="printer-form__error">{{ message }}</p>
             }
@@ -499,9 +512,35 @@
         <div class="printer-form__row printer-form__row--full">
           <p class="printer-form__label">Bevorzugte Zahlungsart</p>
           <div class="printer-form__payment-group" role="group" aria-label="Zahlungsart wählen">
-            <button type="button" class="printer-form__payment-btn printer-form__payment-btn--active">Bar</button>
-            <button type="button" class="printer-form__payment-btn">Überweisung</button>
-            <button type="button" class="printer-form__payment-btn">Rechnung</button>
+            @for (option of paymentMethodOptions; track option.value) {
+              <button
+                type="button"
+                class="printer-form__payment-btn"
+                [class.printer-form__payment-btn--active]="customerForm.controls.paymentMethod.value === option.value"
+                [attr.aria-pressed]="customerForm.controls.paymentMethod.value === option.value"
+                (click)="selectPaymentMethod(option.value)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="printer-form__grid printer-form__grid--2col">
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="customerType">Kundentyp</label>
+            <select id="customerType" data-testid="customer-type" formControlName="customerType" class="printer-form__input printer-form__select">
+              @for (option of customerTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="printer-form__row">
+            <label class="printer-form__label" for="customerDiscount">Rabatt</label>
+            <div class="printer-form__input-wrap">
+              <input id="customerDiscount" data-testid="customer-discount" type="number" inputmode="numeric" min="0" max="100" step="1" formControlName="discountPercent" class="printer-form__input" />
+              <span class="printer-form__unit">%</span>
+            </div>
           </div>
         </div>
 
@@ -524,6 +563,73 @@
           </button>
         </div>
       </form>
+    </div>
+  </section>
+}
+
+<!-- ── KUNDE DETAIL ───────────────────────────────────────── -->
+@if (customerDetail(); as customer) {
+  <div class="sheet-backdrop" (click)="closeCustomerDetail()"></div>
+  <section class="mehr-dialog customer-detail" role="dialog" aria-modal="true" aria-label="Kundendetails" data-testid="customer-detail">
+    <div class="sheet-handle"></div>
+    <div class="mehr-dialog__header">
+      <div class="customer-detail__identity">
+        <span class="customer-list__initials customer-list__initials--lg">{{ customerInitials(customer.name) }}</span>
+        <div>
+          <h2 class="mehr-dialog__title">{{ customer.name }}</h2>
+          <p class="mehr-dialog__subtitle">
+            {{ customerTypeLabel(customer.customerType) }}@if (customer.discountPercent) {&nbsp;· {{ customer.discountPercent }}% Rabatt}
+          </p>
+        </div>
+      </div>
+      <button type="button" class="sheet-header__close" (click)="closeCustomerDetail()" aria-label="Schließen">×</button>
+    </div>
+    <div class="mehr-dialog__body">
+
+      <div class="customer-detail__cards">
+        <div class="customer-detail__card">
+          <span class="customer-detail__card-label">Kontakt</span>
+          <strong class="customer-detail__card-value">{{ customer.contact || '—' }}</strong>
+        </div>
+        <div class="customer-detail__card">
+          <span class="customer-detail__card-label">Zahlung</span>
+          <strong class="customer-detail__card-value">{{ paymentMethodLabel(customer.paymentMethod) || '—' }}</strong>
+          <span class="customer-detail__card-sub">{{ customer.discountPercent ? customer.discountPercent + '% Rabatt' : 'Kein Rabatt' }}</span>
+        </div>
+        <div class="customer-detail__card">
+          <span class="customer-detail__card-label">Umsatz gesamt</span>
+          <strong class="customer-detail__card-value customer-detail__card-value--primary">{{ formatEur(customerRevenueEur()) }}</strong>
+          <span class="customer-detail__card-sub">{{ customerOrders().length }} Auftrag{{ customerOrders().length !== 1 ? 'e' : '' }}</span>
+        </div>
+      </div>
+
+      @if (customer.note) {
+        <div class="customer-detail__notes">
+          <span class="customer-detail__card-label">Notizen</span>
+          <p class="customer-detail__notes-text">{{ customer.note }}</p>
+        </div>
+      }
+
+      <p class="customer-detail__section-label">Auftragshistorie</p>
+      @if (customerOrders().length > 0) {
+        <ul class="customer-detail__orders">
+          @for (order of customerOrders(); track order.id) {
+            <li class="customer-detail__order">
+              <span class="customer-detail__order-name">{{ order.projectName }}</span>
+              <span class="customer-detail__order-date">{{ order.dateLabel }}</span>
+              <span class="customer-detail__order-qty">{{ order.quantity }}×</span>
+              <span class="customer-detail__order-amount">{{ formatEur(order.amountEur) }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="customer-detail__empty">Noch keine Aufträge mit diesem Kunden verknüpft.</p>
+      }
+
+      <div class="printer-form__actions">
+        <button type="button" class="printer-form__cancel" (click)="closeCustomerDetail()">Schließen</button>
+        <button type="button" class="printer-form__submit" (click)="editCustomerFromDetail(customer.id)">Bearbeiten</button>
+      </div>
     </div>
   </section>
 }
