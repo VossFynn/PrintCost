@@ -1,10 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { ShellComponent } from './shell.component';
 import { routes } from '../app.routes';
 import { UpdateBannerService } from './update-banner.service';
+import { PrinterService } from '../core/printers/printer.service';
+import { CustomerService } from '../core/customers/customer.service';
 
 class UpdateBannerServiceStub {
   readonly #updateAvailable = signal(false);
@@ -19,13 +21,30 @@ class UpdateBannerServiceStub {
   }
 }
 
+class PrinterServiceStub {
+  readonly printers = signal([]).asReadonly();
+  readonly activePrinters = computed(() => []);
+  async refresh(): Promise<void> {}
+}
+
+class CustomerServiceStub {
+  readonly customers = signal([]).asReadonly();
+  readonly activeCustomers = computed(() => []);
+  async refresh(): Promise<void> {}
+}
+
 describe('ShellComponent', () => {
   it('renders non-blocking German update banner when update is available', async () => {
     const service = new UpdateBannerServiceStub();
 
     await TestBed.configureTestingModule({
       imports: [ShellComponent],
-      providers: [provideRouter(routes), { provide: UpdateBannerService, useValue: service }]
+      providers: [
+        provideRouter(routes),
+        { provide: UpdateBannerService, useValue: service },
+        { provide: PrinterService, useValue: new PrinterServiceStub() },
+        { provide: CustomerService, useValue: new CustomerServiceStub() }
+      ]
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ShellComponent);
