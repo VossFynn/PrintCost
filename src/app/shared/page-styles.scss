@@ -1,9 +1,9 @@
 .page {
   display: grid;
   align-content: start;
-  gap: var(--pc-space-2);
+  gap: var(--pc-space-3);
   min-height: 100%;
-  padding: var(--pc-space-3) 0 0;
+  padding: var(--pc-space-2) 0 0;
 }
 
 .page__eyebrow {

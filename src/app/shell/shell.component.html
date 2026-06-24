@@ -16,9 +16,28 @@
   </main>
 
   <nav class="shell__nav" aria-label="Primäre Navigation">
+
+    <!-- Desktop: logo + search (hidden on mobile) -->
+    <div class="shell__sidebar-top">
+      <div class="shell__logo">
+        <span class="shell__logo-mark" aria-hidden="true">◉</span>
+        <div class="shell__brand">
+          <strong class="shell__brand-name">PrintCost</strong>
+          <span class="shell__brand-sub">Druckkosten-Rechner</span>
+        </div>
+      </div>
+      <label class="shell__search" aria-label="Suchen">
+        <span class="shell__search-icon" aria-hidden="true">⌕</span>
+        <input type="search" class="shell__search-input" placeholder="Suchen…" />
+      </label>
+    </div>
+
+    <!-- Primary nav links (shown on both mobile and desktop) -->
     @for (item of navItems; track item.path) {
       <a
         class="shell__link"
+        [class.shell__link--mobile-only]="item.mobileOnly"
+        [class.shell__link--desktop-only]="item.desktopOnly"
         [routerLink]="item.path"
         routerLinkActive="shell__link--active"
         [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'subset', fragment: 'ignored', matrixParams: 'ignored' }"
@@ -30,5 +49,54 @@
         <span class="shell__label">{{ item.label }}</span>
       </a>
     }
+
+    <!-- Desktop: Verwaltung section (hidden on mobile) -->
+    <div class="shell__sidebar-section">
+      <span class="shell__section-label">Verwaltung</span>
+    </div>
+
+    <a
+      class="shell__link shell__link--desktop-only"
+      routerLink="/more"
+      aria-label="Drucker verwalten"
+    >
+      <span class="shell__icon" aria-hidden="true">▤</span>
+      <span class="shell__label">Drucker</span>
+      @if (printerCount() > 0) {
+        <span class="shell__badge">{{ printerCount() }}</span>
+      }
+    </a>
+
+    @for (printer of activePrinters(); track printer.id) {
+      <a class="shell__sub-link" routerLink="/more">
+        <span class="shell__sub-dot" aria-hidden="true"></span>
+        <span>{{ printer.name }}</span>
+      </a>
+    }
+
+    <a
+      class="shell__link shell__link--desktop-only"
+      routerLink="/more"
+      aria-label="Kunden verwalten"
+    >
+      <span class="shell__icon" aria-hidden="true">◎</span>
+      <span class="shell__label">Kunden</span>
+      @if (customerCount() > 0) {
+        <span class="shell__badge">{{ customerCount() }}</span>
+      }
+    </a>
+
+    <!-- Desktop: spacer pushes Einstellungen to bottom (hidden on mobile) -->
+    <div class="shell__sidebar-spacer" aria-hidden="true"></div>
+
+    <a
+      class="shell__link shell__link--desktop-only"
+      routerLink="/more"
+      aria-label="Einstellungen öffnen"
+    >
+      <span class="shell__icon" aria-hidden="true">⚙</span>
+      <span class="shell__label">Einstellungen</span>
+    </a>
+
   </nav>
 </div>

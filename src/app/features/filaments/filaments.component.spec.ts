@@ -113,7 +113,7 @@ describe('FilamentsComponent', () => {
     fixture.detectChanges();
 
     expect(root.textContent).toContain('Bitte Name eingeben');
-    expect(root.textContent).toContain('Bitte mindestens einen Einkauf eingeben');
+    expect(root.textContent).toContain('Preis muss größer als 0 sein');
     expect(mock.createCalls).toBe(0);
   });
 

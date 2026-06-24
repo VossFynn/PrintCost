@@ -92,6 +92,15 @@ export class CalculateComponent {
 
     return result.finalPriceEur - result.subtotalEur;
   });
+  readonly isMulticolor = computed(() => this.filamentLines.length > 1);
+  readonly gewinnmarge = computed(() => {
+    const result = this.liveResult();
+    if (!result || result.roundedFinalPriceEur <= 0) {
+      return 0;
+    }
+
+    return Math.round(((result.finalPriceEur - result.subtotalEur) / result.finalPriceEur) * 100);
+  });
   #announcementTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   readonly form = this.#formBuilder.nonNullable.group({
@@ -424,6 +433,16 @@ export class CalculateComponent {
    */
   formatCurrency(value: number): string {
     return this.#currencyFormatter.format(value);
+  }
+
+  perUnit(total: number): number {
+    const qty = Math.max(1, Number(this.form.controls.printQuantity.value) || 1);
+    return total / qty;
+  }
+
+  totalForAll(perPlateCost: number): number {
+    const qty = Math.max(1, Number(this.form.controls.printQuantity.value) || 1);
+    return perPlateCost * qty;
   }
 
   private createFilamentLine(filamentId: string): FilamentLineForm {

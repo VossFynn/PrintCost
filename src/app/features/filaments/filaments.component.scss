@@ -314,6 +314,7 @@
   z-index: 50;
   max-height: 92dvh;
   overflow-y: auto;
+  overflow-x: hidden;
   border-radius: var(--pc-radius-card) var(--pc-radius-card) 0 0;
   background: var(--pc-color-surface-card);
   box-shadow: 0 -8px 40px rgb(44 62 80 / 20%);
@@ -374,6 +375,7 @@
 .filament-form {
   display: grid;
   gap: var(--pc-space-3);
+  min-width: 0;
 }
 
 .filament-form__label {
@@ -399,6 +401,8 @@
 
 .filament-form__input {
   min-height: 2.75rem;
+  min-width: 0;
+  width: 100%;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);
@@ -446,6 +450,8 @@
   margin: 0;
   display: grid;
   gap: var(--pc-space-2);
+  min-width: 0;
+  width: 100%;
 }
 
 .filament-form__purchase-row {
@@ -523,6 +529,13 @@
     opacity: 0.5;
     box-shadow: none;
     cursor: not-allowed;
+  }
+}
+
+@media (min-width: 56rem) {
+  .filament-fab {
+    bottom: var(--pc-space-6);
+    right: var(--pc-space-6);
   }
 }
 

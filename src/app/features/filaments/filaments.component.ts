@@ -379,10 +379,13 @@ export class FilamentsComponent {
   }
 
   private createPurchaseGroup() {
+    const rollWeightG = this.form?.controls?.rollWeightG?.value ?? 0;
+    const quantityKg = rollWeightG > 0 ? rollWeightG / 1000 : 1;
+    const today = new Date().toISOString().slice(0, 10);
     return this.#formBuilder.nonNullable.group({
       priceEur: [0, [Validators.required, Validators.min(0.0001)]],
-      quantityKg: [0, [Validators.required, Validators.min(0.0001)]],
-      purchasedAt: ['', [Validators.required]]
+      quantityKg: [quantityKg, [Validators.required, Validators.min(0.0001)]],
+      purchasedAt: [today, [Validators.required]]
     });
   }
 
@@ -414,8 +417,8 @@ export class FilamentsComponent {
       type: '',
       colorHex: '#000000',
       manufacturer: '',
-      rollWeightG: 0,
-      remainingG: 0,
+      rollWeightG: 1000,
+      remainingG: 1000,
       multiColorSurchargeEurKg: 0,
       fixedPriceEurG: 0
     });
@@ -423,6 +426,7 @@ export class FilamentsComponent {
     while (this.purchases.length > 0) {
       this.purchases.removeAt(0);
     }
+    this.purchases.push(this.createPurchaseGroup());
     this.form.markAsPristine();
     this.form.markAsUntouched();
     this.purchases.markAsPristine();

@@ -591,9 +591,9 @@ export class MoreComponent {
     this.editingPrinterId.set(null);
     this.form.reset({
       name: '',
-      powerWatts: 0,
+      powerWatts: 250,
       purchasePriceEur: 0,
-      lifetimeHours: 0,
+      lifetimeHours: 2000,
       note: ''
     });
     this.form.markAsPristine();

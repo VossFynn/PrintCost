@@ -27,17 +27,19 @@ describe('app routes', () => {
     expect(router.url).toBe('/calculate');
 
     const root = fixture.nativeElement as HTMLElement;
-    const labels = Array.from(root.querySelectorAll('.shell__label')).map((node) => node.textContent?.trim());
-    const navLinks = Array.from(root.querySelectorAll('.shell__link')) as HTMLElement[];
+    const mobileNavLinks = Array.from(
+      root.querySelectorAll('.shell__link:not(.shell__link--desktop-only)')
+    ) as HTMLElement[];
+    const labels = mobileNavLinks.map((node) => node.querySelector('.shell__label')?.textContent?.trim());
     const styleText = Array.from(document.querySelectorAll('style'))
       .map((styleNode) => styleNode.textContent ?? '')
       .join('\n');
 
-    expect(labels).toEqual(['Kalkulation', 'Bestand', 'Filamente', 'Mehr']);
+    expect(labels).toEqual(['Kalkulation', 'Filamente', 'Mehr']);
     expect(root.querySelector('a[aria-current="page"]')?.textContent).toContain('Kalkulation');
     expect(root.querySelector('[aria-label="Primäre Navigation"]')).toBeTruthy();
-    expect(navLinks).toHaveLength(4);
-    expect(navLinks.every((node) => node.getAttribute('aria-label')?.endsWith('öffnen'))).toBe(true);
+    expect(mobileNavLinks).toHaveLength(3);
+    expect(mobileNavLinks.every((node) => node.getAttribute('aria-label')?.endsWith('öffnen'))).toBe(true);
     expect(styleText).toContain('prefers-reduced-motion');
     expect(document.querySelector('link[href*="fonts.googleapis.com"]')).toBeNull();
     expect(document.querySelector('script[src*="fonts.googleapis.com"]')).toBeNull();

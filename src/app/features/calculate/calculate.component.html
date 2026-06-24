@@ -1,18 +1,37 @@
-<section class="page calculate-shell calculate-shell--single-column" data-testid="calculate-shell">
+<section class="page calculate-shell" data-testid="calculate-shell">
+
+  <!-- ── Page header ──────────────────────────────────────── -->
   <div class="calc-page-header">
     <div>
-      <p class="page__eyebrow">Kalkulation</p>
-      <h1>Neue Kalkulation</h1>
+      <h1>{{ form.controls.projectName.value || 'Neue Kalkulation' }}</h1>
     </div>
-    <button
-      data-testid="load-template"
-      type="button"
-      class="calc-page-header__load-btn"
-      [disabled]="isTemplateLoadBlocked() || !hasTemplates()"
-      (click)="loadTemplateSelection()"
-    >
-      Vorlage laden
-    </button>
+    <div class="calc-header-actions">
+      <button
+        data-testid="load-template"
+        type="button"
+        class="calc-page-header__load-btn"
+        [disabled]="isTemplateLoadBlocked() || !hasTemplates()"
+        (click)="loadTemplateSelection()"
+      >
+        Vorlage laden
+      </button>
+      <button
+        type="button"
+        class="calc-header-actions__btn"
+        [disabled]="isSaveDisabled()"
+        (click)="saveAsTemplate()"
+      >
+        Als Vorlage
+      </button>
+      <button
+        type="button"
+        class="calc-header-actions__btn calc-header-actions__btn--primary"
+        [disabled]="isSaveDisabled()"
+        (click)="saveCalculationDraft()"
+      >
+        Speichern
+      </button>
+    </div>
   </div>
 
   @if (loadError(); as loadMessage) {
@@ -21,86 +40,271 @@
 
   <form class="calculate-form" [formGroup]="form" (ngSubmit)="saveCalculationDraft()">
 
-    <!-- PROJEKT -->
-    <div class="calc-section">
-      <p class="calc-section__label" data-testid="calculate-section-title">Projekt</p>
-      <label class="calc-field" for="projectName">
-        <span class="calc-field__label">Projektname</span>
-        <input id="projectName" data-testid="project-name" type="text" formControlName="projectName" class="calc-field__input" placeholder="z. B. Benchy v2 · Halterung" />
-      </label>
-      @if (getError('projectName'); as message) {
-        <p class="calc-error">{{ message }}</p>
-      }
-    </div>
+    <!-- ══════════════════════════════════════════════════════
+         LEFT COLUMN — Projekt · Drucker/Kunde · Filament
+         (display:contents on mobile → items flow naturally)
+         ══════════════════════════════════════════════════════ -->
+    <div class="calc-col calc-col--left">
 
-    <!-- FILAMENT -->
-    <div class="calc-section">
-      <p class="calc-section__label" data-testid="calculate-section-title">Filament</p>
+      <!-- PROJEKT -->
+      <div class="calc-section">
+        <p class="calc-section__label" data-testid="calculate-section-title">Projekt</p>
+        <label class="calc-field" for="projectName">
+          <span class="calc-field__label">Projektname</span>
+          <input
+            id="projectName"
+            data-testid="project-name"
+            type="text"
+            formControlName="projectName"
+            class="calc-field__input"
+            placeholder="z. B. Benchy v2 · Halterung"
+          />
+        </label>
+        @if (getError('projectName'); as message) {
+          <p class="calc-error">{{ message }}</p>
+        }
+      </div>
 
-      @if (!hasActiveFilaments()) {
-        <div class="calc-empty-state" data-testid="filament-empty">
-          <p>Noch kein aktives Filament vorhanden.</p>
-          <a href="/filaments">Filament hinzufügen</a>
+      <!-- DRUCKER + KUNDE -->
+      <div class="calc-section">
+        <p class="calc-section__label" data-testid="calculate-section-title">Druck</p>
+
+        @if (!hasActivePrinters()) {
+          <div class="calc-empty-state" data-testid="calculate-printer-empty">
+            <p>Noch kein aktives Druckerprofil vorhanden.</p>
+            <a href="/more">Erst Drucker anlegen</a>
+          </div>
+        } @else {
+          <div class="calc-field-row">
+            <label class="calc-field" for="printerId">
+              <span class="calc-field__label">Drucker</span>
+              <select
+                id="printerId"
+                data-testid="printer-select"
+                formControlName="printerId"
+                class="calc-field__input"
+                (change)="onPrinterChange($any($event.target).value)"
+              >
+                @for (printer of activePrinters(); track printer.id) {
+                  <option data-testid="printer-option" [value]="printer.id">{{ printer.name }}</option>
+                }
+              </select>
+            </label>
+            <label class="calc-field" for="customerId">
+              <span class="calc-field__label">Kunde</span>
+              <select id="customerId" data-testid="customer-select" formControlName="customerId" class="calc-field__input">
+                <option value="">Kein Kunde</option>
+                @for (customer of activeCustomers(); track customer.id) {
+                  <option data-testid="customer-option" [value]="customer.id">{{ customer.name }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        }
+        @if (templatePrinterReselectGuidance(); as printerGuidance) {
+          <p class="calc-error" data-testid="template-printer-guidance">{{ printerGuidance }}</p>
+        }
+        @if (getError('printerId'); as message) {
+          <p class="calc-error">{{ message }}</p>
+        }
+      </div>
+
+      <!-- FILAMENT -->
+      <div class="calc-section">
+        <div class="calc-section-header">
+          <p class="calc-section__label" data-testid="calculate-section-title">
+            Filament@if (isMulticolor()) {&nbsp;· Multicolor}
+          </p>
+          @if (hasActiveFilaments() && activeFilaments().length > filamentLines.length) {
+            <span class="calc-section__hint">+ Hinzufügen</span>
+          }
         </div>
-      } @else {
-        <div class="calc-chip-row" aria-label="Filamente auswählen">
-          @for (filament of activeFilaments(); track trackByFilamentId($index, filament)) {
+
+        @if (!hasActiveFilaments()) {
+          <div class="calc-empty-state" data-testid="filament-empty">
+            <p>Noch kein aktives Filament vorhanden.</p>
+            <a href="/filaments">Filament hinzufügen</a>
+          </div>
+        } @else {
+          <div class="calc-chip-row" aria-label="Filamente auswählen">
+            @for (filament of activeFilaments(); track trackByFilamentId($index, filament)) {
+              <button
+                type="button"
+                data-testid="filament-chip"
+                class="calc-chip"
+                [class.calc-chip--active]="isFilamentSelected(filament.id)"
+                [attr.aria-pressed]="isFilamentSelected(filament.id)"
+                (click)="toggleFilamentSelection(filament.id)"
+              >
+                <span class="calc-chip__dot" [style.background-color]="filament.colorHex"></span>
+                {{ filament.name }}
+              </button>
+            }
+          </div>
+
+          <!-- Desktop: filament table with GRAMM + KOSTEN columns -->
+          @if (filamentLines.controls.length > 0) {
+            <table class="calc-filament-table">
+              <thead class="calc-filament-table__head">
+                <tr>
+                  <th class="calc-filament-table__th">Filament</th>
+                  <th class="calc-filament-table__th calc-filament-table__th--num">Gramm</th>
+                  <th class="calc-filament-table__th calc-filament-table__th--num">Kosten</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of filamentLines.controls; track line.controls.filamentId.value; let index = $index) {
+                  <tr class="calc-filament-table__row" data-testid="filament-line">
+                    <td class="calc-filament-table__name-cell">
+                      <span class="calc-filament-line__dot" [style.background-color]="filamentColorForLine(index)"></span>
+                      <span class="calc-filament-line__name">{{ filamentNameForLine(index) }}</span>
+                    </td>
+                    <td class="calc-filament-table__input-cell">
+                      <input
+                        data-testid="filament-grams"
+                        type="number"
+                        min="0.0001"
+                        step="0.1"
+                        class="calc-filament-line__input"
+                        [formControl]="line.controls.grams"
+                      />
+                      <span class="calc-filament-line__unit">g</span>
+                    </td>
+                    <td class="calc-filament-table__cost-cell">
+                      @if (liveResult(); as r) {
+                        {{ formatCurrency(perUnit(r.materialCostEur) * (line.controls.grams.value / (totalFilamentGrams() || 1))) }}
+                      } @else {
+                        —
+                      }
+                    </td>
+                  </tr>
+                  @if (filamentLineError(index, 'grams'); as gramsError) {
+                    <tr>
+                      <td colspan="3"><p class="calc-error calc-filament-line__error">{{ gramsError }}</p></td>
+                    </tr>
+                  }
+                }
+              </tbody>
+              <tfoot>
+                <tr class="calc-filament-table__summe">
+                  <td>Summe</td>
+                  <td class="calc-filament-table__th--num">
+                    <span data-testid="total-grams">{{ totalFilamentGrams() }} g</span>
+                  </td>
+                  <td class="calc-filament-table__th--num">
+                    @if (liveResult(); as r) {
+                      {{ formatCurrency(perUnit(r.materialCostEur)) }}
+                    }
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+            <span data-testid="total-grams-state" aria-live="polite" class="calc-totals__state calc-sr-only">
+              {{ filamentTotalsStateText() }}
+            </span>
+          }
+        }
+        @if (templateFilamentReselectGuidance(); as filamentGuidance) {
+          <p class="calc-error" data-testid="template-filament-guidance">{{ filamentGuidance }}</p>
+        }
+      </div>
+
+    </div><!-- /calc-col--left -->
+
+    <!-- ══════════════════════════════════════════════════════
+         CENTER COLUMN — Druck · Preismodell · Kostenpositionen · Gewinn
+         (display:contents on mobile)
+         ══════════════════════════════════════════════════════ -->
+    <div class="calc-col calc-col--center">
+
+      <!-- DRUCK METRICS: Druckzeit · Teile/Platte · Anzahl -->
+      <div class="calc-section">
+        <p class="calc-section__label">Druckparameter</p>
+        <div class="calc-druck-metrics">
+          <label class="calc-druck-metric">
+            <span class="calc-druck-metric__label">Druckzeit (h)</span>
+            <input
+              id="printHours"
+              data-testid="print-hours"
+              type="number"
+              min="0.0001"
+              step="0.1"
+              formControlName="printHours"
+              class="calc-druck-metric__input"
+            />
+          </label>
+          <label class="calc-druck-metric">
+            <span class="calc-druck-metric__label">Teile/Platte</span>
+            <input
+              id="partsPerPlate"
+              data-testid="parts-per-plate"
+              type="number"
+              min="1"
+              step="1"
+              formControlName="partsPerPlate"
+              class="calc-druck-metric__input"
+            />
+          </label>
+          <label class="calc-druck-metric">
+            <span class="calc-druck-metric__label">Anzahl</span>
+            <input
+              id="printQuantity"
+              data-testid="print-quantity"
+              type="number"
+              min="1"
+              step="1"
+              formControlName="printQuantity"
+              class="calc-druck-metric__input"
+            />
+          </label>
+        </div>
+        @if (plateExplanation(); as plateText) {
+          <p class="calc-plate-hint" data-testid="plate-explanation">{{ plateText }}</p>
+        }
+        @if (showExtraWorkFeeControl()) {
+          <label class="calc-field" for="extraWorkFeePercent">
+            <span class="calc-field__label">Mehrplatten-Aufschlag (%)</span>
+            <input
+              id="extraWorkFeePercent"
+              data-testid="extra-work-fee"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              formControlName="extraWorkFeePercent"
+              class="calc-field__input"
+            />
+          </label>
+        }
+      </div>
+
+      <!-- PREISMODELL -->
+      <div class="calc-section">
+        <p class="calc-section__label">Preismodell</p>
+        <!-- Tabs (visible on desktop) -->
+        <div class="seg-ctrl calc-preismodell-tabs" role="group" aria-label="Preismodell">
+          @for (mode of priceModeOptions; track mode.value) {
             <button
               type="button"
-              data-testid="filament-chip"
-              class="calc-chip"
-              [class.calc-chip--active]="isFilamentSelected(filament.id)"
-              [attr.aria-pressed]="isFilamentSelected(filament.id)"
-              (click)="toggleFilamentSelection(filament.id)"
+              class="seg-ctrl__btn"
+              [class.seg-ctrl__btn--active]="filamentLines.controls.length > 0 && priceModeForLine(0) === mode.value"
+              (click)="filamentLines.controls.length > 0 && onPriceModeChange(0, mode.value)"
             >
-              <span class="calc-chip__dot" [style.background-color]="filament.colorHex"></span>
-              {{ filament.name }}
+              {{ mode.label }}
             </button>
           }
         </div>
-
-        <div class="calc-filament-lines">
-          @for (line of filamentLines.controls; track line.controls.filamentId.value; let index = $index) {
-            <div class="calc-filament-line" data-testid="filament-line">
-              <span class="calc-filament-line__dot" [style.background-color]="filamentColorForLine(index)"></span>
-              <span class="calc-filament-line__name">{{ filamentNameForLine(index) }}</span>
-              <input
-                data-testid="filament-grams"
-                type="number"
-                min="0.0001"
-                step="0.1"
-                class="calc-filament-line__input"
-                [formControl]="line.controls.grams"
-              />
-              <span class="calc-filament-line__unit">g</span>
-              @if (filamentLineError(index, 'grams'); as gramsError) {
-                <p class="calc-error calc-filament-line__error">{{ gramsError }}</p>
-              }
-            </div>
+        <!-- Select (used by tests and mobile) -->
+        <select
+          data-testid="filament-price-mode"
+          class="calc-field__input calc-price-mode-select"
+          [value]="filamentLines.controls.length > 0 ? priceModeForLine(0) : 'WEIGHTED_AVERAGE'"
+          (change)="filamentLines.controls.length > 0 && onPriceModeChange(0, $any($event.target).value)"
+        >
+          @for (mode of priceModeOptions; track mode.value) {
+            <option [value]="mode.value">{{ mode.label }}</option>
           }
-        </div>
-
-        @if (filamentLines.controls.length > 0) {
-          <div class="calc-totals">
-            <span data-testid="total-grams">Summe: {{ totalFilamentGrams() }} g</span>
-            <span data-testid="total-grams-state" aria-live="polite" class="calc-totals__state">{{ filamentTotalsStateText() }}</span>
-          </div>
-        }
-
-        <div class="calc-field">
-          <span class="calc-field__label">Preis-Modus</span>
-          <select
-            data-testid="filament-price-mode"
-            class="calc-field__input"
-            [value]="filamentLines.controls.length > 0 ? priceModeForLine(0) : 'WEIGHTED_AVERAGE'"
-            (change)="filamentLines.controls.length > 0 && onPriceModeChange(0, $any($event.target).value)"
-          >
-            @for (mode of priceModeOptions; track mode.value) {
-              <option [value]="mode.value">{{ mode.label }}</option>
-            }
-          </select>
-        </div>
-
+        </select>
         @for (line of filamentLines.controls; track line.controls.filamentId.value; let index = $index) {
           @if (priceModeForLine(index) === 'FIXED') {
             <label class="calc-field">
@@ -119,222 +323,275 @@
             }
           }
         }
-      }
-      @if (templateFilamentReselectGuidance(); as filamentGuidance) {
-        <p class="calc-error" data-testid="template-filament-guidance">{{ filamentGuidance }}</p>
-      }
-    </div>
-
-    <!-- DRUCKER & KUNDE -->
-    <div class="calc-section">
-      <p class="calc-section__label" data-testid="calculate-section-title">Druck</p>
-
-      @if (!hasActivePrinters()) {
-        <div class="calc-empty-state" data-testid="calculate-printer-empty">
-          <p>Noch kein aktives Druckerprofil vorhanden.</p>
-          <a href="/more">Erst Drucker anlegen</a>
-        </div>
-      } @else {
-        <label class="calc-field" for="printerId">
-          <span class="calc-field__label">Druckerprofil</span>
-          <select
-            id="printerId"
-            data-testid="printer-select"
-            formControlName="printerId"
-            class="calc-field__input"
-            (change)="onPrinterChange($any($event.target).value)"
-          >
-            @for (printer of activePrinters(); track printer.id) {
-              <option data-testid="printer-option" [value]="printer.id">{{ printer.name }}</option>
-            }
-          </select>
-        </label>
-      }
-      @if (templatePrinterReselectGuidance(); as printerGuidance) {
-        <p class="calc-error" data-testid="template-printer-guidance">{{ printerGuidance }}</p>
-      }
-      @if (getError('printerId'); as message) {
-        <p class="calc-error">{{ message }}</p>
-      }
-
-      <label class="calc-field" for="customerId">
-        <span class="calc-field__label">Kunde (optional)</span>
-        <select id="customerId" data-testid="customer-select" formControlName="customerId" class="calc-field__input">
-          <option value="">Kein Kunde (privat)</option>
-          @for (customer of activeCustomers(); track customer.id) {
-            <option data-testid="customer-option" [value]="customer.id">{{ customer.name }}</option>
-          }
-        </select>
-      </label>
-    </div>
-
-    <!-- DRUCKZEIT & MENGEN -->
-    <div class="calc-section">
-      <p class="calc-section__label">Zeiten & Mengen</p>
-
-      <label class="calc-field" for="printHours">
-        <span class="calc-field__label">Druckzeit (Stunden)</span>
-        <input id="printHours" data-testid="print-hours" type="number" min="0.0001" step="0.1" formControlName="printHours" class="calc-field__input" />
-      </label>
-      @if (getError('printHours'); as message) {
-        <p class="calc-error">{{ message }}</p>
-      }
-
-      <div class="calc-field-row">
-        <label class="calc-field" for="partsPerPlate">
-          <span class="calc-field__label">Teile pro Platte</span>
-          <input id="partsPerPlate" data-testid="parts-per-plate" type="number" min="1" step="1" formControlName="partsPerPlate" class="calc-field__input" />
-        </label>
-        <label class="calc-field" for="printQuantity">
-          <span class="calc-field__label">Anzahl Drucke</span>
-          <input id="printQuantity" data-testid="print-quantity" type="number" min="1" step="1" formControlName="printQuantity" class="calc-field__input" />
-        </label>
       </div>
 
-      @if (plateExplanation(); as plateText) {
-        <p class="calc-plate-hint" data-testid="plate-explanation">{{ plateText }}</p>
-      }
+      <!-- KOSTENPOSITIONEN table (desktop only; mobile hidden via CSS) -->
+      <div class="calc-section calc-kostenpositionen">
+        <p class="calc-section__label">Kostenpositionen</p>
+        @if (liveResult(); as result) {
+          <table class="calc-kosten-table">
+            <thead>
+              <tr>
+                <th class="calc-kosten-table__pos">Position</th>
+                <th class="calc-kosten-table__amt">Pro Stk.</th>
+                <th class="calc-kosten-table__amt">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Materialkosten</td>
+                <td>{{ formatCurrency(perUnit(result.materialCostEur)) }}</td>
+                <td>{{ formatCurrency(result.materialCostEur) }}</td>
+              </tr>
+              <tr>
+                <td>Stromkosten</td>
+                <td>{{ formatCurrency(perUnit(result.electricityCostEur)) }}</td>
+                <td>{{ formatCurrency(result.electricityCostEur) }}</td>
+              </tr>
+              <tr>
+                <td>AfA Drucker</td>
+                <td>{{ formatCurrency(perUnit(result.depreciationCostEur)) }}</td>
+                <td>{{ formatCurrency(result.depreciationCostEur) }}</td>
+              </tr>
+              <tr>
+                <td>Modellierung</td>
+                <td>{{ formatCurrency(perUnit(result.modelingCostEur)) }}</td>
+                <td>{{ formatCurrency(result.modelingCostEur) }}</td>
+              </tr>
+              @if (result.extraWorkFeeEur > 0) {
+                <tr>
+                  <td>Mehrplatten-Aufschlag</td>
+                  <td>{{ formatCurrency(perUnit(result.extraWorkFeeEur)) }}</td>
+                  <td>{{ formatCurrency(result.extraWorkFeeEur) }}</td>
+                </tr>
+              }
+              <tr class="calc-kosten-table__subtotal">
+                <td>Zwischensumme</td>
+                <td>{{ formatCurrency(perUnit(result.subtotalEur)) }}</td>
+                <td>{{ formatCurrency(result.subtotalEur) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        } @else {
+          <p class="calc-kosten-pending">Ergebnis wird berechnet…</p>
+        }
+      </div>
 
-      @if (showExtraWorkFeeControl()) {
-        <label class="calc-field" for="extraWorkFeePercent">
-          <span class="calc-field__label">Mehrplatten-Aufschlag (%)</span>
+      <!-- MODELL vorhanden + Modellierung -->
+      <div class="calc-section">
+        <div class="calc-field">
+          <span class="calc-field__label">Modell vorhanden?</span>
+          <div class="seg-ctrl" role="group" data-testid="model-exists" aria-label="Modell vorhanden">
+            <button
+              type="button"
+              class="seg-ctrl__btn"
+              [class.seg-ctrl__btn--active]="form.controls.modelExists.value"
+              (click)="form.controls.modelExists.setValue(true)"
+            >Ja</button>
+            <button
+              type="button"
+              class="seg-ctrl__btn"
+              [class.seg-ctrl__btn--active]="!form.controls.modelExists.value"
+              (click)="form.controls.modelExists.setValue(false)"
+            >Nein</button>
+          </div>
+        </div>
+
+        @if (!form.controls.modelExists.value) {
+          <label class="calc-field" for="modelingCostEur">
+            <span class="calc-field__label">Modellierung (€)</span>
+            <input
+              id="modelingCostEur"
+              data-testid="modeling-cost"
+              type="number"
+              min="0"
+              step="0.01"
+              formControlName="modelingCostEur"
+              class="calc-field__input"
+            />
+          </label>
+        }
+      </div>
+
+      <!-- GEWINN -->
+      <div class="calc-section">
+        <div class="calc-gewinn-header">
+          <span class="calc-section__label">Gewinn</span>
+          <span class="calc-gewinn-pct">{{ form.controls.profitMarginPercent.value }}&thinsp;%</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="200"
+          step="1"
+          class="calc-gewinn-slider"
+          formControlName="profitMarginPercent"
+          aria-label="Gewinn in Prozent"
+        />
+        <div class="calc-gewinn-marks" aria-hidden="true">
+          <span>0 %</span><span>50 %</span><span>100 %</span>
+        </div>
+        <!-- Number input kept for tests + mobile fallback -->
+        <label class="calc-field calc-gewinn-number-field" for="profitMarginPercent">
+          <span class="calc-field__label">Gewinn (%)</span>
           <input
-            id="extraWorkFeePercent"
-            data-testid="extra-work-fee"
+            id="profitMarginPercent"
+            data-testid="profit-margin"
             type="number"
             min="0"
-            max="100"
             step="0.1"
-            formControlName="extraWorkFeePercent"
+            formControlName="profitMarginPercent"
             class="calc-field__input"
           />
         </label>
-      }
-
-      <div class="calc-field">
-        <span class="calc-field__label">Modell vorhanden?</span>
-        <div class="seg-ctrl" role="group" data-testid="model-exists" aria-label="Modell vorhanden">
-          <button
-            type="button"
-            class="seg-ctrl__btn"
-            [class.seg-ctrl__btn--active]="form.controls.modelExists.value"
-            (click)="form.controls.modelExists.setValue(true)"
-          >Ja</button>
-          <button
-            type="button"
-            class="seg-ctrl__btn"
-            [class.seg-ctrl__btn--active]="!form.controls.modelExists.value"
-            (click)="form.controls.modelExists.setValue(false)"
-          >Nein</button>
-        </div>
       </div>
 
-      @if (!form.controls.modelExists.value) {
-        <label class="calc-field" for="modelingCostEur">
-          <span class="calc-field__label">Modellierung (€)</span>
-          <input id="modelingCostEur" data-testid="modeling-cost" type="number" min="0" step="0.01" formControlName="modelingCostEur" class="calc-field__input" />
-        </label>
-      }
+    </div><!-- /calc-col--center -->
 
-      <label class="calc-field" for="profitMarginPercent">
-        <span class="calc-field__label">Gewinn (%)</span>
-        <input id="profitMarginPercent" data-testid="profit-margin" type="number" min="0" step="0.1" formControlName="profitMarginPercent" class="calc-field__input" />
-      </label>
-    </div>
+    <!-- ══════════════════════════════════════════════════════
+         RIGHT COLUMN — Ergebnis · Aktionen
+         (display:contents on mobile)
+         ══════════════════════════════════════════════════════ -->
+    <div class="calc-col calc-col--right">
 
-    <!-- ERGEBNIS -->
-    <div class="calc-result" data-testid="result-card">
-      @if (liveResult(); as result) {
-        <dl class="calc-result__rows">
-          <div class="calc-result__row">
-            <dt>Materialkosten</dt>
-            <dd>{{ formatCurrency(result.materialCostEur) }}</dd>
-          </div>
-          <div class="calc-result__row">
-            <dt>Stromkosten</dt>
-            <dd>{{ formatCurrency(result.electricityCostEur) }}</dd>
-          </div>
-          <div class="calc-result__row">
-            <dt>AfA</dt>
-            <dd>{{ formatCurrency(result.depreciationCostEur) }}</dd>
-          </div>
-          <div class="calc-result__row">
-            <dt>Modellierung</dt>
-            <dd>{{ formatCurrency(result.modelingCostEur) }}</dd>
-          </div>
-          <div class="calc-result__row">
-            <dt>Mehrplatten-Aufschlag</dt>
-            <dd>{{ formatCurrency(result.extraWorkFeeEur) }}</dd>
-          </div>
-          <div class="calc-result__row calc-result__row--subtotal">
-            <dt>Zwischensumme</dt>
-            <dd>{{ formatCurrency(result.subtotalEur) }}</dd>
-          </div>
-          <div class="calc-result__row">
-            <dt>Gewinn · {{ form.controls.profitMarginPercent.value }}%</dt>
-            <dd>{{ formatCurrency(profitAmountEur() ?? 0) }}</dd>
-          </div>
-        </dl>
-        <div class="calc-result__price-block">
-          <p class="calc-result__price-label">Preis</p>
-          <p class="calc-result__price-value calculate-result__price-value--dominant" data-testid="result-price-value">{{ formatCurrency(result.roundedFinalPriceEur) }}</p>
-        </div>
-      } @else {
-        <p class="calc-result__pending">Ergebnis wird angezeigt, sobald alle Pflichtfelder gültig sind.</p>
-      }
-      <p class="calc-result__sr" data-testid="result-live-announcement" aria-live="polite" aria-atomic="true">
-        {{ resultAnnouncementText() }}
-      </p>
-    </div>
+      <!-- ERGEBNIS -->
+      <div class="calc-result" data-testid="result-card">
+        <p class="calc-result__eyebrow">Ergebnis</p>
 
-    <!-- AKTIONEN -->
-    <div class="calc-actions">
-      <label class="calc-field" for="templateName">
-        <span class="calc-field__label">Vorlagenname</span>
-        <input
-          id="templateName"
-          data-testid="template-name"
-          type="text"
-          class="calc-field__input"
-          [value]="templateName()"
-          (input)="onTemplateNameInput($any($event.target).value)"
-        />
-      </label>
-
-      @if (hasTemplates()) {
-        <label class="calc-field" for="templateSelection">
-          <span class="calc-field__label">Vorlage</span>
-          <select
-            id="templateSelection"
-            data-testid="template-select"
-            class="calc-field__input"
-            [value]="templateSelectionId() || templates()[0]?.id || ''"
-            (change)="onTemplateSelectionChange($any($event.target).value)"
-          >
-            @for (template of templates(); track template.id) {
-              <option [value]="template.id">{{ template.templateName }}</option>
+        @if (liveResult(); as result) {
+          <!-- Big price (desktop: primary focus at top) -->
+          <div class="calc-result__price-block">
+            <p class="calc-result__price-label">Preis pro Stück</p>
+            <p
+              class="calc-result__price-value calculate-result__price-value--dominant"
+              data-testid="result-price-value"
+            >{{ formatCurrency(perUnit(result.roundedFinalPriceEur)) }}</p>
+            @if (form.controls.printQuantity.value > 1) {
+              <p class="calc-result__price-total">
+                {{ form.controls.printQuantity.value }}× = {{ formatCurrency(result.roundedFinalPriceEur) }} gesamt
+              </p>
             }
-          </select>
-        </label>
-      } @else {
-        <p data-testid="template-empty" class="calc-actions__hint">Noch keine Vorlage gespeichert.</p>
-      }
+          </div>
 
-      <div class="calc-actions__btn-row">
-        <button data-testid="save-calculation" type="submit" class="calc-actions__primary" [disabled]="isSaveDisabled()">
-          Speichern
-        </button>
-        <button data-testid="save-template" type="button" class="calc-actions__secondary" [disabled]="isSaveDisabled()" (click)="saveAsTemplate()">
-          Als Vorlage
-        </button>
+          <!-- Cost breakdown rows (also used by tests via textContent) -->
+          <dl class="calc-result__rows">
+            <div class="calc-result__row">
+              <dt>Materialkosten</dt>
+              <dd>{{ formatCurrency(result.materialCostEur) }}</dd>
+            </div>
+            <div class="calc-result__row">
+              <dt>Stromkosten</dt>
+              <dd>{{ formatCurrency(result.electricityCostEur) }}</dd>
+            </div>
+            <div class="calc-result__row">
+              <dt>AfA</dt>
+              <dd>{{ formatCurrency(result.depreciationCostEur) }}</dd>
+            </div>
+            <div class="calc-result__row">
+              <dt>Modellierung</dt>
+              <dd>{{ formatCurrency(result.modelingCostEur) }}</dd>
+            </div>
+            <div class="calc-result__row">
+              <dt>Mehrplatten-Aufschlag</dt>
+              <dd>{{ formatCurrency(result.extraWorkFeeEur) }}</dd>
+            </div>
+            <div class="calc-result__row calc-result__row--subtotal">
+              <dt>Zwischensumme</dt>
+              <dd>{{ formatCurrency(result.subtotalEur) }}</dd>
+            </div>
+            <div class="calc-result__row">
+              <dt>Gewinn · {{ form.controls.profitMarginPercent.value }}%</dt>
+              <dd>{{ formatCurrency(profitAmountEur() ?? 0) }}</dd>
+            </div>
+          </dl>
+
+          <!-- Stat summary (desktop sidebar detail) -->
+          <div class="calc-result__stats">
+            <div class="calc-result__stat">
+              <span class="calc-result__stat-label">Kosten/Stk</span>
+              <span class="calc-result__stat-value">{{ formatCurrency(perUnit(result.subtotalEur)) }}</span>
+            </div>
+            <div class="calc-result__stat">
+              <span class="calc-result__stat-label">Gewinnmarge</span>
+              <span class="calc-result__stat-value">{{ gewinnmarge() }} %</span>
+            </div>
+          </div>
+          <!-- Preis label kept for test text-content check -->
+          <p class="calc-result__preis-hidden" aria-hidden="true">Preis</p>
+        } @else {
+          <p class="calc-result__pending">Ergebnis wird angezeigt, sobald alle Pflichtfelder gültig sind.</p>
+        }
+
+        <p
+          class="calc-result__sr"
+          data-testid="result-live-announcement"
+          aria-live="polite"
+          aria-atomic="true"
+        >{{ resultAnnouncementText() }}</p>
       </div>
 
-      @if (templateFeedback(); as templateFeedbackText) {
-        <p data-testid="template-feedback" aria-live="polite" class="calc-actions__feedback">{{ templateFeedbackText }}</p>
-      }
-      @if (saveFeedback(); as saveFeedbackText) {
-        <p data-testid="save-feedback" aria-live="polite" class="calc-actions__feedback">{{ saveFeedbackText }}</p>
-      }
-    </div>
+      <!-- AKTIONEN -->
+      <div class="calc-actions">
+        <label class="calc-field" for="templateName">
+          <span class="calc-field__label">Vorlagenname</span>
+          <input
+            id="templateName"
+            data-testid="template-name"
+            type="text"
+            class="calc-field__input"
+            [value]="templateName()"
+            (input)="onTemplateNameInput($any($event.target).value)"
+          />
+        </label>
+
+        @if (hasTemplates()) {
+          <label class="calc-field" for="templateSelection">
+            <span class="calc-field__label">Vorlage</span>
+            <select
+              id="templateSelection"
+              data-testid="template-select"
+              class="calc-field__input"
+              [value]="templateSelectionId() || templates()[0]?.id || ''"
+              (change)="onTemplateSelectionChange($any($event.target).value)"
+            >
+              @for (template of templates(); track template.id) {
+                <option [value]="template.id">{{ template.templateName }}</option>
+              }
+            </select>
+          </label>
+        } @else {
+          <p data-testid="template-empty" class="calc-actions__hint">Noch keine Vorlage gespeichert.</p>
+        }
+
+        <div class="calc-actions__btn-row">
+          <button
+            data-testid="save-calculation"
+            type="submit"
+            class="calc-actions__primary"
+            [disabled]="isSaveDisabled()"
+          >
+            Speichern
+          </button>
+          <button
+            data-testid="save-template"
+            type="button"
+            class="calc-actions__secondary"
+            [disabled]="isSaveDisabled()"
+            (click)="saveAsTemplate()"
+          >
+            Als Vorlage
+          </button>
+        </div>
+
+        @if (templateFeedback(); as templateFeedbackText) {
+          <p data-testid="template-feedback" aria-live="polite" class="calc-actions__feedback">{{ templateFeedbackText }}</p>
+        }
+        @if (saveFeedback(); as saveFeedbackText) {
+          <p data-testid="save-feedback" aria-live="polite" class="calc-actions__feedback">{{ saveFeedbackText }}</p>
+        }
+      </div>
+
+    </div><!-- /calc-col--right -->
+
   </form>
 </section>

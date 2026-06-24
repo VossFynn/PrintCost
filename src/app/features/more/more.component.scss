@@ -453,6 +453,7 @@
   box-shadow: 0 -8px 40px rgb(44 62 80 / 20%);
   animation: pc-sheet-in 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) both;
   overscroll-behavior: contain;
+  overflow-x: hidden;
 }
 
 .mehr-sheet {
@@ -558,6 +559,8 @@
 
 .printer-form__input {
   min-height: 2.75rem;
+  min-width: 0;
+  width: 100%;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);

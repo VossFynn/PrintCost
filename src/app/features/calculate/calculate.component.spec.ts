@@ -257,7 +257,7 @@ describe('CalculateComponent', () => {
     const sectionTitles = Array.from(root.querySelectorAll('[data-testid="calculate-section-title"]')).map((node) =>
       node.textContent?.trim()
     );
-    expect(sectionTitles).toEqual(['Projekt', 'Filament', 'Druck']);
+    expect(sectionTitles).toEqual(['Projekt', 'Druck', 'Filament']);
   });
 
   it('shows active printer options only and preselects last used active printer', async () => {
@@ -339,7 +339,7 @@ describe('CalculateComponent', () => {
     const optionLabels = Array.from(customerSelect.options).map((option) => option.textContent?.trim());
     const optionValues = Array.from(customerSelect.options).map((option) => option.value);
 
-    expect(optionLabels).toEqual(['Kein Kunde (privat)', 'Anna Käuferin', 'Clara König']);
+    expect(optionLabels).toEqual(['Kein Kunde', 'Anna Käuferin', 'Clara König']);
     expect(optionValues).toEqual(['', 'customer-1', 'customer-3']);
     expect(customerSelect.value).toBe('');
   });
@@ -549,7 +549,7 @@ describe('CalculateComponent', () => {
     const shell = root.querySelector('[data-testid="calculate-shell"]');
     expect(shell).not.toBeNull();
     expect(shell?.classList.contains('calculate-shell')).toBe(true);
-    expect(shell?.classList.contains('calculate-shell--single-column')).toBe(true);
+    expect(shell?.classList.contains('page')).toBe(true);
   });
 
   it('updates the result card live without a submit step', async () => {

@@ -1,8 +1,8 @@
 {
   "name": "PrintCost",
   "short_name": "PrintCost",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/PrintCost/",
+  "scope": "/PrintCost/",
   "display": "standalone",
   "background_color": "#f6efe8",
   "theme_color": "#f6efe8",
