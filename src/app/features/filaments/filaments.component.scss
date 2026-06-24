@@ -213,6 +213,14 @@
   letter-spacing: 0.04em;
 }
 
+.filament-list__stock {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  flex: 1;
+  min-width: 0;
+}
+
 .filament-list__bar-wrap {
   flex: 1;
   min-width: 3rem;
@@ -627,24 +635,38 @@
 
 .filament-form__purchase-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr auto;
+  grid-template-areas:
+    'price qty  remove'
+    'date  date remove';
   gap: var(--pc-space-2);
-  align-items: start;
+  align-items: center;
 
-  .filament-form__input--date { grid-column: 1 / -1; }
+  // Price/quantity sit on the top row, the date spans the width below them,
+  // and the remove button stays anchored on the right across both rows —
+  // instead of the ✕ wrapping to a lonely line at the bottom.
+  > .filament-form__input-unit:nth-of-type(1) { grid-area: price; }
+  > .filament-form__input-unit:nth-of-type(2) { grid-area: qty; }
+  .filament-form__input--date { grid-area: date; }
+  .filament-form__remove-purchase { grid-area: remove; }
 }
 
 @media (min-width: 36rem) {
   .filament-form__purchase-row {
     grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-areas: none;
 
-    .filament-form__input--date { grid-column: auto; }
+    > .filament-form__input-unit:nth-of-type(1),
+    > .filament-form__input-unit:nth-of-type(2),
+    .filament-form__input--date,
+    .filament-form__remove-purchase { grid-area: auto; }
   }
 }
 
 .filament-form__remove-purchase {
   width: 2.75rem;
   height: 2.75rem;
+  align-self: center;
   border: 1.5px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-sm);
   background: transparent;
@@ -745,13 +767,17 @@
     grid-template-columns: minmax(0, 1fr) 17rem;
   }
 
-  // Column headers
+  // Column headers → styled like a table header row
   .filament-col-heads {
     display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(5rem, 8rem) 7rem 3rem;
+    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(6rem, 9rem) 3rem;
     gap: var(--pc-space-3);
     padding: var(--pc-space-2) var(--pc-space-3);
-    margin-bottom: var(--pc-space-1);
+    margin-bottom: 0;
+    background: var(--pc-color-surface-muted);
+    border: 1px solid var(--pc-color-border-subtle);
+    border-bottom: none;
+    border-radius: var(--pc-radius-card) var(--pc-radius-card) 0 0;
 
     span {
       font-size: 0.6875rem;
@@ -759,15 +785,18 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--pc-color-ink-label);
+
+      &:nth-child(5) { text-align: right; }
     }
   }
 
-  // List: remove card-gap, use table rows
+  // List: remove card-gap, use table rows (attached beneath the header row)
   .filament-list {
     display: block;
     padding: 0;
     border: 1px solid var(--pc-color-border-subtle);
-    border-radius: var(--pc-radius-card);
+    border-top: none;
+    border-radius: 0 0 var(--pc-radius-card) var(--pc-radius-card);
     background: var(--pc-color-surface-card);
     overflow: hidden;
   }
@@ -779,9 +808,9 @@
   }
 
   .filament-list__item {
-    // Named-area grid for 7 columns
-    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(5rem, 8rem) 7rem 3rem;
-    grid-template-areas: 'dot name material price bar stock acts';
+    // Named-area grid for 6 columns
+    grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(6rem, 9rem) 3rem;
+    grid-template-areas: 'dot name material price stock acts';
     grid-template-rows: auto;
     column-gap: var(--pc-space-3);
     row-gap: 0;
@@ -818,16 +847,24 @@
 
   .filament-list__material-tag { grid-area: material; }
 
+  // Restbestand cell: current stock value with the level bar beneath it.
+  .filament-list__stock {
+    grid-area: stock;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
   .filament-list__bar-wrap {
-    grid-area: bar;
     flex: none;
     width: 100%;
     min-width: unset;
   }
 
   .filament-list__stock-value {
-    grid-area: stock;
     font-size: 0.8125rem;
+    font-weight: 600;
     text-align: right;
     flex: none;
   }
@@ -875,7 +912,7 @@
     max-height: 88dvh;
     border-radius: var(--pc-radius-card);
     box-shadow: 0 24px 60px rgb(44 62 80 / 30%);
-    animation: pc-dialog-in 0.2s ease both;
+    animation: pc-dialog-center-in 0.2s ease both;
   }
 
   .sheet-handle { display: none; }

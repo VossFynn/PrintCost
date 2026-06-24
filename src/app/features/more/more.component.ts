@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { BackupService } from '../../core/backup/backup.service';
 import { CalculationService } from '../../core/calculations/calculation.service';
@@ -44,6 +45,7 @@ export class MoreComponent {
   readonly #calculationService = inject(CalculationService);
   readonly #partService = inject(PartService);
   readonly #formBuilder = inject(FormBuilder);
+  readonly #route = inject(ActivatedRoute, { optional: true });
 
   // --- Printer form ---
   readonly form = this.#formBuilder.nonNullable.group({
@@ -179,6 +181,15 @@ export class MoreComponent {
       this.#settingsService.refresh(),
       this.#calculationService.refresh()
     ]);
+
+    // Deep-links such as /more?neu=drucker (from the calculation empty state)
+    // open the matching create dialog immediately.
+    const neu = this.#route?.snapshot.queryParamMap.get('neu');
+    if (neu === 'drucker') {
+      this.openCreateDialog();
+    } else if (neu === 'kunde') {
+      this.openCreateCustomerDialog();
+    }
 
     effect(() => {
       const settings = this.#settingsService.settings();

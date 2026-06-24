@@ -527,7 +527,7 @@ select.calc-field__input {
 /* ── Gewinn slider ──────────────────────────────────────── */
 
 .calc-gewinn-header {
-  display: flex;
+  display: none; /* hidden on mobile — the number field below carries the label + value */
   justify-content: space-between;
   align-items: center;
 }
@@ -875,6 +875,10 @@ select.calc-field__input {
   }
 
   /* Gewinn slider visible on desktop */
+  .calc-gewinn-header {
+    display: flex;
+  }
+
   .calc-gewinn-slider {
     display: block;
   }

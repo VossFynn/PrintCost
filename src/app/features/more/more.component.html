@@ -1,9 +1,7 @@
 <section class="page">
 
   <!-- ── Page Header ─────────────────────────────────────── -->
-  <app-page-header icon="⋯" eyebrow="Verwaltung &amp; System" heading="Mehr" [subtitle]="headerSubtitle()">
-    <button type="button" class="mehr-page-header__btn" (click)="openCreateDialog()">+ Hinzufügen</button>
-  </app-page-header>
+  <app-page-header icon="⋯" eyebrow="Verwaltung &amp; System" heading="Mehr" [subtitle]="headerSubtitle()"></app-page-header>
 
   <!-- ── Mobile nav card (hidden on desktop) ─────────────── -->
   <section class="mehr-mobile-nav mehr-group" aria-label="Verwaltung">
@@ -14,15 +12,6 @@
         <div class="mehr-nav-row__body">
           <p class="mehr-nav-row__title">Drucker verwalten</p>
           <p class="mehr-nav-row__meta">{{ printers().length }} Profile · Watt, AfA/h</p>
-        </div>
-        <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
-      </button>
-      <div class="mehr-nav-divider"></div>
-      <button type="button" class="mehr-nav-row" data-testid="open-customer-dialog" (click)="openCreateCustomerDialog()">
-        <span class="mehr-nav-row__icon" aria-hidden="true">◎</span>
-        <div class="mehr-nav-row__body">
-          <p class="mehr-nav-row__title">Kunden</p>
-          <p class="mehr-nav-row__meta">{{ customers().length }} Kunden · Name, Notiz, Kontakt</p>
         </div>
         <span class="mehr-nav-row__chevron" aria-hidden="true">›</span>
       </button>
@@ -73,6 +62,7 @@
 
         <!-- Desktop column headers -->
         <div class="mehr-drucker__col-heads" aria-hidden="true">
+          <span></span>
           <span>Drucker</span>
           <span>Leistung</span>
           <span>Strom €/kWh</span>
@@ -127,7 +117,7 @@
           <h2 class="mehr-panel__title">Kunden</h2>
           <p class="mehr-panel__subtitle">{{ customers().length }} Einträge</p>
         </div>
-        <button type="button" class="mehr-panel__add-btn" (click)="openCreateCustomerDialog()">+ Neu</button>
+        <button type="button" class="mehr-panel__add-btn" data-testid="open-customer-dialog" (click)="openCreateCustomerDialog()">+ Neu</button>
       </div>
       <label class="mehr-panel__search" aria-label="Kunden suchen">
         <span class="mehr-panel__search-icon" aria-hidden="true">⌕</span>
@@ -164,7 +154,6 @@
           }
         </ul>
       }
-      <button type="button" class="customer-add-btn" (click)="openCreateCustomerDialog()">+ Kunde hinzufügen</button>
     </aside>
 
   </div>

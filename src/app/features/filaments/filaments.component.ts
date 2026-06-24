@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { FilamentPayload, FilamentService } from '../../core/filaments/filament.service';
 import { FilamentRecord } from '../../domain/models/storage.models';
@@ -35,6 +36,7 @@ type FilamentFilter = 'Alle' | 'PLA' | 'PETG' | 'ABS' | 'TPU' | 'Anderes';
 export class FilamentsComponent {
   readonly #filamentService = inject(FilamentService);
   readonly #formBuilder = inject(FormBuilder);
+  readonly #route = inject(ActivatedRoute, { optional: true });
   readonly #materialFilters = new Set<Exclude<FilamentFilter, 'Alle' | 'Anderes'>>(['PLA', 'PETG', 'ABS', 'TPU']);
 
   readonly form = this.#formBuilder.nonNullable.group({
@@ -148,6 +150,12 @@ export class FilamentsComponent {
 
   constructor() {
     void this.#filamentService.refresh();
+
+    // Opening with ?neu=1 (e.g. from the calculation empty state) jumps straight
+    // into the create dialog instead of just landing on the list.
+    if (this.#route?.snapshot.queryParamMap.has('neu')) {
+      this.openCreateDialog();
+    }
   }
 
   openCreateDialog(): void {

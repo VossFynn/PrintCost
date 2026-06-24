@@ -423,7 +423,7 @@ describe('CalculateComponent', () => {
     expect(root.querySelector('[data-testid="filament-chip"]')).toBeNull();
     expect(root.textContent).toContain('Noch kein aktives Filament vorhanden.');
     expect(root.textContent).toContain('Filament hinzufügen');
-    expect(root.querySelector('[data-testid="filament-empty"] a')?.getAttribute('href')).toBe('/filaments');
+    expect(root.querySelector('[data-testid="filament-empty"] a')?.getAttribute('href')).toBe('/filaments?neu=1');
   });
 
   it('shows fixed-mode inline validation and keeps save disabled until fixed value is valid', async () => {

@@ -75,4 +75,10 @@
   .page-header__actions {
     width: 100%;
   }
+
+  /* The eyebrow ("Verwaltung & System" etc.) is redundant next to the large
+     title on phones and only adds visual clutter — hide it there. */
+  .page-header__eyebrow {
+    display: none;
+  }
 }
