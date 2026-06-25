@@ -28,26 +28,31 @@
         [attr.aria-pressed]="isAreaActive(area)"
         (click)="selectArea(area)"
       >
-        {{ area === 'drucke' ? 'Drucke' : 'Teile' }}
+        {{ area === 'projekte' ? 'Projekte' : 'Teile' }}
       </button>
     }
   </nav>
 
-  @if (activeArea() === 'drucke') {
+  @if (activeArea() === 'projekte') {
 
     <!-- ── Filter chips ──────────────────────────────── -->
-    <div class="inventory-filters" aria-label="Druckefilter">
-      @for (filter of druckeFilters; track filter) {
-        <button
-          type="button"
-          data-testid="drucke-filter-chip"
-          class="inventory-filters__chip"
-          [class.inventory-filters__chip--active]="isDruckeFilterActive(filter)"
-          [attr.aria-pressed]="isDruckeFilterActive(filter)"
-          (click)="selectDruckeFilter(filter)"
-        >
-          {{ filter }}
-        </button>
+    <div class="inventory-header-strip">
+      <div class="inventory-filters" aria-label="Druckefilter">
+        @for (filter of druckeFilters; track filter) {
+          <button
+            type="button"
+            data-testid="drucke-filter-chip"
+            class="inventory-filters__chip"
+            [class.inventory-filters__chip--active]="isDruckeFilterActive(filter)"
+            [attr.aria-pressed]="isDruckeFilterActive(filter)"
+            (click)="selectDruckeFilter(filter)"
+          >
+            {{ filter }}
+          </button>
+        }
+      </div>
+      @if (visibleDruckeCards().length > 0) {
+        <h2 class="inventory-panel__heading">Übersicht</h2>
       }
     </div>
 
@@ -84,7 +89,12 @@
 
           <ul class="inventory-cards" aria-label="Gespeicherte Drucke">
             @for (card of visibleDruckeCards(); track card.id) {
-              <li class="inventory-card" data-testid="inventory-card" (click)="openDetail(card.id)">
+              <li
+                class="inventory-card"
+                data-testid="inventory-card"
+                [class.inventory-card--recorded]="recordedCardId() === card.id"
+                (click)="openDetail(card.id)"
+              >
 
                 <div class="inventory-card__info">
                   <h3 class="inventory-card__title" data-testid="inventory-card-title">{{ card.projectName }}</h3>
@@ -112,8 +122,6 @@
                 <div class="inventory-card__status">
                   @if (card.status === 'in-stock') {
                     <span class="inventory-card__pill inventory-card__pill--ok">Auf Lager</span>
-                  } @else if (card.status === 'partial') {
-                    <span class="inventory-card__pill inventory-card__pill--warn">Teilweise</span>
                   } @else if (card.status === 'complete') {
                     <span class="inventory-card__pill inventory-card__pill--muted">Vollständig</span>
                   } @else if (card.status === 'gifted') {
@@ -121,15 +129,27 @@
                   }
                 </div>
 
-                <button
-                  type="button"
-                  class="inventory-card__quick-action"
-                  data-testid="inventory-record-print"
-                  aria-label="Druck verbuchen"
-                  (click)="onCardQuickAction($event, card.id)"
-                >
-                  +1
-                </button>
+                <!-- Dezente Aktionskreise: Schnell-Verbuchung verschiedener Mengen.
+                     Der gestrichelte Kreis fragt eine eigene Anzahl ab. -->
+                <div class="inventory-card__steps" (click)="$event.stopPropagation()">
+                  @for (step of recordSteps; track step) {
+                    <button
+                      type="button"
+                      class="inventory-card__step"
+                      [attr.data-testid]="step === 1 ? 'inventory-record-print' : null"
+                      [attr.aria-label]="step === 1 ? 'Einen Druck verbuchen' : step + ' Drucke verbuchen'"
+                      [title]="step === 1 ? 'Einen Druck verbuchen' : step + ' Drucke verbuchen'"
+                      (click)="onCardStep($event, card.id, step)"
+                    >+{{ step }}</button>
+                  }
+                  <button
+                    type="button"
+                    class="inventory-card__step inventory-card__step--custom"
+                    aria-label="Eigene Anzahl verbuchen"
+                    title="Eigene Anzahl verbuchen"
+                    (click)="recordCustomQuantity($event, card.id)"
+                  >+</button>
+                </div>
 
               </li>
             }
@@ -139,7 +159,6 @@
 
       <!-- ── Stats Panel ─────────────────────────────── -->
       <aside class="inventory-panel">
-        <h2 class="inventory-panel__heading">Übersicht</h2>
 
         <div class="inventory-panel__card">
           <span class="inventory-panel__stat-label">Gesamt gedruckt</span>
@@ -174,8 +193,59 @@
 
   } @else {
     <section class="inventory-section">
-      <h2 class="inventory-section__label">Teile</h2>
-      <p class="page__body">Teile folgen in einer späteren Story.</p>
+      @if (printedCards().length === 0) {
+        <div class="inventory-empty-card" data-testid="teile-empty-state">
+          <p class="inventory-empty-card__text">Noch keine gedruckten Teile vorhanden.</p>
+        </div>
+      } @else {
+        <ul class="inventory-cards" aria-label="Gedruckte Teile">
+          @for (card of printedCards(); track card.id) {
+            <li
+              class="inventory-card"
+              data-testid="inventory-card-teil"
+              (click)="openDetail(card.id)"
+            >
+              <div class="inventory-card__info">
+                <h3 class="inventory-card__title">{{ card.projectName }}</h3>
+                <p class="inventory-card__meta">{{ card.updatedAtLabel }} · {{ card.roundedPriceEur }} €</p>
+              </div>
+
+              <span class="inventory-card__printed">Gedruckt: {{ card.timesPrinted }}</span>
+
+              <span class="inventory-card__sold">Verkauft: {{ card.timesSold }}</span>
+
+              <div class="inventory-card__status">
+                @if (card.status === 'in-stock') {
+                  <span class="inventory-card__pill inventory-card__pill--ok">Auf Lager</span>
+                } @else if (card.status === 'complete') {
+                  <span class="inventory-card__pill inventory-card__pill--muted">Vollständig</span>
+                } @else if (card.status === 'gifted') {
+                  <span class="inventory-card__pill inventory-card__pill--muted">Verschenkt</span>
+                }
+              </div>
+
+              <div class="inventory-card__steps" (click)="$event.stopPropagation()">
+                @for (step of recordSteps; track step) {
+                  <button
+                    type="button"
+                    class="inventory-card__step"
+                    [attr.aria-label]="step === 1 ? 'Einen Druck verbuchen' : step + ' Drucke verbuchen'"
+                    [title]="step === 1 ? 'Einen Druck verbuchen' : step + ' Drucke verbuchen'"
+                    (click)="onCardStep($event, card.id, step)"
+                  >+{{ step }}</button>
+                }
+                <button
+                  type="button"
+                  class="inventory-card__step inventory-card__step--custom"
+                  aria-label="Eigene Anzahl verbuchen"
+                  title="Eigene Anzahl verbuchen"
+                  (click)="recordCustomQuantity($event, card.id)"
+                >+</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
     </section>
   }
 
