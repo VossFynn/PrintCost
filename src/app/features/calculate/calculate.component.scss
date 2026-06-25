@@ -11,31 +11,6 @@
 
 /* ── Page header row ────────────────────────────────────── */
 
-.calc-page-header__load-btn {
-  flex-shrink: 0;
-  min-height: 2.25rem;
-  border: 1.5px solid var(--pc-color-primary);
-  border-radius: var(--pc-radius-input);
-  background: transparent;
-  color: var(--pc-color-primary);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  padding: 0 var(--pc-space-3);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease;
-  margin-bottom: 2px;
-
-  &:hover {
-    background: var(--pc-color-surface-accent-soft);
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-}
-
 .calc-header-actions__btn {
   display: none; /* hidden on mobile (bottom Aktionen block handles it), shown on desktop */
   min-height: 2.25rem;
@@ -96,7 +71,7 @@
   border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-card);
   background: var(--pc-color-surface-card);
-  box-shadow: 0 1px 4px rgb(44 62 80 / 4%);
+  box-shadow: 0 2px 10px rgb(44 62 80 / 6%);
 }
 
 .calc-section-header {
@@ -121,6 +96,23 @@
   color: var(--pc-color-ink-label);
 }
 
+// Dezenterer Sub-Header innerhalb eines zusammengefassten Blocks.
+.calc-section__sublabel {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--pc-color-ink-muted);
+}
+
+// Thin divider separating logical sub-groups inside one section card.
+.calc-block-divider {
+  height: 1px;
+  background: var(--pc-color-border-muted);
+  margin: var(--pc-space-1) 0;
+}
+
 /* Kostenpositionen hidden on mobile */
 .calc-kostenpositionen {
   display: none;
@@ -142,10 +134,10 @@
 }
 
 .calc-field__input {
-  min-height: 2.75rem;
+  min-height: 2.5rem;
   min-width: 0;
   width: 100%;
-  border: 1.5px solid var(--pc-color-border-subtle);
+  border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);
   background: var(--pc-color-surface-card);
@@ -298,7 +290,9 @@ select.calc-field__input {
 .calc-filament-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* ensures columns align between thead and tbody */
   font-size: 0.875rem;
+  margin-top: var(--pc-space-2);
 }
 
 .calc-filament-table__head {
@@ -307,7 +301,7 @@ select.calc-field__input {
 
 .calc-filament-table__th {
   text-align: left;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -316,7 +310,12 @@ select.calc-field__input {
   border-bottom: 1px solid var(--pc-color-border-subtle);
 }
 
+.calc-filament-table__th--name {
+  /* takes remaining width */
+}
+
 .calc-filament-table__th--num {
+  width: 5.5rem;
   text-align: right;
 }
 
@@ -324,8 +323,8 @@ select.calc-field__input {
   border-bottom: 1px solid var(--pc-color-border-muted);
 
   td {
-    padding: var(--pc-space-2);
-    vertical-align: middle;
+    padding: var(--pc-space-2) var(--pc-space-2);
+    vertical-align: top;
   }
 }
 
@@ -333,10 +332,17 @@ select.calc-field__input {
   display: flex;
   align-items: center;
   gap: var(--pc-space-2);
+  overflow: hidden;
 }
 
+/* Input cell: contains the adornment wrapper + optional error */
 .calc-filament-table__input-cell {
-  display: flex;
+  vertical-align: top;
+  text-align: right;
+}
+
+.calc-filament-line__input-wrap {
+  display: inline-flex;
   align-items: center;
   gap: var(--pc-space-1);
   justify-content: flex-end;
@@ -347,6 +353,7 @@ select.calc-field__input {
   text-align: right;
   font-weight: 600;
   color: var(--pc-color-ink-secondary);
+  vertical-align: middle;
 }
 
 .calc-filament-table__summe {
@@ -356,6 +363,7 @@ select.calc-field__input {
     color: var(--pc-color-ink-secondary);
     font-weight: 600;
     border-top: 1px solid var(--pc-color-border-subtle);
+    vertical-align: middle;
   }
 
   td:last-child {
@@ -448,7 +456,7 @@ select.calc-field__input {
 }
 
 .calc-druck-metric__label {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -541,8 +549,42 @@ select.calc-field__input {
 .calc-gewinn-slider {
   display: none; /* hidden on mobile */
   width: 100%;
-  accent-color: var(--pc-color-primary);
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--pc-color-surface-muted);
+  border: 1px solid var(--pc-color-border-subtle);
+  accent-color: var(--pc-color-primary);
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: var(--pc-color-primary);
+    border: 2.5px solid #fff;
+    box-shadow: 0 1px 6px rgb(196 98 45 / 40%);
+    cursor: pointer;
+  }
+
+  &::-moz-range-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: var(--pc-color-primary);
+    border: 2.5px solid #fff;
+    box-shadow: 0 1px 6px rgb(196 98 45 / 40%);
+    cursor: pointer;
+  }
+
+  &::-moz-range-track {
+    background: var(--pc-color-surface-muted);
+    border: 1px solid var(--pc-color-border-subtle);
+    height: 6px;
+    border-radius: 3px;
+  }
 }
 
 .calc-gewinn-marks {
@@ -563,9 +605,10 @@ select.calc-field__input {
 .calc-result {
   padding: var(--pc-space-4);
   border: 1px solid var(--pc-color-border-subtle);
+  border-top: 2px solid var(--pc-color-primary);
   border-radius: var(--pc-radius-card);
   background: var(--pc-color-surface-card);
-  box-shadow: 0 1px 4px rgb(44 62 80 / 4%);
+  box-shadow: 0 2px 10px rgb(44 62 80 / 6%);
   display: grid;
   gap: var(--pc-space-3);
 }
@@ -714,7 +757,7 @@ select.calc-field__input {
   border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-card);
   background: var(--pc-color-surface-card);
-  box-shadow: 0 1px 4px rgb(44 62 80 / 4%);
+  box-shadow: 0 2px 10px rgb(44 62 80 / 6%);
 }
 
 .calc-actions .calc-field__label {
@@ -801,7 +844,7 @@ select.calc-field__input {
   /* Form becomes a 3-column grid */
   .calculate-form {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 14rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 17rem;
     grid-template-rows: auto;
     column-gap: var(--pc-space-4);
     row-gap: 0;
@@ -918,7 +961,7 @@ select.calc-field__input {
   }
 
   .calc-result__price-value {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
   /* Collapse the detailed cost rows on desktop (sidebar is narrow) */
@@ -983,12 +1026,13 @@ select.calc-field__input {
   position: absolute;
   top: 0;
   height: 100%;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease, left 0.3s ease;
 
   &--material { background: #c4622d; }
   &--strom    { background: #e8a87c; }
   &--afa      { background: #7ab3d4; }
   &--model    { background: #a8c4d8; }
+  &--gewinn   { background: #3e9e6b; }
 }
 
 .calc-result__kosten-legend {
@@ -1017,6 +1061,7 @@ select.calc-field__input {
   &--strom    { background: #e8a87c; }
   &--afa      { background: #7ab3d4; }
   &--model    { background: #a8c4d8; }
+  &--gewinn   { background: #3e9e6b; }
 }
 
 @media (min-width: 56rem) {

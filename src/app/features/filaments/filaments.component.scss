@@ -2,34 +2,42 @@
 
 // ── Header actions (projected into app-page-header) ───────
 
+.filament-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  flex-wrap: nowrap;
+}
+
 .filament-header__add-btn {
   display: inline-flex;
   align-items: center;
-  min-height: 2.5rem;
+  min-height: 2rem;
   border: none;
   border-radius: var(--pc-radius-input);
   background: var(--pc-color-primary);
   color: var(--pc-color-primary-foreground);
   font: inherit;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  padding: 0 var(--pc-space-4);
+  padding: 0 var(--pc-space-3);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: opacity 0.15s ease;
+  box-shadow: 0 2px 8px rgb(196 98 45 / 20%);
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
 
-  &:hover { opacity: 0.9; }
+  &:hover { opacity: 0.95; box-shadow: 0 4px 12px rgb(196 98 45 / 28%); }
 }
 
 .filament-search {
   display: flex;
   align-items: center;
   gap: var(--pc-space-2);
-  flex: 1;
-  min-width: 11rem;
-  min-height: 2.5rem;
-  border: 1.5px solid var(--pc-color-border-subtle);
+  width: 9rem;
+  min-width: 0;
+  min-height: 2rem;
+  border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-input);
   padding: 0 var(--pc-space-3);
   background: var(--pc-color-surface-card);
@@ -38,7 +46,7 @@
 
 .filament-search__icon {
   color: var(--pc-color-ink-muted);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   flex-shrink: 0;
 }
 
@@ -49,7 +57,7 @@
   background: transparent;
   color: var(--pc-color-ink-primary);
   font: inherit;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 
   &::placeholder { color: var(--pc-color-ink-muted); }
   &:focus { outline: none; }
@@ -92,8 +100,8 @@
 
 .filament-empty-card {
   display: grid;
-  padding: var(--pc-space-6) var(--pc-space-4);
-  border: 1.5px dashed var(--pc-color-border-muted);
+  padding: var(--pc-space-8) var(--pc-space-4);
+  border: 1.5px dashed var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-card);
   background: var(--pc-color-surface-muted);
   text-align: center;
@@ -101,8 +109,18 @@
 
 .filament-empty-card__text {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--pc-color-ink-secondary);
+}
+
+// ── Filter strip (filter chips + Übersicht heading on desktop) ──
+
+.filament-header-strip {
+  display: block;
+}
+
+.filament-panel__heading {
+  display: none;
 }
 
 // ── Desktop Two-column Layout ─────────────────────────────
@@ -154,9 +172,10 @@
   border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-card);
   background: var(--pc-color-surface-card);
+  box-shadow: 0 1px 4px rgb(44 62 80 / 4%);
   transition: box-shadow 0.15s ease;
 
-  &:hover { box-shadow: 0 2px 8px rgb(44 62 80 / 6%); }
+  &:hover { box-shadow: 0 3px 12px rgb(44 62 80 / 8%); }
 }
 
 .filament-list__color-dot {
@@ -324,6 +343,7 @@
   border: 1px solid var(--pc-color-border-subtle);
   border-radius: var(--pc-radius-card);
   background: var(--pc-color-surface-card);
+  box-shadow: 0 2px 10px rgb(44 62 80 / 5%);
   margin-bottom: var(--pc-space-3);
 
   &--accent {
@@ -470,6 +490,12 @@
 .filament-form__field {
   display: grid;
   gap: var(--pc-space-1);
+
+  // The field grid-gap already separates label and input — drop the label's
+  // own margin so the heading sits tight to its input (no double spacing).
+  .filament-form__label {
+    margin-bottom: 0;
+  }
 }
 
 .filament-form__grid-2 {
@@ -482,6 +508,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--pc-space-3);
+  align-items: start; /* cells top-align so quick-add pills don't push Restmenge input down */
 
   // MATERIAL spans full width on mobile, others side by side
   > :first-child { grid-column: 1 / -1; }
@@ -494,14 +521,14 @@
 }
 
 .filament-form__material-chip {
-  min-height: 2.5rem;
+  min-height: 2rem;
   padding: 0 var(--pc-space-3);
   border: 1.5px solid var(--pc-color-border-subtle);
-  border-radius: var(--pc-radius-input);
+  border-radius: 9999px;
   background: var(--pc-color-surface-muted);
   color: var(--pc-color-ink-secondary);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
@@ -620,6 +647,70 @@
   pointer-events: none;
 }
 
+// Swatch wrapper carries a small remove affordance shown on hover/focus.
+.filament-form__swatch-wrap {
+  position: relative;
+  display: inline-flex;
+
+  &:hover .filament-form__swatch-remove,
+  &:focus-within .filament-form__swatch-remove {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.filament-form__swatch-remove {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 1.5px solid var(--pc-color-surface-card);
+  border-radius: 50%;
+  background: var(--pc-color-ink-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+
+  &:hover { background: #b34a1a; }
+}
+
+// Quick-add pills (e.g. +1000, +750) for the weight inputs.
+.filament-form__quick-adds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-1);
+  margin-top: var(--pc-space-1);
+}
+
+.filament-form__quick-add {
+  min-height: 1.5rem;
+  padding: 0 var(--pc-space-2);
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: 9999px;
+  background: var(--pc-color-surface-card);
+  color: var(--pc-color-ink-secondary);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--pc-color-primary);
+    color: var(--pc-color-primary);
+    background: var(--pc-color-surface-accent-soft);
+  }
+}
+
 // ── Purchases (hidden on mobile) ─────────────────────────
 
 .filament-form__purchases {
@@ -682,20 +773,24 @@
 }
 
 .filament-form__add-purchase {
-  min-height: 2.25rem;
-  border: 1.5px solid var(--pc-color-primary);
-  border-radius: var(--pc-radius-sm);
-  background: transparent;
-  color: var(--pc-color-primary);
+  min-height: 1.75rem;
+  border: 1px solid var(--pc-color-border-subtle);
+  border-radius: 9999px;
+  background: var(--pc-color-surface-muted);
+  color: var(--pc-color-ink-secondary);
   font: inherit;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 0 var(--pc-space-3);
   cursor: pointer;
-  justify-self: start;
-  transition: background 0.15s ease;
+  justify-self: end;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 
-  &:hover { background: var(--pc-color-surface-accent-soft); }
+  &:hover {
+    border-color: var(--pc-color-primary);
+    color: var(--pc-color-primary);
+    background: var(--pc-color-surface-accent-soft);
+  }
 }
 
 .filament-form__error {
@@ -705,14 +800,19 @@
   font-weight: 500;
 }
 
-// ── Form Actions ──────────────────────────────────────────
+// ── Form Actions — sticky so they're always visible in a scrollable modal ──
 
 .filament-form__actions {
+  position: sticky;
+  bottom: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--pc-space-2);
-  padding-top: var(--pc-space-2);
+  padding: var(--pc-space-3) 0 0;
+  margin-top: var(--pc-space-2);
   border-top: 1px solid var(--pc-color-border-muted);
+  background: var(--pc-color-surface-card);
+  z-index: 1;
 }
 
 .filament-form__cancel {
@@ -762,6 +862,23 @@
   // On desktop the search keeps a comfortable fixed width instead of stretching.
   .filament-search { flex: 0 1 18rem; }
 
+  // Header strip: same grid as layout so chips and heading align
+  .filament-header-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: var(--pc-space-4);
+    align-items: center;
+  }
+
+  .filament-panel__heading {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--pc-color-ink-primary);
+  }
+
   // Two-column layout
   .filament-layout {
     grid-template-columns: minmax(0, 1fr) 17rem;
@@ -771,8 +888,10 @@
   .filament-col-heads {
     display: grid;
     grid-template-columns: 2rem minmax(0, 1fr) 5rem 5rem minmax(6rem, 9rem) 3rem;
+    align-items: center;
     gap: var(--pc-space-3);
-    padding: var(--pc-space-2) var(--pc-space-3);
+    min-height: 1.75rem;
+    padding: 0 var(--pc-space-3);
     margin-bottom: 0;
     background: var(--pc-color-surface-muted);
     border: 1px solid var(--pc-color-border-subtle);
@@ -900,15 +1019,6 @@
 
   // Stats panel visible on desktop
   .filament-panel { display: block; }
-
-  // Line the "Übersicht" heading up with the table's column-header bar so the
-  // two columns start at the same height instead of looking misaligned.
-  .filament-panel__heading {
-    display: flex;
-    align-items: center;
-    min-height: 2rem;
-    margin: 0 0 var(--pc-space-3);
-  }
 
   // Dialog: centered modal
   .filament-sheet {

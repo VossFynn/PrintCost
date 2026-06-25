@@ -277,35 +277,17 @@ describe('MoreComponent', () => {
     expect(root.textContent).toContain('Prusa MK4');
   });
 
-  it('shows a German delete confirmation and does not mutate on cancel', async () => {
+  it('soft deletes an active printer directly without confirmation and removes it from list', async () => {
     const printerMock = new MockPrinterService();
     await printerMock.createPrinter({});
     const { fixture, root } = await createComponent({ printerMock });
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    (root.querySelector('[data-testid="delete-printer"]') as HTMLButtonElement).click();
-    fixture.detectChanges();
-
-    expect(confirmSpy).toHaveBeenCalledWith(
-      'Willst du dieses Druckerprofil wirklich löschen? Es bleibt für gespeicherte Kalkulationen erhalten.'
-    );
-    expect(printerMock.softDeleteCalls).toBe(0);
-    confirmSpy.mockRestore();
-  });
-
-  it('soft deletes an active printer after confirmation and removes it from list', async () => {
-    const printerMock = new MockPrinterService();
-    await printerMock.createPrinter({});
-    const { fixture, root } = await createComponent({ printerMock });
-
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     (root.querySelector('[data-testid="delete-printer"]') as HTMLButtonElement).click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(printerMock.softDeleteCalls).toBe(1);
     expect(root.textContent).toContain('Noch kein aktives Druckerprofil vorhanden.');
-    confirmSpy.mockRestore();
   });
 
   // --- Existing customer tests ---
@@ -337,22 +319,17 @@ describe('MoreComponent', () => {
     expect(root.textContent).toContain('Kontakt ist zu lang');
   });
 
-  it('shows German delete confirmation before soft deleting customer', async () => {
+  it('soft deletes a customer directly without confirmation and removes it from list', async () => {
     const customerMock = new MockCustomerService();
     await customerMock.createCustomer({ name: 'Anna Käuferin', contact: 'anna@example.com' });
     const { fixture, root } = await createComponent({ customerMock });
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     (root.querySelector('[data-testid="delete-customer"]') as HTMLButtonElement).click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(confirmSpy).toHaveBeenCalledWith(
-      'Willst du diesen Kunden wirklich löschen? Bestehende Kalkulationen und Verkäufe bleiben lesbar.'
-    );
     expect(customerMock.softDeleteCalls).toBe(1);
     expect(root.textContent).toContain('Noch kein aktiver Kunde vorhanden.');
-    confirmSpy.mockRestore();
   });
 
   // --- Settings form tests (5.1) ---

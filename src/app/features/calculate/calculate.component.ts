@@ -4,13 +4,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { CalculationService, CalculationTemplateInput } from '../../core/calculations/calculation.service';
+import { CalculationService } from '../../core/calculations/calculation.service';
 import { CustomerService } from '../../core/customers/customer.service';
 import { FilamentPriceMode, FilamentService } from '../../core/filaments/filament.service';
 import { PrinterService } from '../../core/printers/printer.service';
 import { SettingsService } from '../../core/settings/settings.service';
 import { calculate, CalculationInput, CalculationResult } from '../../domain/calculation/calculate';
-import { CalculationFilamentLineSnapshot, FilamentRecord, TemplateRecord } from '../../domain/models/storage.models';
+import { CalculationFilamentLineSnapshot, FilamentRecord } from '../../domain/models/storage.models';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
 const LAST_USED_PRINTER_SETTING_KEY = 'lastUsedPrinterProfileId';
@@ -67,13 +67,6 @@ export class CalculateComponent {
   readonly #formRevision = signal(0);
   readonly resultAnnouncementText = signal('');
   readonly saveFeedback = signal('');
-  readonly templateName = signal('');
-  readonly templateFeedback = signal('');
-  readonly templateSelectionId = signal<string | null>(null);
-  readonly templatePrinterReselectGuidance = signal<string | null>(null);
-  readonly templateFilamentReselectGuidance = signal<string | null>(null);
-  readonly templates = this.#calculationService.templates;
-  readonly hasTemplates = computed(() => this.templates().length > 0);
   readonly liveResult = computed(() => {
     this.#formRevision();
     return this.computeLiveResult();
@@ -147,7 +140,7 @@ export class CalculateComponent {
     void this.initialize();
   }
 
-  async saveCalculationDraft(): Promise<void> {
+  async savePrintProject(): Promise<void> {
     this.form.markAllAsTouched();
     this.filamentLines.markAllAsTouched();
 
@@ -192,50 +185,7 @@ export class CalculateComponent {
       calculationInput,
       calculationResult
     });
-    this.saveFeedback.set('Kalkulation gespeichert. Unter Bestand > Drucke verfügbar.');
-  }
-
-  async saveAsTemplate(): Promise<void> {
-    this.templateFeedback.set('');
-    this.templatePrinterReselectGuidance.set(null);
-    this.templateFilamentReselectGuidance.set(null);
-    this.form.markAllAsTouched();
-    this.filamentLines.markAllAsTouched();
-
-    if (this.isSaveDisabled()) {
-      return;
-    }
-
-    const templateName = this.templateName().trim();
-    if (!templateName) {
-      this.templateFeedback.set('Bitte Vorlagenname eingeben.');
-      return;
-    }
-
-    await this.#calculationService.saveTemplate({
-      templateName,
-      templateInput: this.serializeTemplateInput()
-    });
-    this.templateName.set('');
-    await this.#calculationService.refreshTemplates();
-    this.templateSelectionId.set(this.templates()[0]?.id ?? null);
-    this.templateFeedback.set('Vorlage gespeichert.');
-  }
-
-  async loadTemplateSelection(): Promise<void> {
-    this.templateFeedback.set('');
-    const selectedTemplateId = this.selectedTemplateId();
-    if (!selectedTemplateId) {
-      return;
-    }
-
-    const template = await this.#calculationService.loadTemplate(selectedTemplateId);
-    if (!template) {
-      this.templateFeedback.set('Vorlage konnte nicht geladen werden.');
-      return;
-    }
-
-    this.prefillFormFromTemplate(template);
+    this.saveFeedback.set('Druckprojekt gespeichert – jetzt im Bestand verfügbar.');
   }
 
   async onPrinterChange(printerId: string): Promise<void> {
@@ -285,12 +235,10 @@ export class CalculateComponent {
         this.#filamentService.refresh(),
         this.#printerService.refresh(),
         this.#customerService.refresh(),
-        this.#settingsService.refresh(),
-        this.#calculationService.refreshTemplates()
+        this.#settingsService.refresh()
       ]);
       this.syncPrinterSelection();
       this.syncSelectedFilamentLines();
-      this.templateSelectionId.set(this.templates()[0]?.id ?? null);
       this.applySettingsDefaults();
     } catch (error) {
       if (error instanceof Error) {
@@ -372,10 +320,21 @@ export class CalculateComponent {
 
   onPriceModeChange(index: number, rawMode: string): void {
     const mode = this.normalizePriceMode(rawMode);
-    this.filamentLines.at(index).controls.priceMode.setValue(mode);
-    if (mode !== 'FIXED') {
-      this.filamentLines.at(index).controls.fixedPriceEurG.setValue(0);
-      this.filamentLines.at(index).controls.fixedPriceEurG.markAsUntouched();
+    const line = this.filamentLines.at(index);
+    line.controls.priceMode.setValue(mode);
+    if (mode === 'FIXED') {
+      // Prefill the fixed price (default 0) from the selected filament's own
+      // fixed price so the user starts from a sensible value instead of blank.
+      if (Number(line.controls.fixedPriceEurG.value) <= 0) {
+        const filament = this.activeFilaments().find((entry) => entry.id === line.controls.filamentId.value);
+        const presetPrice = filament?.fixedPriceEurG ?? 0;
+        if (presetPrice > 0) {
+          line.controls.fixedPriceEurG.setValue(presetPrice);
+        }
+      }
+    } else {
+      line.controls.fixedPriceEurG.setValue(0);
+      line.controls.fixedPriceEurG.markAsUntouched();
     }
     this.bumpFormRevision();
   }
@@ -406,19 +365,6 @@ export class CalculateComponent {
       this.filamentLines.length === 0 ||
       this.hasInvalidFilamentLines()
     );
-  }
-
-  isTemplateLoadBlocked(): boolean {
-    return !this.hasTemplates();
-  }
-
-  onTemplateNameInput(value: string): void {
-    this.templateName.set(value);
-  }
-
-  onTemplateSelectionChange(templateId: string): void {
-    this.templateSelectionId.set(templateId || null);
-    this.templateFeedback.set('');
   }
 
   totalFilamentGrams(): number {
@@ -473,6 +419,53 @@ export class CalculateComponent {
 
   totalForAll(perPlateCost: number): number {
     return perPlateCost * this.totalPieces();
+  }
+
+  /**
+   * Material cost for a single filament line (grams × resolved €/g).
+   *
+   * Computed independently of the full-form validity so the cost column updates
+   * the moment a gram amount is entered — even before the project name, printer
+   * or print time are filled in. Returns null when no price can be resolved yet.
+   */
+  lineMaterialCostEur(index: number): number | null {
+    const line = this.filamentLines.at(index);
+    if (!line) {
+      return null;
+    }
+
+    const grams = Number(line.controls.grams.value);
+    if (!Number.isFinite(grams) || grams <= 0) {
+      return null;
+    }
+
+    const filament = this.activeFilaments().find((entry) => entry.id === line.controls.filamentId.value);
+    if (!filament) {
+      return null;
+    }
+
+    const mode = this.normalizePriceMode(line.controls.priceMode.value);
+    try {
+      const pricePerGram =
+        mode === 'FIXED'
+          ? Number(line.controls.fixedPriceEurG.value)
+          : this.#filamentService.pricePerGramForMode(filament, mode);
+      if (!Number.isFinite(pricePerGram) || pricePerGram <= 0) {
+        return null;
+      }
+
+      return grams * pricePerGram;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Sum of all resolvable per-line material costs (for the table footer). */
+  totalMaterialCostEur(): number {
+    return this.filamentLines.controls.reduce(
+      (sum, _line, index) => sum + (this.lineMaterialCostEur(index) ?? 0),
+      0
+    );
   }
 
   private createFilamentLine(filamentId: string): FilamentLineForm {
@@ -537,104 +530,9 @@ export class CalculateComponent {
     this.#formRevision.update((revision) => revision + 1);
   }
 
-  private selectedTemplateId(): string | null {
-    const explicitSelection = this.templateSelectionId();
-    if (explicitSelection) {
-      return explicitSelection;
-    }
-
-    return this.templates()[0]?.id ?? null;
-  }
-
   private selectedCustomerId(): string | undefined {
     const customerId = this.form.controls.customerId.value.trim();
     return customerId ? customerId : undefined;
-  }
-
-  /**
-   * Serializes the current editable form into a detached template payload.
-   */
-  private serializeTemplateInput(): CalculationTemplateInput {
-    return {
-      projectName: this.form.controls.projectName.value,
-      printerId: this.form.controls.printerId.value,
-      printHours: Number(this.form.controls.printHours.value),
-      printQuantity: Number(this.form.controls.printQuantity.value),
-      partsPerPlate: Number(this.form.controls.partsPerPlate.value),
-      modelExists: this.form.controls.modelExists.value,
-      modelingCostEur: this.modelingCostEur(),
-      modelingHourlyRateEur: Number(this.form.controls.modelingHourlyRateEur.value),
-      modelingHours: Number(this.form.controls.modelingHours.value),
-      extraWorkFeePercent: Number(this.form.controls.extraWorkFeePercent.value),
-      profitMarginPercent: Number(this.form.controls.profitMarginPercent.value),
-      filamentLines: this.filamentLines.controls.map((line) => ({
-        filamentId: line.controls.filamentId.value,
-        grams: Number(line.controls.grams.value),
-        priceMode: this.normalizePriceMode(line.controls.priceMode.value),
-        fixedPriceEurG: Number(line.controls.fixedPriceEurG.value)
-      }))
-    };
-  }
-
-  /**
-   * Prefills form controls from template data while forcing reselection for missing linked records.
-   */
-  private prefillFormFromTemplate(template: TemplateRecord): void {
-    const templateInput = template.templateInput;
-    this.form.patchValue(
-      {
-        projectName: templateInput.projectName,
-        printHours: templateInput.printHours,
-        printQuantity: templateInput.printQuantity,
-        partsPerPlate: templateInput.partsPerPlate,
-        modelExists: templateInput.modelExists,
-        // Prefer the stored rate/hours split; fall back to the legacy flat cost
-        // (rate = cost, 1 h) so older templates keep their modelling amount.
-        modelingHourlyRateEur:
-          templateInput.modelingHourlyRateEur ?? templateInput.modelingCostEur,
-        modelingHours:
-          templateInput.modelingHours ?? (templateInput.modelingCostEur > 0 ? 1 : 0),
-        extraWorkFeePercent: templateInput.extraWorkFeePercent,
-        profitMarginPercent: templateInput.profitMarginPercent
-      },
-      { emitEvent: false }
-    );
-
-    const hasPrinter = this.activePrinters().some((entry) => entry.id === templateInput.printerId);
-    this.form.controls.printerId.setValue(hasPrinter ? templateInput.printerId : '', { emitEvent: false });
-    this.templatePrinterReselectGuidance.set(
-      hasPrinter ? null : 'Gespeicherter Drucker ist nicht verfügbar. Bitte neu auswählen.'
-    );
-
-    this.filamentLines.clear({ emitEvent: false });
-    const activeFilamentIds = new Set(this.activeFilaments().map((entry) => entry.id));
-    let missingFilamentCount = 0;
-    for (const line of templateInput.filamentLines) {
-      if (!activeFilamentIds.has(line.filamentId)) {
-        missingFilamentCount += 1;
-        continue;
-      }
-
-      const formLine = this.createFilamentLine(line.filamentId);
-      formLine.patchValue(
-        {
-          grams: line.grams,
-          priceMode: this.normalizePriceMode(line.priceMode),
-          fixedPriceEurG: line.fixedPriceEurG
-        },
-        { emitEvent: false }
-      );
-      this.filamentLines.push(formLine, { emitEvent: false });
-    }
-
-    this.templateFilamentReselectGuidance.set(
-      missingFilamentCount > 0 ? 'Gespeicherte Filamente sind nicht verfügbar. Bitte Filamente neu auswählen.' : null
-    );
-
-    this.form.markAsUntouched();
-    this.filamentLines.markAsUntouched();
-    this.bumpFormRevision();
-    this.templateFeedback.set('Vorlage geladen.');
   }
 
   private computeLiveResult(): CalculationResult | null {

@@ -113,7 +113,6 @@ describe('FilamentsComponent', () => {
     fixture.detectChanges();
 
     expect(root.textContent).toContain('Bitte Name eingeben');
-    expect(root.textContent).toContain('Bitte mindestens einen Einkauf eingeben');
     expect(mock.createCalls).toBe(0);
   });
 
@@ -256,7 +255,7 @@ describe('FilamentsComponent', () => {
     expect(root.textContent).toContain('180 g');
   });
 
-  it('asks for confirmation before deleting a filament and keeps cancel safe', async () => {
+  it('soft-deletes a filament directly without confirmation dialog', async () => {
     const mock = new MockFilamentService([
       {
         id: 'filament-1',
@@ -286,61 +285,55 @@ describe('FilamentsComponent', () => {
     fixture.detectChanges();
 
     const root = fixture.nativeElement as HTMLElement;
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    (root.querySelector('[data-testid="delete-filament"]') as HTMLButtonElement).click();
-    fixture.detectChanges();
-
-    expect(confirmSpy).toHaveBeenCalledWith(
-      'Willst du dieses Filament wirklich löschen? Es bleibt für gespeicherte Kalkulationen erhalten.'
-    );
-    expect(mock.softDeleteCalls).toBe(0);
-    expect(root.textContent).toContain('PLA White');
-    confirmSpy.mockRestore();
-  });
-
-  it('soft-deletes a filament from the active list after confirmation', async () => {
-    const mock = new MockFilamentService([
-      {
-        id: 'filament-1',
-        name: 'PLA White',
-        type: 'PLA',
-        colorHex: '#ffffff',
-        manufacturer: 'Prusa',
-        rollWeightG: 1000,
-        remainingG: 180,
-        purchases: [{ priceEur: 22.99, quantityKg: 1, purchasedAt: '2026-06-20' }],
-        multiColorSurchargeEurKg: 0,
-        fixedPriceEurG: undefined,
-        deleted: false,
-        createdAt: '2026-06-23T00:00:00.000Z',
-        updatedAt: '2026-06-23T00:00:00.000Z'
-      }
-    ]);
-
-    await TestBed.configureTestingModule({
-      imports: [FilamentsComponent],
-      providers: [{ provide: FilamentService, useValue: mock }]
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(FilamentsComponent);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const root = fixture.nativeElement as HTMLElement;
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     (root.querySelector('[data-testid="delete-filament"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(confirmSpy).toHaveBeenCalled();
     expect(mock.softDeleteCalls).toBe(1);
     expect(root.textContent).not.toContain('PLA White');
-    confirmSpy.mockRestore();
   });
 
-  it('uses a German confirmation dialog when closing dirty form without saving', async () => {
+  it('soft-deletes a filament from the active list', async () => {
+    const mock = new MockFilamentService([
+      {
+        id: 'filament-1',
+        name: 'PLA White',
+        type: 'PLA',
+        colorHex: '#ffffff',
+        manufacturer: 'Prusa',
+        rollWeightG: 1000,
+        remainingG: 180,
+        purchases: [{ priceEur: 22.99, quantityKg: 1, purchasedAt: '2026-06-20' }],
+        multiColorSurchargeEurKg: 0,
+        fixedPriceEurG: undefined,
+        deleted: false,
+        createdAt: '2026-06-23T00:00:00.000Z',
+        updatedAt: '2026-06-23T00:00:00.000Z'
+      }
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [FilamentsComponent],
+      providers: [{ provide: FilamentService, useValue: mock }]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FilamentsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    (root.querySelector('[data-testid="delete-filament"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(mock.softDeleteCalls).toBe(1);
+    expect(root.textContent).not.toContain('PLA White');
+  });
+
+  it('closes the filament form directly without confirmation when cancel is clicked', async () => {
     const mock = new MockFilamentService();
     await TestBed.configureTestingModule({
       imports: [FilamentsComponent],
@@ -361,12 +354,9 @@ describe('FilamentsComponent', () => {
     nameInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     (root.querySelector('[data-testid="cancel-filament"]') as HTMLButtonElement).click();
     fixture.detectChanges();
 
-    expect(confirmSpy).toHaveBeenCalledWith('Ungespeicherte Änderungen verwerfen?');
-    expect(root.querySelector('[data-testid="filament-dialog"]')).not.toBeNull();
-    confirmSpy.mockRestore();
+    expect(root.querySelector('[data-testid="filament-dialog"]')).toBeNull();
   });
 });

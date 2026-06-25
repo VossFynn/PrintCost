@@ -9,9 +9,9 @@ import { CustomerService } from '../../core/customers/customer.service';
 import { CalculationRecord } from '../../domain/models/storage.models';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
 
-type InventoryArea = 'drucke' | 'teile';
-type DruckeFilter = 'Alle' | 'Auf Lager' | 'Teilweise' | 'Vollständig' | 'Verschenkt';
-type InventoryCardStatus = 'in-stock' | 'partial' | 'complete' | 'gifted';
+type InventoryArea = 'projekte' | 'teile';
+type DruckeFilter = 'Alle' | 'Auf Lager' | 'Vollständig' | 'Verschenkt';
+type InventoryCardStatus = 'in-stock' | 'complete' | 'gifted';
 
 interface InventoryCardViewModel {
   id: string;
@@ -42,10 +42,14 @@ export class InventoryComponent {
   #activeDetailRequest = 0;
 
   readonly savedCalculations = this.#calculationService.activeSavedCalculations;
-  readonly inventoryAreas: InventoryArea[] = ['drucke', 'teile'];
-  readonly druckeFilters: DruckeFilter[] = ['Alle', 'Auf Lager', 'Teilweise', 'Vollständig', 'Verschenkt'];
-  readonly activeArea = signal<InventoryArea>('drucke');
+  readonly inventoryAreas: InventoryArea[] = ['projekte', 'teile'];
+  readonly druckeFilters: DruckeFilter[] = ['Alle', 'Auf Lager', 'Vollständig', 'Verschenkt'];
+  readonly activeArea = signal<InventoryArea>('projekte');
   readonly activeDruckeFilter = signal<DruckeFilter>('Alle');
+  /** Preset increments offered as dezente Aktionskreise on each card. */
+  readonly recordSteps = [1, 5, 10] as const;
+  /** Card currently animating after a record (slides to the front). */
+  readonly recordedCardId = signal<string | null>(null);
   readonly searchTerm = signal('');
   readonly actionFeedback = signal<string | null>(null);
   readonly detailError = signal<string | null>(null);
@@ -53,6 +57,10 @@ export class InventoryComponent {
   readonly #localDetailId = signal<string | null>(null);
   readonly selectedDetail = signal<CalculationDetailView | null>(null);
   readonly druckeCards = computed(() => this.savedCalculations().map((record) => mapInventoryCard(record)));
+  /** Kalkulationen, die mindestens einmal gedruckt wurden → erscheinen als Teile. */
+  readonly printedCards = computed(() =>
+    this.druckeCards().filter((card) => card.timesPrinted > 0)
+  );
   readonly visibleDruckeCards = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     return this.druckeCards().filter(
@@ -132,16 +140,22 @@ export class InventoryComponent {
     return this.activeDruckeFilter() === filter;
   }
 
-  async recordPrintOccurrence(calculationId: string): Promise<void> {
-    const confirmed = window.confirm('Druck verbuchen?');
-    if (!confirmed) {
-      return;
-    }
-
+  async recordPrintOccurrence(calculationId: string, amount = 1): Promise<void> {
+    // Recording a print increments the count directly — no modal. The action
+    // only bumps a counter (and deducts stock), so a confirmation adds friction
+    // without protecting anything irreversible.
+    const count = Math.max(1, Math.floor(amount));
     this.actionFeedback.set(null);
     try {
-      const result = await this.#calculationService.recordPrintOccurrence(calculationId);
-      this.actionFeedback.set(result.warning ?? 'Druck verbucht.');
+      let warning: string | undefined;
+      for (let i = 0; i < count; i += 1) {
+        const result = await this.#calculationService.recordPrintOccurrence(calculationId);
+        warning = result.warning ?? warning;
+      }
+      // Highlight the just-recorded card; the service re-sorts newest-first so it
+      // also slides to the front of the list (animated via the .recorded class).
+      this.flagRecorded(calculationId);
+      this.actionFeedback.set(warning ?? (count === 1 ? 'Druck verbucht.' : `${count} Drucke verbucht.`));
     } catch (error) {
       if (error instanceof Error) {
         this.actionFeedback.set(error.message);
@@ -149,6 +163,38 @@ export class InventoryComponent {
         this.actionFeedback.set('Druck konnte nicht verbucht werden.');
       }
     }
+  }
+
+  /** Records a specific step amount from a card action circle. */
+  onCardStep(event: MouseEvent, calculationId: string, amount: number): void {
+    event.stopPropagation();
+    void this.recordPrintOccurrence(calculationId, amount);
+  }
+
+  /** Opens a lightweight number prompt for a custom print quantity. */
+  recordCustomQuantity(event: MouseEvent, calculationId: string): void {
+    event.stopPropagation();
+    const input = window.prompt('Wie viele Drucke verbuchen?', '1');
+    if (input === null) {
+      return;
+    }
+
+    const amount = Math.floor(Number(input.replace(',', '.')));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      this.actionFeedback.set('Bitte eine gültige Anzahl eingeben.');
+      return;
+    }
+
+    void this.recordPrintOccurrence(calculationId, amount);
+  }
+
+  private flagRecorded(calculationId: string): void {
+    this.recordedCardId.set(calculationId);
+    setTimeout(() => {
+      if (this.recordedCardId() === calculationId) {
+        this.recordedCardId.set(null);
+      }
+    }, 600);
   }
 
   async openDetail(calculationId: string): Promise<void> {
@@ -179,11 +225,6 @@ export class InventoryComponent {
     }
 
     this.#localDetailId.set(null);
-  }
-
-  onCardQuickAction(event: MouseEvent, calculationId: string): void {
-    event.stopPropagation();
-    void this.recordPrintOccurrence(calculationId);
   }
 
   detailPrintDurationLabel(): string {
@@ -340,8 +381,6 @@ function matchesDruckeFilter(card: InventoryCardViewModel, filter: DruckeFilter)
   switch (filter) {
     case 'Auf Lager':
       return card.status === 'in-stock';
-    case 'Teilweise':
-      return card.status === 'partial';
     case 'Vollständig':
       return card.status === 'complete';
     case 'Verschenkt':
@@ -362,7 +401,9 @@ function classifyInventoryStatus(timesPrinted: number, timesSold: number, timesG
   if (distributed >= timesPrinted) {
     return 'complete';
   }
-  return 'partial';
+  // Partially distributed prints still have remaining stock — treat them as
+  // "Auf Lager" rather than a separate "Teilweise" status.
+  return 'in-stock';
 }
 
 function readCounterField(record: CalculationRecord, key: 'timesSold' | 'timesGifted'): number {

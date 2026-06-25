@@ -2,37 +2,44 @@
 
   <!-- ── Page Header ────────────────────────────────────── -->
   <app-page-header icon="◐" eyebrow="Spulen &amp; Farben" heading="Filamente" [subtitle]="headerSubtitle()">
-    <label class="filament-search" for="filament-search-input">
-      <span class="filament-search__icon" aria-hidden="true">⌕</span>
-      <input
-        id="filament-search-input"
-        #searchInput
-        data-testid="filament-search"
-        type="search"
-        placeholder="Filament suchen…"
-        [value]="searchTerm()"
-        (input)="setSearchTerm(searchInput.value)"
-        class="filament-search__input"
-      />
-    </label>
-    <button type="button" data-testid="open-filament-dialog" class="filament-header__add-btn" (click)="openCreateDialog()">
-      + Filament hinzufügen
-    </button>
+    <div class="filament-header-actions">
+      <label class="filament-search" for="filament-search-input">
+        <span class="filament-search__icon" aria-hidden="true">⌕</span>
+        <input
+          id="filament-search-input"
+          #searchInput
+          data-testid="filament-search"
+          type="search"
+          placeholder="Filament suchen…"
+          [value]="searchTerm()"
+          (input)="setSearchTerm(searchInput.value)"
+          class="filament-search__input"
+        />
+      </label>
+      <button type="button" data-testid="open-filament-dialog" class="filament-header__add-btn" (click)="openCreateDialog()">
+        + Filament hinzufügen
+      </button>
+    </div>
   </app-page-header>
 
-  <!-- ── Filter Chips ───────────────────────────────────── -->
-  <div class="filament-filter-row" aria-label="Filamentfilter">
-    @for (filter of filamentFilters; track filter) {
-      <button
-        type="button"
-        data-testid="filament-filter-chip"
-        class="filament-filter-chip"
-        [class.filament-filter-chip--active]="selectedFilter() === filter"
-        [attr.aria-pressed]="selectedFilter() === filter"
-        (click)="selectFilter(filter)"
-      >
-        {{ filter }}
-      </button>
+  <!-- ── Filter Chips + Übersicht heading (desktop: same row) ─ -->
+  <div class="filament-header-strip">
+    <div class="filament-filter-row" aria-label="Filamentfilter">
+      @for (filter of filamentFilters; track filter) {
+        <button
+          type="button"
+          data-testid="filament-filter-chip"
+          class="filament-filter-chip"
+          [class.filament-filter-chip--active]="selectedFilter() === filter"
+          [attr.aria-pressed]="selectedFilter() === filter"
+          (click)="selectFilter(filter)"
+        >
+          {{ filter }}
+        </button>
+      }
+    </div>
+    @if (filaments().length > 0 && visibleFilaments().length > 0) {
+      <h2 class="filament-panel__heading">Übersicht</h2>
     }
   </div>
 
@@ -141,7 +148,6 @@
 
       <!-- ── Stats Panel ─────────────────────────────── -->
       <aside class="filament-panel">
-        <h2 class="filament-panel__heading">Übersicht</h2>
 
         <div class="filament-panel__card">
           <span class="filament-panel__stat-label">Spulen gesamt</span>
@@ -203,53 +209,25 @@
         <div class="filament-form__field">
           <span class="filament-form__label">Farbe</span>
           <div class="filament-form__swatches">
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#c4622d'"
-              style="background:#c4622d"
-              (click)="form.controls.colorHex.setValue('#c4622d'); form.controls.colorHex.markAsDirty()"
-              aria-label="Orange"></button>
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#e8d8c0'"
-              style="background:#e8d8c0"
-              (click)="form.controls.colorHex.setValue('#e8d8c0'); form.controls.colorHex.markAsDirty()"
-              aria-label="Creme"></button>
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#4a3966'"
-              style="background:#4a3966"
-              (click)="form.controls.colorHex.setValue('#4a3966'); form.controls.colorHex.markAsDirty()"
-              aria-label="Lila"></button>
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#2b5186'"
-              style="background:#2b5186"
-              (click)="form.controls.colorHex.setValue('#2b5186'); form.controls.colorHex.markAsDirty()"
-              aria-label="Blau"></button>
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#1c1c1c'"
-              style="background:#1c1c1c"
-              (click)="form.controls.colorHex.setValue('#1c1c1c'); form.controls.colorHex.markAsDirty()"
-              aria-label="Schwarz"></button>
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#3a7a4a'"
-              style="background:#3a7a4a"
-              (click)="form.controls.colorHex.setValue('#3a7a4a'); form.controls.colorHex.markAsDirty()"
-              aria-label="Grün"></button>
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#c44830'"
-              style="background:#c44830"
-              (click)="form.controls.colorHex.setValue('#c44830'); form.controls.colorHex.markAsDirty()"
-              aria-label="Rot"></button>
-            <button type="button" class="filament-form__swatch"
-              [class.filament-form__swatch--active]="form.controls.colorHex.value === '#c4a020'"
-              style="background:#c4a020"
-              (click)="form.controls.colorHex.setValue('#c4a020'); form.controls.colorHex.markAsDirty()"
-              aria-label="Gold"></button>
-            <!-- Custom colour picker -->
-            <label class="filament-form__swatch filament-form__swatch--custom" aria-label="Eigene Farbe">
+            @for (color of paletteColors(); track color) {
+              <span class="filament-form__swatch-wrap">
+                <button type="button" class="filament-form__swatch"
+                  [class.filament-form__swatch--active]="form.controls.colorHex.value.toLowerCase() === color"
+                  [style.background]="color"
+                  (click)="selectColor(color)"
+                  [attr.aria-label]="'Farbe ' + color"></button>
+                <button type="button" class="filament-form__swatch-remove"
+                  (click)="removePaletteColor(color, $event)"
+                  [attr.aria-label]="'Farbe ' + color + ' entfernen'">×</button>
+              </span>
+            }
+            <!-- Custom colour picker → adds a new swatch; only fires on confirm (change, not input). -->
+            <label class="filament-form__swatch filament-form__swatch--custom" aria-label="Eigene Farbe hinzufügen">
               <input
                 type="color"
                 class="filament-form__color-picker"
                 [value]="form.controls.colorHex.value"
-                (input)="onColorPickerChange($event)"
+                (change)="onColorPickerChange($event)"
               />
               <span aria-hidden="true">+</span>
             </label>
@@ -319,6 +297,11 @@
               <input id="rollWeightG" type="number" min="0.0001" step="1" formControlName="rollWeightG" class="filament-form__input" />
               <span class="filament-form__unit">g</span>
             </div>
+            <div class="filament-form__quick-adds" aria-label="Spulengewicht schnell hinzufügen">
+              @for (amount of weightQuickAdds; track amount) {
+                <button type="button" class="filament-form__quick-add" (click)="addRollWeight(amount)">+{{ amount }}</button>
+              }
+            </div>
             @if (getError('rollWeightG'); as message) {
               <p class="filament-form__error">{{ message }}</p>
             }
@@ -362,9 +345,6 @@
             }
           }
           <button type="button" class="filament-form__add-purchase" (click)="addPurchase()">+ Einkauf hinzufügen</button>
-          @if (getPurchaseArrayError(); as message) {
-            <p class="filament-form__error">{{ message }}</p>
-          }
         </fieldset>
 
         <!-- ── Weitere Parameter ───────────────────────── -->

@@ -57,7 +57,7 @@
             <h2 class="mehr-drucker__title">Drucker</h2>
             <p class="mehr-drucker__subtitle">{{ printers().length }} Profile · Watt, Strom, AfA/h</p>
           </div>
-          <button type="button" class="mehr-text-link-btn" (click)="openCreateDialog()">+ Drucker hinzufügen</button>
+          <button type="button" class="mehr-primary-add-btn" data-testid="open-printer-dialog-header" (click)="openCreateDialog()">+ Drucker hinzufügen</button>
         </div>
 
         <!-- Desktop column headers -->
@@ -75,7 +75,15 @@
         @if (printers().length > 0) {
           <ul class="printer-list" aria-label="Aktive Druckerprofile">
             @for (printer of printers(); track printer.id) {
-              <li class="printer-list__item">
+              <li
+                class="printer-list__item printer-list__item--clickable"
+                role="button"
+                tabindex="0"
+                data-testid="printer-row"
+                (click)="startEdit(printer.id)"
+                (keydown.enter)="startEdit(printer.id)"
+                (keydown.space)="startEdit(printer.id)"
+              >
                 <span class="printer-list__status-dot" aria-hidden="true"></span>
                 <div class="printer-list__info">
                   <p class="printer-list__name">{{ printer.name }}</p>
@@ -86,7 +94,7 @@
                 <span class="printer-list__col">{{ printer.purchasePriceEur | number:'1.0-0' }}&thinsp;€</span>
                 <span class="printer-list__col">{{ printer.lifetimeHours | number:'1.0-0' }}&thinsp;h</span>
                 <strong class="printer-list__afa">{{ printer.purchasePriceEur / printer.lifetimeHours | number:'1.2-2' }}&thinsp;€/h</strong>
-                <div class="printer-list__actions">
+                <div class="printer-list__actions" (click)="$event.stopPropagation()">
                   <button type="button" class="printer-list__edit" (click)="startEdit(printer.id)" aria-label="Drucker bearbeiten">✎</button>
                   <button type="button" data-testid="delete-printer" class="printer-list__delete" (click)="requestDelete(printer.id)" aria-label="Drucker löschen">✕</button>
                 </div>
@@ -96,8 +104,6 @@
         } @else {
           <p class="printer-list__empty">Noch kein aktives Druckerprofil vorhanden.</p>
         }
-
-        <button type="button" class="mehr-list-add-btn" (click)="openCreateDialog()">+ Drucker hinzufügen</button>
 
         <div class="mehr-info-box">
           <span class="mehr-info-box__icon" aria-hidden="true">ⓘ</span>

@@ -61,6 +61,21 @@ export class FilamentsComponent {
   readonly materialPresets = ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'PA'] as const;
   readonly showCustomMaterial = signal(false);
 
+  /** Selectable colour swatches — the user can add (via picker) and remove these. */
+  readonly paletteColors = signal<string[]>([
+    '#c4622d',
+    '#e8d8c0',
+    '#4a3966',
+    '#2b5186',
+    '#1c1c1c',
+    '#3a7a4a',
+    '#c44830',
+    '#c4a020'
+  ]);
+
+  /** Quick-add amounts (g) for the spool/remaining weight inputs. */
+  readonly weightQuickAdds = [1000, 750, 500, 250] as const;
+
   readonly filaments = this.#filamentService.activeFilaments;
   readonly visibleFilaments = computed(() => {
     const search = this.searchTerm().trim().toLowerCase();
@@ -199,15 +214,6 @@ export class FilamentsComponent {
   }
 
   async requestDelete(filamentId: string): Promise<void> {
-    // Deletion stays a confirm-first action because the service keeps history alive.
-    const confirmed = window.confirm(
-      'Willst du dieses Filament wirklich löschen? Es bleibt für gespeicherte Kalkulationen erhalten.'
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
     this.serviceError.set(null);
     try {
       await this.#filamentService.softDeleteFilament(filamentId);
@@ -266,16 +272,55 @@ export class FilamentsComponent {
 
   onColorPickerChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
-    this.form.controls.colorHex.setValue(value);
+    this.addPaletteColor(value);
+  }
+
+  /** Selects a colour swatch. */
+  selectColor(hex: string): void {
+    this.form.controls.colorHex.setValue(hex);
     this.form.controls.colorHex.markAsDirty();
+  }
+
+  /** Adds a colour to the palette (if new) and selects it. */
+  addPaletteColor(hex: string): void {
+    const value = hex.toLowerCase();
+    if (!this.paletteColors().includes(value)) {
+      this.paletteColors.update((colors) => [...colors, value]);
+    }
+    this.selectColor(value);
+  }
+
+  /** Removes a colour from the palette; reselects a remaining one if needed. */
+  removePaletteColor(hex: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.paletteColors.update((colors) => colors.filter((color) => color !== hex));
+    if (this.form.controls.colorHex.value.toLowerCase() === hex.toLowerCase()) {
+      this.selectColor(this.paletteColors()[0] ?? '#000000');
+    }
+  }
+
+  /** Adds a quick-add amount (g) to the spool weight. */
+  addRollWeight(amount: number): void {
+    const current = Number(this.form.controls.rollWeightG.value) || 0;
+    this.form.controls.rollWeightG.setValue(current + amount);
+    this.form.controls.rollWeightG.markAsDirty();
   }
 
   async saveFilament(): Promise<void> {
     this.form.markAllAsTouched();
-    this.purchases.markAllAsTouched();
     this.serviceError.set(null);
 
-    if (this.form.invalid || this.purchases.length === 0 || this.purchases.invalid) {
+    // Strip purchase rows the user added but never filled (priceEur still at 0).
+    // Purchases are optional; an unfilled row shouldn't block saving.
+    for (let i = this.purchases.length - 1; i >= 0; i--) {
+      if (Number(this.purchases.at(i).get('priceEur')?.value) <= 0) {
+        this.purchases.removeAt(i);
+      }
+    }
+    this.purchases.markAllAsTouched();
+
+    if (this.form.invalid || this.purchases.invalid) {
       return;
     }
 
@@ -289,7 +334,7 @@ export class FilamentsComponent {
       } else {
         await this.#filamentService.createFilament(payload);
       }
-      this.closeDialog(true);
+      this.closeDialog();
     } catch (error) {
       if (error instanceof Error) {
         this.serviceError.set(error.message);
@@ -301,14 +346,7 @@ export class FilamentsComponent {
     }
   }
 
-  closeDialog(force = false): void {
-    if (!force && (this.form.dirty || this.purchases.dirty)) {
-      const confirmed = window.confirm('Ungespeicherte Änderungen verwerfen?');
-      if (!confirmed) {
-        return;
-      }
-    }
-
+  closeDialog(): void {
     this.isDialogOpen.set(false);
     this.resetForm();
   }

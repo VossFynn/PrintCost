@@ -147,19 +147,29 @@
   color: var(--pc-color-ink-secondary);
 }
 
-.mehr-text-link-btn {
-  display: none; // mobile hidden, desktop shows
+// Single, clearly-emphasised primary "Drucker hinzufügen" action.
+.mehr-primary-add-btn {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 2.5rem;
   border: none;
-  background: transparent;
-  color: var(--pc-color-primary);
+  border-radius: var(--pc-radius-input);
+  background: var(--pc-color-primary);
+  color: var(--pc-color-primary-foreground);
   font: inherit;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
+  padding: 0 var(--pc-space-4);
   cursor: pointer;
-  padding: 0;
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(196 98 45 / 22%);
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
 
-  &:hover { text-decoration: underline; }
+  &:hover {
+    opacity: 0.95;
+    box-shadow: 0 4px 12px rgb(196 98 45 / 30%);
+  }
 }
 
 .mehr-drucker__col-heads {
@@ -191,6 +201,16 @@
 
   &:last-child { border-bottom: none; }
   &:hover { background: var(--pc-color-surface-muted); }
+
+  // Whole row is clickable → opens the edit dialog.
+  &--clickable {
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--pc-color-primary);
+      outline-offset: -2px;
+    }
+  }
 }
 
 .printer-list__status-dot {
@@ -287,25 +307,6 @@
 }
 
 // ── List add button ───────────────────────────────────────
-
-.mehr-list-add-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-2);
-  width: 100%;
-  padding: var(--pc-space-3) var(--pc-space-4);
-  border: 1.5px dashed var(--pc-color-primary);
-  border-radius: var(--pc-radius-card);
-  background: transparent;
-  color: var(--pc-color-primary);
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:hover { background: var(--pc-color-surface-accent-soft); }
-}
 
 // ── Info box ──────────────────────────────────────────────
 
@@ -1247,9 +1248,6 @@
     }
   }
 
-  // Text link button visible
-  .mehr-text-link-btn { display: block; }
-
   // Printer list → flat table rows between the header row and the add row
   .printer-list {
     border-radius: 0;
@@ -1275,19 +1273,6 @@
   .printer-list__actions {
     justify-content: flex-end;
     gap: var(--pc-space-1);
-  }
-
-  // List add button → inline text
-  .mehr-list-add-btn {
-    border: none;
-    border-top: 1px solid var(--pc-color-border-muted);
-    border-radius: 0 0 var(--pc-radius-card) var(--pc-radius-card);
-    justify-content: center;
-    font-size: 0.875rem;
-    padding: var(--pc-space-2) var(--pc-space-4);
-    background: var(--pc-color-surface-card);
-
-    &:hover { background: var(--pc-color-surface-muted); }
   }
 
   // Kunden panel → visible, in grid (no extra margin)

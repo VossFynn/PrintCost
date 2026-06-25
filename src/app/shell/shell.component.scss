@@ -91,6 +91,7 @@
 .shell__link--active,
 .shell__link[aria-current='page'] {
   color: var(--pc-color-primary);
+  background: var(--pc-color-surface-accent-soft);
 }
 
 .shell__link:focus-visible {
@@ -104,7 +105,7 @@
 }
 
 .shell__label {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.01em;

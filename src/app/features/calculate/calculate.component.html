@@ -3,34 +3,17 @@
   <!-- ── Page header ──────────────────────────────────────── -->
   <app-page-header
     icon="▣"
-    eyebrow="Neue Kalkulation"
+    eyebrow="Druckprojekt"
     [heading]="form.controls.projectName.value || 'Neue Kalkulation'"
     [subtitle]="headerSubtitle()"
   >
     <button
-      data-testid="load-template"
-      type="button"
-      class="calc-page-header__load-btn"
-      [disabled]="isTemplateLoadBlocked() || !hasTemplates()"
-      (click)="loadTemplateSelection()"
-    >
-      Vorlage laden
-    </button>
-    <button
-      type="button"
-      class="calc-header-actions__btn"
-      [disabled]="isSaveDisabled()"
-      (click)="saveAsTemplate()"
-    >
-      Als Vorlage
-    </button>
-    <button
       type="button"
       class="calc-header-actions__btn calc-header-actions__btn--primary"
       [disabled]="isSaveDisabled()"
-      (click)="saveCalculationDraft()"
+      (click)="savePrintProject()"
     >
-      Speichern
+      Im Bestand speichern
     </button>
   </app-page-header>
 
@@ -38,7 +21,7 @@
     <p class="calc-error">{{ loadMessage }}</p>
   }
 
-  <form class="calculate-form" [formGroup]="form" (ngSubmit)="saveCalculationDraft()">
+  <form class="calculate-form" [formGroup]="form" (ngSubmit)="savePrintProject()">
 
     <!-- ══════════════════════════════════════════════════════
          LEFT COLUMN — Projekt · Drucker/Kunde · Filament
@@ -48,9 +31,8 @@
 
       <!-- PROJEKT -->
       <div class="calc-section">
-        <p class="calc-section__label" data-testid="calculate-section-title">Projekt</p>
         <label class="calc-field" for="projectName">
-          <span class="calc-field__label">Name</span>
+          <span class="calc-field__label">Projektname</span>
           <input
             id="projectName"
             data-testid="project-name"
@@ -67,7 +49,6 @@
 
       <!-- DRUCKER + KUNDE -->
       <div class="calc-section">
-        <p class="calc-section__label" data-testid="calculate-section-title">Druck</p>
 
         @if (!hasActivePrinters()) {
           <div class="calc-empty-state" data-testid="calculate-printer-empty">
@@ -101,9 +82,6 @@
             </label>
           </div>
         }
-        @if (templatePrinterReselectGuidance(); as printerGuidance) {
-          <p class="calc-error" data-testid="template-printer-guidance">{{ printerGuidance }}</p>
-        }
         @if (getError('printerId'); as message) {
           <p class="calc-error">{{ message }}</p>
         }
@@ -112,12 +90,9 @@
       <!-- FILAMENT -->
       <div class="calc-section">
         <div class="calc-section-header">
-          <p class="calc-section__label" data-testid="calculate-section-title">
+          <span class="calc-field__label">
             Filament@if (isMulticolor()) {&nbsp;· Multicolor}
-          </p>
-          @if (hasActiveFilaments() && activeFilaments().length > filamentLines.length) {
-            <span class="calc-section__hint">+ Hinzufügen</span>
-          }
+          </span>
         </div>
 
         @if (!hasActiveFilaments()) {
@@ -142,12 +117,12 @@
             }
           </div>
 
-          <!-- Desktop: filament table with GRAMM + KOSTEN columns -->
+          <!-- Filament-Tabelle: Gramm-Input + Kosten pro Zeile -->
           @if (filamentLines.controls.length > 0) {
             <table class="calc-filament-table">
               <thead class="calc-filament-table__head">
                 <tr>
-                  <th class="calc-filament-table__th">Filament</th>
+                  <th class="calc-filament-table__th calc-filament-table__th--name">Filament</th>
                   <th class="calc-filament-table__th calc-filament-table__th--num">Gramm</th>
                   <th class="calc-filament-table__th calc-filament-table__th--num">Kosten</th>
                 </tr>
@@ -160,52 +135,49 @@
                       <span class="calc-filament-line__name">{{ filamentNameForLine(index) }}</span>
                     </td>
                     <td class="calc-filament-table__input-cell">
-                      <input
-                        data-testid="filament-grams"
-                        type="number"
-                        min="0.0001"
-                        step="1"
-                        class="calc-filament-line__input"
-                        [formControl]="line.controls.grams"
-                      />
-                      <span class="calc-filament-line__unit">g</span>
+                      <div class="calc-filament-line__input-wrap">
+                        <input
+                          data-testid="filament-grams"
+                          type="number"
+                          min="0.0001"
+                          step="1"
+                          class="calc-filament-line__input"
+                          [formControl]="line.controls.grams"
+                        />
+                        <span class="calc-filament-line__unit" aria-hidden="true">g</span>
+                      </div>
+                      @if (filamentLineError(index, 'grams'); as gramsError) {
+                        <p class="calc-error calc-filament-line__error">{{ gramsError }}</p>
+                      }
                     </td>
                     <td class="calc-filament-table__cost-cell">
-                      @if (liveResult(); as r) {
-                        {{ formatCurrency(perUnit(r.materialCostEur) * (line.controls.grams.value / (totalFilamentGrams() || 1))) }}
+                      @if (lineMaterialCostEur(index); as lineCost) {
+                        {{ formatCurrency(lineCost) }}
                       } @else {
                         —
                       }
                     </td>
                   </tr>
-                  @if (filamentLineError(index, 'grams'); as gramsError) {
-                    <tr>
-                      <td colspan="3"><p class="calc-error calc-filament-line__error">{{ gramsError }}</p></td>
-                    </tr>
-                  }
                 }
               </tbody>
               <tfoot>
                 <tr class="calc-filament-table__summe">
-                  <td>Summe</td>
+                  <td></td>
                   <td class="calc-filament-table__th--num">
                     <span data-testid="total-grams">{{ totalFilamentGrams() }} g</span>
                   </td>
                   <td class="calc-filament-table__th--num">
-                    @if (liveResult(); as r) {
-                      {{ formatCurrency(perUnit(r.materialCostEur)) }}
+                    @if (totalFilamentGrams() > 0) {
+                      {{ formatCurrency(totalMaterialCostEur()) }}
                     }
                   </td>
                 </tr>
               </tfoot>
             </table>
-            <span data-testid="total-grams-state" aria-live="polite" class="calc-totals__state calc-sr-only">
-              {{ filamentTotalsStateText() }}
-            </span>
+          <span data-testid="total-grams-state" aria-live="polite" class="calc-sr-only">
+            {{ filamentTotalsStateText() }}
+          </span>
           }
-        }
-        @if (templateFilamentReselectGuidance(); as filamentGuidance) {
-          <p class="calc-error" data-testid="template-filament-guidance">{{ filamentGuidance }}</p>
         }
       </div>
 
@@ -217,12 +189,12 @@
          ══════════════════════════════════════════════════════ -->
     <div class="calc-col calc-col--center">
 
-      <!-- DRUCK METRICS: Druckzeit · Teile/Platte · Anzahl -->
+      <!-- DRUCKPARAMETER + PREISMODELL — ein Block -->
       <div class="calc-section">
-        <p class="calc-section__label">Druckparameter</p>
+        <!-- Drei Metriken: Druckzeit · Teile/Platte · Anzahl Platten -->
         <div class="calc-druck-metrics">
           <label class="calc-druck-metric">
-            <span class="calc-druck-metric__label">Druckzeit</span>
+            <span class="calc-druck-metric__label">Druckzeit (h)</span>
             <input
               id="printHours"
               data-testid="print-hours"
@@ -234,7 +206,7 @@
             />
           </label>
           <label class="calc-druck-metric">
-            <span class="calc-druck-metric__label">Teile/Platte</span>
+            <span class="calc-druck-metric__label">Teile / Platte</span>
             <input
               id="partsPerPlate"
               data-testid="parts-per-plate"
@@ -246,7 +218,7 @@
             />
           </label>
           <label class="calc-druck-metric">
-            <span class="calc-druck-metric__label">Anzahl</span>
+            <span class="calc-druck-metric__label">Anzahl Platten</span>
             <input
               id="printQuantity"
               data-testid="print-quantity"
@@ -258,12 +230,13 @@
             />
           </label>
         </div>
+
         @if (plateExplanation(); as plateText) {
           <p class="calc-plate-hint" data-testid="plate-explanation">{{ plateText }}</p>
         }
         @if (showExtraWorkFeeControl()) {
           <label class="calc-field" for="extraWorkFeePercent">
-            <span class="calc-field__label">Mehrplatten-Aufschlag (%)</span>
+            <span class="calc-field__label">Mehrplatten-Aufschlag %</span>
             <input
               id="extraWorkFeePercent"
               data-testid="extra-work-fee"
@@ -276,12 +249,10 @@
             />
           </label>
         }
-      </div>
 
-      <!-- PREISMODELL -->
-      <div class="calc-section">
-        <p class="calc-section__label">Preismodell</p>
-        <!-- Tabs (visible on desktop) -->
+        <!-- Preismodell inline im selben Block -->
+        <div class="calc-block-divider"></div>
+        <p class="calc-section__sublabel">Preismodell</p>
         <div class="seg-ctrl calc-preismodell-tabs" role="group" aria-label="Preismodell">
           @for (mode of priceModeOptions; track mode.value) {
             <button
@@ -308,7 +279,7 @@
         @for (line of filamentLines.controls; track line.controls.filamentId.value; let index = $index) {
           @if (priceModeForLine(index) === 'FIXED') {
             <label class="calc-field">
-              <span class="calc-field__label">Fixpreis für {{ filamentNameForLine(index) }} (€/g)</span>
+              <span class="calc-field__label">Fixpreis {{ filamentNameForLine(index) }} (€/g)</span>
               <input
                 data-testid="filament-fixed-price"
                 type="number"
@@ -377,7 +348,7 @@
         }
       </div>
 
-      <!-- MODELL vorhanden + Modellierung -->
+      <!-- MODELLIERUNG -->
       <div class="calc-section">
         <div class="calc-field">
           <span class="calc-field__label">Modell vorhanden?</span>
@@ -446,7 +417,7 @@
           aria-label="Gewinn in Prozent"
         />
         <div class="calc-gewinn-marks" aria-hidden="true">
-          <span>0 %</span><span>50 %</span><span>100 %</span>
+          <span>0 %</span><span>100 %</span><span>200 %</span>
         </div>
         <!-- Number input kept for tests + mobile fallback -->
         <label class="calc-field calc-gewinn-number-field" for="profitMarginPercent">
@@ -544,34 +515,45 @@
               <p class="calc-result__kostenanteil-label">Kostenanteil</p>
               <div class="calc-result__kosten-bar">
                 <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--material"
-                  [style.width.%]="result.materialCostEur / result.subtotalEur * 100"></span>
+                  [style.width.%]="result.materialCostEur / result.finalPriceEur * 100"></span>
                 <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--strom"
-                  [style.width.%]="result.electricityCostEur / result.subtotalEur * 100"
-                  [style.left.%]="result.materialCostEur / result.subtotalEur * 100"></span>
+                  [style.width.%]="result.electricityCostEur / result.finalPriceEur * 100"
+                  [style.left.%]="result.materialCostEur / result.finalPriceEur * 100"></span>
                 <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--afa"
-                  [style.width.%]="result.depreciationCostEur / result.subtotalEur * 100"
-                  [style.left.%]="(result.materialCostEur + result.electricityCostEur) / result.subtotalEur * 100"></span>
+                  [style.width.%]="result.depreciationCostEur / result.finalPriceEur * 100"
+                  [style.left.%]="(result.materialCostEur + result.electricityCostEur) / result.finalPriceEur * 100"></span>
                 <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--model"
-                  [style.width.%]="result.modelingCostEur / result.subtotalEur * 100"
-                  [style.left.%]="(result.materialCostEur + result.electricityCostEur + result.depreciationCostEur) / result.subtotalEur * 100"></span>
+                  [style.width.%]="result.modelingCostEur / result.finalPriceEur * 100"
+                  [style.left.%]="(result.materialCostEur + result.electricityCostEur + result.depreciationCostEur) / result.finalPriceEur * 100"></span>
+                @if (result.finalPriceEur > result.subtotalEur) {
+                  <span class="calc-result__kosten-bar-fill calc-result__kosten-bar-fill--gewinn"
+                    [style.width.%]="(result.finalPriceEur - result.subtotalEur) / result.finalPriceEur * 100"
+                    [style.left.%]="result.subtotalEur / result.finalPriceEur * 100"></span>
+                }
               </div>
               <div class="calc-result__kosten-legend">
                 <span class="calc-result__kosten-legend-item">
                   <span class="calc-result__kosten-dot calc-result__kosten-dot--material"></span>
-                  Material {{ (result.materialCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                  Material {{ (result.materialCostEur / result.finalPriceEur * 100).toFixed(0) }}%
                 </span>
                 <span class="calc-result__kosten-legend-item">
                   <span class="calc-result__kosten-dot calc-result__kosten-dot--strom"></span>
-                  Strom {{ (result.electricityCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                  Strom {{ (result.electricityCostEur / result.finalPriceEur * 100).toFixed(0) }}%
                 </span>
                 <span class="calc-result__kosten-legend-item">
                   <span class="calc-result__kosten-dot calc-result__kosten-dot--afa"></span>
-                  AfA {{ (result.depreciationCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                  AfA {{ (result.depreciationCostEur / result.finalPriceEur * 100).toFixed(0) }}%
                 </span>
                 <span class="calc-result__kosten-legend-item">
                   <span class="calc-result__kosten-dot calc-result__kosten-dot--model"></span>
-                  Modell {{ (result.modelingCostEur / result.subtotalEur * 100).toFixed(0) }}%
+                  Modell {{ (result.modelingCostEur / result.finalPriceEur * 100).toFixed(0) }}%
                 </span>
+                @if (result.finalPriceEur > result.subtotalEur) {
+                  <span class="calc-result__kosten-legend-item">
+                    <span class="calc-result__kosten-dot calc-result__kosten-dot--gewinn"></span>
+                    Gewinn {{ ((result.finalPriceEur - result.subtotalEur) / result.finalPriceEur * 100).toFixed(0) }}%
+                  </span>
+                }
               </div>
             </div>
           }
@@ -589,62 +571,17 @@
         >{{ resultAnnouncementText() }}</p>
       </div>
 
-      <!-- AKTIONEN -->
+      <!-- SPEICHERN -->
       <div class="calc-actions">
-        <label class="calc-field" for="templateName">
-          <span class="calc-field__label">Vorlagenname</span>
-          <input
-            id="templateName"
-            data-testid="template-name"
-            type="text"
-            class="calc-field__input"
-            [value]="templateName()"
-            (input)="onTemplateNameInput($any($event.target).value)"
-          />
-        </label>
+        <button
+          data-testid="save-calculation"
+          type="submit"
+          class="calc-actions__primary"
+          [disabled]="isSaveDisabled()"
+        >
+          Im Bestand speichern
+        </button>
 
-        @if (hasTemplates()) {
-          <label class="calc-field" for="templateSelection">
-            <span class="calc-field__label">Vorlage</span>
-            <select
-              id="templateSelection"
-              data-testid="template-select"
-              class="calc-field__input"
-              [value]="templateSelectionId() || templates()[0]?.id || ''"
-              (change)="onTemplateSelectionChange($any($event.target).value)"
-            >
-              @for (template of templates(); track template.id) {
-                <option [value]="template.id">{{ template.templateName }}</option>
-              }
-            </select>
-          </label>
-        } @else {
-          <p data-testid="template-empty" class="calc-actions__hint">Noch keine Vorlage gespeichert.</p>
-        }
-
-        <div class="calc-actions__btn-row">
-          <button
-            data-testid="save-calculation"
-            type="submit"
-            class="calc-actions__primary"
-            [disabled]="isSaveDisabled()"
-          >
-            Speichern
-          </button>
-          <button
-            data-testid="save-template"
-            type="button"
-            class="calc-actions__secondary"
-            [disabled]="isSaveDisabled()"
-            (click)="saveAsTemplate()"
-          >
-            Als Vorlage
-          </button>
-        </div>
-
-        @if (templateFeedback(); as templateFeedbackText) {
-          <p data-testid="template-feedback" aria-live="polite" class="calc-actions__feedback">{{ templateFeedbackText }}</p>
-        }
         @if (saveFeedback(); as saveFeedbackText) {
           <p data-testid="save-feedback" aria-live="polite" class="calc-actions__feedback">{{ saveFeedbackText }}</p>
         }

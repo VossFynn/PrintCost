@@ -457,15 +457,6 @@ export class MoreComponent {
   }
 
   async requestDelete(printerId: string): Promise<void> {
-    // Printer deletion is confirm-first because historical calculations keep a reference to the record.
-    const confirmed = window.confirm(
-      'Willst du dieses Druckerprofil wirklich löschen? Es bleibt für gespeicherte Kalkulationen erhalten.'
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
     this.serviceError.set(null);
     try {
       await this.#printerService.softDeletePrinter(printerId);
@@ -552,13 +543,6 @@ export class MoreComponent {
   }
 
   async requestDeleteCustomer(customerId: string): Promise<void> {
-    const confirmed = window.confirm(
-      'Willst du diesen Kunden wirklich löschen? Bestehende Kalkulationen und Verkäufe bleiben lesbar.'
-    );
-    if (!confirmed) {
-      return;
-    }
-
     this.customerServiceError.set(null);
     try {
       await this.#customerService.softDeleteCustomer(customerId);

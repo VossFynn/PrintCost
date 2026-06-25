@@ -5,15 +5,11 @@ import { describe, expect, it } from 'vitest';
 import { vi } from 'vitest';
 
 import { FilamentService } from '../../core/filaments/filament.service';
-import {
-  CalculationService,
-  CalculationTemplateInput,
-  SaveCalculationTemplatePayload
-} from '../../core/calculations/calculation.service';
+import { CalculationService } from '../../core/calculations/calculation.service';
 import { CustomerService } from '../../core/customers/customer.service';
 import { PrinterService } from '../../core/printers/printer.service';
 import { SettingsService } from '../../core/settings/settings.service';
-import { CustomerRecord, FilamentRecord, PrinterRecord, TemplateRecord } from '../../domain/models/storage.models';
+import { CustomerRecord, FilamentRecord, PrinterRecord } from '../../domain/models/storage.models';
 import { CalculateComponent } from './calculate.component';
 
 const LAST_USED_PRINTER_SETTING_KEY = 'lastUsedPrinterProfileId';
@@ -104,15 +100,7 @@ class MockCustomerService {
 
 class MockCalculationService {
   saveCalls: unknown[] = [];
-  saveTemplateCalls: SaveCalculationTemplatePayload[] = [];
-  private readonly templatesSignal = signal<TemplateRecord[]>([]);
-  templates = this.templatesSignal.asReadonly();
 
-  constructor(initialTemplates: TemplateRecord[] = []) {
-    this.templatesSignal.set(initialTemplates);
-  }
-
-  async refreshTemplates() {}
   async savePlannedCalculation(payload: unknown) {
     this.saveCalls.push(payload);
     return {
@@ -120,39 +108,10 @@ class MockCalculationService {
       timesPrinted: 0
     };
   }
-
-  async saveTemplate(payload: SaveCalculationTemplatePayload): Promise<TemplateRecord> {
-    this.saveTemplateCalls.push(clone(payload));
-    const now = '2026-06-23T00:00:00.000Z';
-    const record: TemplateRecord = {
-      id: `template-${this.templatesSignal().length + 1}`,
-      templateName: payload.templateName,
-      templateInput: clone(payload.templateInput),
-      createdAt: now,
-      updatedAt: now
-    };
-    this.templatesSignal.update((current) => [record, ...current]);
-    return clone(record);
-  }
-
-  async loadTemplate(templateId: string): Promise<TemplateRecord | undefined> {
-    const found = this.templatesSignal().find((entry) => entry.id === templateId);
-    return found ? clone(found) : undefined;
-  }
 }
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
-}
-
-function createTemplateRecord(id: string, input: CalculationTemplateInput): TemplateRecord {
-  return {
-    id,
-    templateName: 'Vorlage',
-    templateInput: clone(input),
-    createdAt: '2026-06-23T00:00:00.000Z',
-    updatedAt: '2026-06-23T00:00:00.000Z'
-  };
 }
 
 function createActivePrinter(id: string, name: string): PrinterRecord {
@@ -206,13 +165,12 @@ describe('CalculateComponent', () => {
     filaments?: FilamentRecord[];
     customers?: CustomerRecord[];
     settings?: Record<string, unknown>;
-    templates?: TemplateRecord[];
   }) {
     const printerService = new MockPrinterService(options?.printers ?? [createActivePrinter('printer-1', 'Prusa MK4')]);
     const settingsService = new MockSettingsService(options?.settings);
     const filamentService = new MockFilamentService(options?.filaments ?? [createActiveFilament('filament-1', 'PLA White')]);
     const customerService = new MockCustomerService(options?.customers ?? []);
-    const calculationService = new MockCalculationService(options?.templates);
+    const calculationService = new MockCalculationService();
 
     await TestBed.configureTestingModule({
       imports: [CalculateComponent],
@@ -233,35 +191,6 @@ describe('CalculateComponent', () => {
 
     return { fixture, root: fixture.nativeElement as HTMLElement, calculationService, customerService };
   }
-
-  it('renders Projekt, Filament, Druck sections in order', async () => {
-    const printerService = new MockPrinterService([createActivePrinter('printer-1', 'Prusa MK4')]);
-    const settingsService = new MockSettingsService();
-    const filamentService = new MockFilamentService([createActiveFilament('filament-1', 'PLA White')]);
-
-    await TestBed.configureTestingModule({
-      imports: [CalculateComponent],
-      providers: [
-        provideRouter([]),
-        { provide: PrinterService, useValue: printerService },
-        { provide: SettingsService, useValue: settingsService },
-        { provide: FilamentService, useValue: filamentService },
-        { provide: CustomerService, useValue: new MockCustomerService() },
-        { provide: CalculationService, useValue: new MockCalculationService() }
-      ]
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(CalculateComponent);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const root = fixture.nativeElement as HTMLElement;
-    const sectionTitles = Array.from(root.querySelectorAll('[data-testid="calculate-section-title"]')).map((node) =>
-      node.textContent?.trim()
-    );
-    expect(sectionTitles).toEqual(['Projekt', 'Druck', 'Filament']);
-  });
 
   it('shows active printer options only and preselects last used active printer', async () => {
     const printerService = new MockPrinterService([
@@ -704,7 +633,7 @@ describe('CalculateComponent', () => {
     expect(calculationService.saveCalls).toHaveLength(1);
     const savedPayload = calculationService.saveCalls[0] as { customerId?: string };
     expect(savedPayload.customerId).toBeUndefined();
-    expect(root.textContent).toContain('Kalkulation gespeichert');
+    expect(root.textContent).toContain('Druckprojekt gespeichert');
   });
 
   it('persists selected customer id when saving a calculation', async () => {
@@ -735,85 +664,4 @@ describe('CalculateComponent', () => {
     expect(savedPayload.customerId).toBe('customer-1');
   });
 
-  it('shows German template empty prompt and blocks template load when none exist', async () => {
-    const { root } = await setupComponent({ templates: [] });
-
-    expect(root.textContent).toContain('Noch keine Vorlage gespeichert.');
-    const loadTemplateButton = root.querySelector('[data-testid="load-template"]') as HTMLButtonElement;
-    expect(loadTemplateButton.disabled).toBe(true);
-  });
-
-  it('saves template name independently from project name and loads editable form data', async () => {
-    const { fixture, root, calculationService } = await setupComponent();
-
-    (root.querySelector('[data-testid="project-name"]') as HTMLInputElement).value = 'Projekt A';
-    (root.querySelector('[data-testid="project-name"]') as HTMLInputElement).dispatchEvent(new Event('input'));
-    (root.querySelector('[data-testid="print-hours"]') as HTMLInputElement).value = '2';
-    (root.querySelector('[data-testid="print-hours"]') as HTMLInputElement).dispatchEvent(new Event('input'));
-    (root.querySelector('[data-testid="filament-chip"]') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    (root.querySelector('[data-testid="filament-grams"]') as HTMLInputElement).value = '14';
-    (root.querySelector('[data-testid="filament-grams"]') as HTMLInputElement).dispatchEvent(new Event('input'));
-    (root.querySelector('[data-testid="template-name"]') as HTMLInputElement).value = 'Standard PLA';
-    (root.querySelector('[data-testid="template-name"]') as HTMLInputElement).dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-
-    (root.querySelector('[data-testid="save-template"]') as HTMLButtonElement).click();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(calculationService.saveTemplateCalls).toHaveLength(1);
-    expect(calculationService.saveTemplateCalls[0]?.templateName).toBe('Standard PLA');
-    expect(calculationService.saveTemplateCalls[0]?.templateInput.projectName).toBe('Projekt A');
-
-    (root.querySelector('[data-testid="project-name"]') as HTMLInputElement).value = 'Zwischenstand';
-    (root.querySelector('[data-testid="project-name"]') as HTMLInputElement).dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-
-    (root.querySelector('[data-testid="load-template"]') as HTMLButtonElement).click();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const projectNameInput = root.querySelector('[data-testid="project-name"]') as HTMLInputElement;
-    expect(projectNameInput.value).toBe('Projekt A');
-
-    projectNameInput.value = 'Neuer Name';
-    projectNameInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    expect(projectNameInput.value).toBe('Neuer Name');
-  });
-
-  it('shows German reselection guidance when template references unavailable records and keeps save blocked', async () => {
-    const missingTemplate = createTemplateRecord('template-1', {
-      projectName: 'Projekt',
-      printerId: 'printer-missing',
-      printHours: 2,
-      printQuantity: 1,
-      partsPerPlate: 1,
-      modelExists: true,
-      modelingCostEur: 0,
-      extraWorkFeePercent: 0,
-      profitMarginPercent: 10,
-      filamentLines: [
-        {
-          filamentId: 'filament-missing',
-          grams: 20,
-          priceMode: 'WEIGHTED_AVERAGE',
-          fixedPriceEurG: 0
-        }
-      ]
-    });
-
-    const { fixture, root } = await setupComponent({
-      templates: [missingTemplate]
-    });
-
-    (root.querySelector('[data-testid="load-template"]') as HTMLButtonElement).click();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(root.textContent).toContain('Gespeicherter Drucker ist nicht verfügbar. Bitte neu auswählen.');
-    expect(root.textContent).toContain('Gespeicherte Filamente sind nicht verfügbar. Bitte Filamente neu auswählen.');
-    expect((root.querySelector('[data-testid="save-calculation"]') as HTMLButtonElement).disabled).toBe(true);
-  });
 });

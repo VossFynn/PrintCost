@@ -138,9 +138,9 @@ describe('InventoryComponent', () => {
 
     const root = fixture.nativeElement as HTMLElement;
     expect(root.textContent).toContain('Bestand');
-    expect(root.textContent).toContain('Drucke');
+    expect(root.textContent).toContain('Projekte');
     expect(root.textContent).toContain('Teile');
-    expect(root.querySelector('[data-testid="inventory-tab-drucke"]')?.getAttribute('aria-pressed')).toBe('true');
+    expect(root.querySelector('[data-testid="inventory-tab-projekte"]')?.getAttribute('aria-pressed')).toBe('true');
     expect(root.querySelector('[data-testid="inventory-tab-teile"]')?.getAttribute('aria-pressed')).toBe('false');
   });
 
@@ -210,17 +210,13 @@ describe('InventoryComponent', () => {
 
     const root = fixture.nativeElement as HTMLElement;
     const chips = Array.from(root.querySelectorAll('[data-testid="drucke-filter-chip"]')) as HTMLButtonElement[];
-    expect(chips.map((chip) => chip.textContent?.trim())).toEqual(['Alle', 'Auf Lager', 'Teilweise', 'Vollständig', 'Verschenkt']);
+    expect(chips.map((chip) => chip.textContent?.trim())).toEqual(['Alle', 'Auf Lager', 'Vollständig', 'Verschenkt']);
 
+    // Partially distributed prints still have remaining stock → "Auf Lager".
     clickChip(chips, 'Auf Lager', fixture);
-    expect(visibleProjectNames(root)).toEqual(['Auf-Lager-Projekt', 'Geplant-Projekt']);
+    expect(visibleProjectNames(root)).toEqual(['Auf-Lager-Projekt', 'Teilweise-Projekt', 'Geplant-Projekt']);
     expect(chipState(chips, 'Auf Lager')).toBe('true');
     expect(chipState(chips, 'Alle')).toBe('false');
-
-    clickChip(chips, 'Teilweise', fixture);
-    expect(visibleProjectNames(root)).toEqual(['Teilweise-Projekt']);
-    expect(chipState(chips, 'Teilweise')).toBe('true');
-    expect(chipState(chips, 'Auf Lager')).toBe('false');
 
     clickChip(chips, 'Vollständig', fixture);
     expect(visibleProjectNames(root)).toEqual(['Vollstaendig-Projekt']);
@@ -362,7 +358,7 @@ describe('InventoryComponent', () => {
     expect(root.textContent).toContain('Notiz: Messe');
   });
 
-  it('records +1 print occurrence after German confirmation and updates printed count', async () => {
+  it('records +1 print occurrence directly (no confirmation) and updates printed count', async () => {
     const calculationService = new MockCalculationService();
     calculationService.setSavedCalculations([createCalculationRecord({ id: 'calc-1', projectName: 'Halterung', timesPrinted: 2 })]);
 
@@ -379,16 +375,13 @@ describe('InventoryComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const root = fixture.nativeElement as HTMLElement;
     (root.querySelector('[data-testid="inventory-record-print"]') as HTMLButtonElement).click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(confirmSpy).toHaveBeenCalledWith('Druck verbuchen?');
     expect(calculationService.recordPrintCalls).toBe(1);
     expect(root.textContent).toContain('Gedruckt: 3');
-    confirmSpy.mockRestore();
   });
 
   it('shows German warning when stock is clamped to zero during print occurrence', async () => {
