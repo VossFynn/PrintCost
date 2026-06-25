@@ -8,6 +8,7 @@ import { CalculationDetailView, CalculationService } from '../../core/calculatio
 import { CustomerService } from '../../core/customers/customer.service';
 import { CalculationRecord } from '../../domain/models/storage.models';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { NumberInputDirective } from '../../shared/number-input.directive';
 
 type InventoryArea = 'projekte' | 'teile';
 type DruckeFilter = 'Alle' | 'Auf Lager' | 'Vollständig' | 'Verschenkt';
@@ -28,7 +29,7 @@ interface InventoryCardViewModel {
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent, NumberInputDirective],
   templateUrl: './inventory.component.html',
   styleUrl: './inventory.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

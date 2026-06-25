@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FilamentPayload, FilamentService } from '../../core/filaments/filament.service';
 import { FilamentRecord } from '../../domain/models/storage.models';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { NumberInputDirective } from '../../shared/number-input.directive';
 
 type FilamentFormFieldName =
   | 'name'
@@ -28,7 +29,7 @@ type FilamentFilter = 'Alle' | 'PLA' | 'PETG' | 'ABS' | 'TPU' | 'Anderes';
 @Component({
   selector: 'app-filaments',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent, NumberInputDirective],
   templateUrl: './filaments.component.html',
   styleUrl: './filaments.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

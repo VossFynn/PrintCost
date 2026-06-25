@@ -12,6 +12,7 @@ import { SettingsService } from '../../core/settings/settings.service';
 import { calculate, CalculationInput, CalculationResult } from '../../domain/calculation/calculate';
 import { CalculationFilamentLineSnapshot, FilamentRecord } from '../../domain/models/storage.models';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { NumberInputDirective } from '../../shared/number-input.directive';
 
 const LAST_USED_PRINTER_SETTING_KEY = 'lastUsedPrinterProfileId';
 const RESULT_ANNOUNCEMENT_DEBOUNCE_MS = 300;
@@ -39,7 +40,7 @@ type FilamentLineForm = FormGroup<{
 @Component({
   selector: 'app-calculate',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PageHeaderComponent, NumberInputDirective],
   templateUrl: './calculate.component.html',
   styleUrl: './calculate.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

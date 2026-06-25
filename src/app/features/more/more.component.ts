@@ -12,6 +12,7 @@ import { PrinterPayload, PrinterService } from '../../core/printers/printer.serv
 import { SettingsService } from '../../core/settings/settings.service';
 import { BackupFormat, CustomerPaymentMethod, CustomerType } from '../../domain/models/storage.models';
 import { PageHeaderComponent } from '../../shared/page-header/page-header.component';
+import { NumberInputDirective } from '../../shared/number-input.directive';
 
 type PrinterFormFieldName = 'name' | 'bedType' | 'powerWatts' | 'purchasePriceEur' | 'lifetimeHours' | 'note';
 
@@ -31,7 +32,7 @@ type SettingsFormFieldName =
 @Component({
   selector: 'app-more',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, PageHeaderComponent, NumberInputDirective],
   templateUrl: './more.component.html',
   styleUrl: './more.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
