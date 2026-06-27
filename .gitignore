@@ -48,3 +48,6 @@ yarn-error.log*
 
 # macOS screenshots accidentally dropped at repo root
 /Bildschirmfoto*.png
+
+# Design files
+*.pptx
