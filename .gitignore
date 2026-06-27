@@ -31,5 +31,20 @@ yarn-error.log*
 /.serena/
 /.copilot/
 
+# BMAD / AI agent framework — local dev tooling, not source
+/.agent/
+/.agents/
+/_bmad/
+/_bmad-output/
+
+# RTK (token-optimizer) tooling — local dev only
+/.rtk/
+
+# Python / uv caches
+/.uv-cache/
+
 # Generated macOS metadata
 **/.DS_Store
+
+# macOS screenshots accidentally dropped at repo root
+/Bildschirmfoto*.png
